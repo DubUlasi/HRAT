@@ -1,0 +1,163 @@
+/* Voice report modal — recording / processing / review steps. Review-step form fields reuse
+   the existing Input/Select/TextArea/FormField components, so no new form styling here. */
+
+.voice-step-recording {
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.voice-step-processing {
+  padding: 44px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 13px;
+}
+
+.voice-error-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  background-color: var(--warning-light);
+  color: var(--warning-color);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  width: 100%;
+}
+
+.voice-error-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.listening-visualizer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-status-heading h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.voice-status-heading p {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  max-width: 440px;
+}
+
+.live-mic-pulse {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  margin-right: 8px;
+  animation: livePulse 1.2s infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.85); }
+}
+
+.transcription-live-box {
+  width: 100%;
+  min-height: 80px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 13px 16px;
+  text-align: left;
+}
+
+.transcription-live-box p {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.voice-modal-actions {
+  margin-top: 0;
+}
+
+.ai-processing-spinner {
+  color: var(--accent-color);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.voice-step-processing h4 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.voice-step-processing p {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.review-intro-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.voice-stepper-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 10px;
+}
+
+.voice-stepper-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-stepper-tab:hover {
+  background-color: var(--active-bg);
+}
+
+.voice-stepper-tab.active {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #FFFFFF;
+}

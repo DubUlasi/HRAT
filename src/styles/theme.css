@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Light Mode Tokens */
+  --bg-color: #FAFAFB;
+  --sidebar-bg: #FFFFFF;
+  --sidebar-border: #F2F4F7;
+
+  --text-primary: #1D2939;
+  --text-secondary: #475467;
+  --text-muted: #667085;
+  --text-brand: #079455;
+
+  --active-bg: #F2F4F7;
+  --active-text: #101828;
+  --active-icon: #344054;
+
+  --card-bg: #FFFFFF;
+  --card-border: #EEF2F6;
+  --card-shadow: none;
+
+  --accent-color: #079455;
+  --accent-light: #ECFDF3;
+  --danger-color: #F04438;
+  --danger-light: #FEF3F2;
+  --warning-color: #F79009;
+  --warning-light: #FFFAEB;
+  --info-color: #2E90FA;
+  --info-light: #EFF8FF;
+  --violet-color: #7A5AF8;
+  --violet-light: #F4F3FF;
+
+  --toggle-bg: #EAECF0;
+  --toggle-handle: #FFFFFF;
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --transition-speed: 0.25s;
+}
+
+[data-theme="dark"] {
+  /* Dark Mode Tokens */
+  --bg-color: #0B0F19;
+  --sidebar-bg: #101523;
+  --sidebar-border: #1E293B;
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-brand: #10B981;
+
+  --active-bg: #1E293B;
+  --active-text: #F8FAFC;
+  --active-icon: #F1F5F9;
+
+  --card-bg: #121B2E;
+  --card-border: #1E293B;
+  --card-shadow: none;
+
+  --accent-color: #10B981;
+  --accent-light: #064E3B;
+  --danger-color: #F97066;
+  --danger-light: #451A1A;
+  --warning-color: #FDB022;
+  --warning-light: #45300B;
+  --info-color: #53B1FD;
+  --info-light: rgba(83, 177, 253, 0.15);
+  --violet-color: #9B8AFB;
+  --violet-light: rgba(155, 138, 251, 0.15);
+
+  --toggle-bg: #1E293B;
+  --toggle-handle: #101523;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
