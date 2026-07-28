@@ -287,6 +287,36 @@ body {
   color: #374151;
 }
 
+.form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: #FEF3F2;
+  color: #B42318;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.form-error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.demo-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 14px;
+}
+
+.demo-hint strong {
+  color: #374151;
+  font-weight: 600;
+}
+
 .form-input {
   width: 100%;
   padding: 12px 16px;

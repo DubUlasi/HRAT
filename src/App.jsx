@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ComplaintWizardPage from './pages/ComplaintWizardPage';
@@ -23,7 +22,7 @@ export default function App() {
     <ComplaintsProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/complaint" element={<ComplaintWizardPage />} />

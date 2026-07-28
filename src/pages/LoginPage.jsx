@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import ShowcaseGrid from '../components/ShowcaseGrid';
 import '../styles/login.css';
+
+// No backend yet — this stands in for the Complaint Registry Head's login until real auth
+// exists, matching the mock identity used throughout the registry-head role (navConfig.js).
+const DEMO_EMAIL = 'sampete@example.com';
+const DEMO_PASSWORD = 'password123';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -11,19 +16,27 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
     setSubmitting(true);
     setTimeout(() => {
-      navigate('/');
+      const matches = email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD;
+      if (matches) {
+        navigate('/registry-head');
+      } else {
+        setError('Incorrect email or password. Try the demo credentials below.');
+        setSubmitting(false);
+      }
     }, 600);
   };
 
   const handleGoogleSignIn = () => {
     setGoogleSubmitting(true);
     setTimeout(() => {
-      navigate('/');
+      navigate('/registry-head');
     }, 600);
   };
 
@@ -57,6 +70,13 @@ export default function LoginPage() {
           </button>
 
           <div className="divider">or</div>
+
+          {error && (
+            <div className="form-error">
+              <AlertCircle size={15} />
+              <span>{error}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -101,6 +121,10 @@ export default function LoginPage() {
               {submitting ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
+
+          <div className="demo-hint">
+            Demo access: <strong>{DEMO_EMAIL}</strong> / <strong>{DEMO_PASSWORD}</strong>
+          </div>
 
           <div className="login-card-footer">
             <p>
