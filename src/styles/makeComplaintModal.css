@@ -1,0 +1,93 @@
+/* Dedicated stylesheet for MakeComplaintModal.jsx's own chrome — the wide desktop wizard modal
+   container, header (title/subtitle/close button), and body wrapper. Nothing else in the app
+   uses these classes, so they live here instead of the shared modals.css.
+
+   The modal reuses .modal-overlay (shared, in modals.css) for its backdrop, and the wizard
+   content itself (stepper bar, steps, fields) comes from ComplaintWizardForm and
+   src/styles/signup.css — this file only covers the chrome wrapped around that content.
+
+   Explicit white (not var(--card-bg)) — the wizard form's own styling (signup.css) assumes a
+   white page regardless of app theme, same as the public /complaint route always does. */
+
+.wizard-modal-container {
+  position: relative;
+  width: 700px;
+  max-width: 94vw;
+  max-height: 92vh;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.wizard-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+}
+
+.wizard-modal-header-text h3 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.wizard-modal-header-text p {
+  font-size: 11px;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+/* Matches .modal-close-btn's look (the close button on the Make a Complaint choice modal) —
+   transparent by default, a soft highlight on hover, instead of a filled gray chip. */
+.wizard-modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  background: none;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.wizard-modal-close:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.wizard-modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 19px 24px 24px;
+  text-align: center;
+}
+
+.wizard-modal-body .su-main {
+  min-height: auto;
+  padding: 0;
+  display: block;
+}
+
+.wizard-modal-body .su-content {
+  max-width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .wizard-modal-container {
+    width: 100%;
+  }
+  .wizard-modal-body {
+    padding: 20px 18px 26px;
+  }
+}

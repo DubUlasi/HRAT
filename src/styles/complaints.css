@@ -295,6 +295,7 @@
 .category-pill.pill-info { background-color: var(--info-light); color: var(--info-color); }
 .category-pill.pill-warning { background-color: var(--warning-light); color: var(--warning-color); }
 .category-pill.pill-danger { background-color: var(--danger-light); color: var(--danger-color); }
+.category-pill.pill-accent { background-color: var(--accent-light); color: var(--accent-color); }
 
 .urgency-pill {
   padding: 3px 10px;

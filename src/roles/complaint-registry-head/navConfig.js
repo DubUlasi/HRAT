@@ -1,13 +1,17 @@
-import { LayoutDashboard, FileText, Search, Inbox, CheckCircle2, HelpCircle, Settings, BarChart3, TrendingUp, AlertOctagon, Phone } from 'lucide-react';
+import { LayoutDashboard, FileText, Search, Inbox, CheckCircle2, HelpCircle, Settings, BarChart3, TrendingUp, AlertOctagon } from 'lucide-react';
 
 // `section` groups items into a labeled block in the sidebar (see Sidebar.jsx) — Dashboard is
 // the only item left without one, rendering as a flat top-level link above every section.
+//
+// Call Center intentionally has no nav entry here — the feature (page, modal, context, mock
+// data) is still fully in the codebase, just not linked from the design right now. Re-add a
+// { to: '/registry-head/call-center', icon: Phone, label: 'Call Center', section: 'Complaints' }
+// entry to bring it back.
 export const registryHeadNavItems = [
   { to: '/registry-head', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/registry-head/complaints', icon: FileText, label: 'All Complaints', end: true, section: 'Complaints' },
   { to: '/registry-head/complaints/new', icon: Inbox, label: 'New Complaints', section: 'Complaints' },
   { to: '/registry-head/complaints/treated', icon: CheckCircle2, label: 'Treated Complaints', section: 'Complaints' },
-  { to: '/registry-head/call-center', icon: Phone, label: 'Call Center', section: 'Complaints' },
   { to: '/registry-head/repeat-offenders', icon: AlertOctagon, label: 'Repeat Offenders', section: 'Complaints' },
   { to: '/registry-head/analytics', icon: BarChart3, label: 'Analytics', section: 'Insights' },
   { to: '/registry-head/business-intelligence', icon: TrendingUp, label: 'Business Intelligence', section: 'Insights' },

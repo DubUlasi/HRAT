@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, UserCircle, Users, Pencil } from 'lucide-react';
+import { ArrowRight, UserCircle, Users, Pencil, Check } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { getKeyPopulation } from '../../../constants/keyPopulations';
 import KeyPopulationSheet from './KeyPopulationSheet';
@@ -55,6 +55,7 @@ export default function StepVictimDetails({ value, onChange, onBack, onContinue,
             className={`toggle-card ${value.relationship === 'self' ? 'selected' : ''}`}
             onClick={() => onChange({ relationship: 'self' })}
           >
+            {value.relationship === 'self' && <span className="toggle-card-check"><Check size={11} /></span>}
             <span className="toggle-card-icon"><UserCircle size={20} /></span>
             <span className="toggle-card-label">{t('wizard.victim.myself')}</span>
           </button>
@@ -63,6 +64,7 @@ export default function StepVictimDetails({ value, onChange, onBack, onContinue,
             className={`toggle-card ${value.relationship === 'other' ? 'selected' : ''}`}
             onClick={() => onChange({ relationship: 'other' })}
           >
+            {value.relationship === 'other' && <span className="toggle-card-check"><Check size={11} /></span>}
             <span className="toggle-card-icon"><Users size={20} /></span>
             <span className="toggle-card-label">{t('wizard.victim.someoneElse')}</span>
           </button>
@@ -155,6 +157,7 @@ export default function StepVictimDetails({ value, onChange, onBack, onContinue,
                 className={`toggle-card ${value.populationType === 'general' ? 'selected' : ''}`}
                 onClick={() => handlePopulationTypeChange('general')}
               >
+                {value.populationType === 'general' && <span className="toggle-card-check"><Check size={11} /></span>}
                 <span className="toggle-card-label">{t('wizard.victim.generalPopulation')}</span>
               </button>
               <button
@@ -162,6 +165,7 @@ export default function StepVictimDetails({ value, onChange, onBack, onContinue,
                 className={`toggle-card ${value.populationType === 'key' ? 'selected' : ''}`}
                 onClick={() => handlePopulationTypeChange('key')}
               >
+                {value.populationType === 'key' && <span className="toggle-card-check"><Check size={11} /></span>}
                 <span className="toggle-card-label">{t('wizard.victim.keyPopulation')}</span>
               </button>
             </div>

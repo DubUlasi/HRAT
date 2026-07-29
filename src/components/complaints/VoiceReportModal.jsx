@@ -46,7 +46,7 @@ export default function VoiceReportModal({ open, onClose }) {
   const [victim, setVictim] = useState(EMPTY_PERSON);
   const [violator, setViolator] = useState(EMPTY_PERSON);
   const [incident, setIncident] = useState(EMPTY_INCIDENT);
-  const [category, setCategory] = useState('women_children');
+  const [category, setCategory] = useState('gender_based_violence');
   const [suggestedCategory, setSuggestedCategory] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -58,7 +58,7 @@ export default function VoiceReportModal({ open, onClose }) {
     setVictim(EMPTY_PERSON);
     setViolator(EMPTY_PERSON);
     setIncident(EMPTY_INCIDENT);
-    setCategory('women_children');
+    setCategory('gender_based_violence');
     setSuggestedCategory(null);
 
     let cancelled = false;

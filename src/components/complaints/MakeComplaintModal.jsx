@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import ComplaintWizardForm from './ComplaintWizardForm';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import { useTranslation } from '../../context/I18nContext';
+import '../../styles/makeComplaintModal.css';
 
 // Same wizard, same fields, same signup.css styling as the public /complaint page — framed in
 // a wide desktop wizard modal chrome (header + numbered stepper bar) instead of navigating away.
