@@ -22,7 +22,7 @@ export default function QuickTrackerBlob() {
         <span className="voice-blob-shape">
           <span className="voice-blob-shine" />
         </span>
-        <Radar size={24} className="voice-blob-icon" />
+        <Radar size={21} className="voice-blob-icon" />
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} title="Quick Complaint Tracker" width="480px">

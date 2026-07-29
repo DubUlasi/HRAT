@@ -133,7 +133,7 @@ export default function RegistryHeadReportsPage() {
       {report && (
         <>
           <div className="section-header-flex">
-            <h2>Report Preview ({report.rows.length} complaint{report.rows.length === 1 ? '' : 's'})</h2>
+            <h2 className="report-preview-title">Report Preview ({report.rows.length} complaint{report.rows.length === 1 ? '' : 's'})</h2>
             <Button variant="secondary" icon={Download} onClick={() => downloadCsv(report.rows, report.filters)}>
               Download CSV
             </Button>

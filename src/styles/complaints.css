@@ -493,6 +493,14 @@
   margin-bottom: 0;
 }
 
+/* Reports page's "Report Preview (N complaints)" heading — 2px under the page's own h1 title
+   size (.header-title-area h1 is 20px), since it's a sub-section of that page, not the page title. */
+.report-preview-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .section-card-title {
   display: inline-flex;
   align-items: center;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, LogOut, Moon, Sun, MoreVertical, ChevronLeft } from 'lucide-react';
+import { Settings, LogOut, Moon, Sun, MoreVertical, ChevronLeft, X } from 'lucide-react';
 import SidebarNavItem from './SidebarNavItem';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -32,14 +32,14 @@ function groupNavItems(navItems) {
  * navItems: [{ to, icon, label, end?, badge?, section? }]
  * user: { name, email, avatarSrc }
  */
-export default function Sidebar({ navItems, user, collapsed = false, onToggleCollapsed, logoHref = '/', logoSrc = '/hrat_nhrc_logo.png' }) {
+export default function Sidebar({ navItems, user, collapsed = false, onToggleCollapsed, logoHref = '/', logoSrc = '/hrat_nhrc_logo.png', mobileOpen = false, onCloseMobile }) {
   const { isDark, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const settingsHref = navItems.find((item) => item.label === 'Settings')?.to || '/settings';
   const navBlocks = groupNavItems(navItems);
 
   return (
-    <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <button
         type="button"
         className="sidebar-collapse-btn"
@@ -50,8 +50,19 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
         <ChevronLeft size={14} className={collapsed ? 'rotated' : ''} />
       </button>
 
+      {mobileOpen && (
+        <button
+          type="button"
+          className="sidebar-mobile-close-btn"
+          onClick={onCloseMobile}
+          aria-label="Close menu"
+        >
+          <X size={16} />
+        </button>
+      )}
+
       <div className="sidebar-header">
-        <Link to={logoHref} className="logo-container">
+        <Link to={logoHref} className="logo-container" onClick={onCloseMobile}>
           <img src={logoSrc} alt="HRAT Logo" className="logo-icon" />
         </Link>
       </div>
@@ -59,7 +70,7 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
       <nav className="nav-section">
         {collapsed
           ? navItems.map((item) => (
-              <SidebarNavItem key={item.to} {...item} collapsed={collapsed} />
+              <SidebarNavItem key={item.to} {...item} collapsed={collapsed} onNavigate={onCloseMobile} />
             ))
           : navBlocks.map((block, idx) =>
               Array.isArray(block.items) ? (
@@ -67,19 +78,19 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
                   <div className="nav-group-label">{block.label}</div>
                   <div className="nav-group-content">
                     {block.items.map((item) => (
-                      <SidebarNavItem key={item.to} {...item} />
+                      <SidebarNavItem key={item.to} {...item} onNavigate={onCloseMobile} />
                     ))}
                   </div>
                 </div>
               ) : (
-                <SidebarNavItem key={block.to} {...block} />
+                <SidebarNavItem key={block.to} {...block} onNavigate={onCloseMobile} />
               )
             )}
       </nav>
 
       <div className="sidebar-footer">
         <div className={`profile-menu ${showProfileMenu ? 'show' : ''}`}>
-          <Link to={settingsHref} className="profile-menu-item">
+          <Link to={settingsHref} className="profile-menu-item" onClick={onCloseMobile}>
             <Settings size={16} />
             Account Settings
           </Link>
@@ -88,7 +99,7 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
             {isDark ? 'Light Theme' : 'Dark Theme'}
           </div>
           <div className="sidebar-divider" style={{ margin: '4px 0' }}></div>
-          <Link to="/login" className="profile-menu-item" style={{ color: '#EF4444' }}>
+          <Link to="/login" className="profile-menu-item" style={{ color: '#EF4444' }} onClick={onCloseMobile}>
             <LogOut size={16} />
             Sign Out
           </Link>

@@ -8,12 +8,20 @@ import { useComplaints } from '../../context/ComplaintsContext';
 import '../../styles/quickComplaintTracker.css';
 
 const RESULT_LIMIT = 6;
+const RECENT_LIMIT = 5;
 
 // Search-by-name/complaint-number/phone widget shown inside QuickTrackerBlob's modal. Pure
-// client-side substring match over the complaints already in ComplaintsContext.
+// client-side substring match over the complaints already in ComplaintsContext. With no query
+// typed yet, it shows the most recently filed complaints instead of an empty panel.
 export default function QuickComplaintTracker() {
   const { complaints } = useComplaints();
   const [query, setQuery] = useState('');
+  const searched = query.trim().length > 0;
+
+  const recent = useMemo(
+    () => [...complaints].sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)).slice(0, RECENT_LIMIT),
+    [complaints]
+  );
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -28,7 +36,7 @@ export default function QuickComplaintTracker() {
       .slice(0, RESULT_LIMIT);
   }, [complaints, query]);
 
-  const searched = query.trim().length > 0;
+  const rows = searched ? results : recent;
 
   return (
     <div className="qt-tracker">
@@ -38,13 +46,17 @@ export default function QuickComplaintTracker() {
         placeholder="Search by name, complaint number, or phone number"
       />
 
+      {rows.length > 0 && (
+        <span className="qt-results-label">{searched ? 'Search Results' : 'Recent Complaints'}</span>
+      )}
+
       {searched && results.length === 0 && (
         <EmptyState message="No matching complaints found." />
       )}
 
-      {results.length > 0 && (
+      {rows.length > 0 && (
         <div className="qt-results">
-          {results.map((c) => (
+          {rows.map((c) => (
             <div key={c.id} className="qt-result-row">
               <Avatar name={c.victim?.name || 'Unknown'} size={32} />
               <div className="qt-result-info">

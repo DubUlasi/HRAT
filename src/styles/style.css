@@ -21,7 +21,7 @@
   top: 0;
   left: 0;
   z-index: 100;
-  transition: background-color var(--transition-speed), border-color var(--transition-speed), width var(--transition-speed);
+  transition: background-color var(--transition-speed), border-color var(--transition-speed), width var(--transition-speed), transform 0.25s ease;
 }
 
 .sidebar.collapsed {
@@ -93,6 +93,58 @@
 
 .sidebar-collapse-btn svg.rotated {
   transform: rotate(180deg);
+}
+
+/* Mobile drawer close "X" — only rendered (in JSX) while the sidebar is open as a mobile
+   overlay, so it never needs its own visibility media query. */
+.sidebar-mobile-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.sidebar-mobile-close-btn:hover {
+  background-color: var(--active-bg);
+  color: var(--text-primary);
+}
+
+/* Hamburger trigger — hidden by default, only shown at the same <=900px breakpoint that
+   hides the fixed sidebar off-canvas (see the @media block further down). */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-menu-btn:hover {
+  background-color: var(--active-bg);
+}
+
+.mobile-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(16, 24, 40, 0.5);
+  z-index: 99;
 }
 
 .logo-container {
@@ -568,8 +620,18 @@ th {
 
 @media (max-width: 900px) {
   .sidebar {
-    display: none;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(16, 24, 40, 0.18);
   }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+
   .main-content,
   .main-content.sidebar-collapsed {
     margin-left: 0;

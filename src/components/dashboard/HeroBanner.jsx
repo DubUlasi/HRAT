@@ -40,7 +40,7 @@ export default function HeroBanner({
             <div className="hero-stat-item">
               {stat.icon && (
                 <div className="hero-stat-icon-box">
-                  <stat.icon size={15} />
+                  <stat.icon size={17} />
                 </div>
               )}
               <div className="hero-stat-info">

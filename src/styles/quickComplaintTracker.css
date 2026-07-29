@@ -7,6 +7,15 @@
   gap: 12px;
 }
 
+.qt-results-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: -4px;
+}
+
 .qt-results {
   display: flex;
   flex-direction: column;
