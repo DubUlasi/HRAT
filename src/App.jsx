@@ -11,8 +11,8 @@ import RegistryHeadComplaintsPage from './roles/complaint-registry-head/Registry
 import RegistryHeadComplaintDetailPage from './roles/complaint-registry-head/RegistryHeadComplaintDetailPage';
 import RegistryHeadRepeatOffendersPage from './roles/complaint-registry-head/RegistryHeadRepeatOffendersPage';
 import RegistryHeadCallCenterPage from './roles/complaint-registry-head/RegistryHeadCallCenterPage';
-import RegistryHeadAnalyticsPage from './roles/complaint-registry-head/RegistryHeadAnalyticsPage';
 import RegistryHeadBusinessIntelligencePage from './roles/complaint-registry-head/RegistryHeadBusinessIntelligencePage';
+import RegistryHeadReportsPage from './roles/complaint-registry-head/RegistryHeadReportsPage';
 import RegistryHeadTrackPage from './roles/complaint-registry-head/RegistryHeadTrackPage';
 import RegistryHeadHelpPage from './roles/complaint-registry-head/RegistryHeadHelpPage';
 import RegistryHeadSettingsPage from './roles/complaint-registry-head/RegistryHeadSettingsPage';
@@ -41,8 +41,8 @@ export default function App() {
               <Route path="/registry-head/complaints/:complaintId" element={<RegistryHeadComplaintDetailPage />} />
               <Route path="/registry-head/repeat-offenders" element={<RegistryHeadRepeatOffendersPage />} />
               <Route path="/registry-head/call-center" element={<RegistryHeadCallCenterPage />} />
-              <Route path="/registry-head/analytics" element={<RegistryHeadAnalyticsPage />} />
               <Route path="/registry-head/business-intelligence" element={<RegistryHeadBusinessIntelligencePage />} />
+              <Route path="/registry-head/reports" element={<RegistryHeadReportsPage />} />
               <Route path="/registry-head/track" element={<RegistryHeadTrackPage />} />
               <Route path="/registry-head/help" element={<RegistryHeadHelpPage />} />
               <Route path="/registry-head/settings" element={<RegistryHeadSettingsPage />} />

@@ -10,40 +10,14 @@ import OfficePerformanceTable from '../../components/dashboard/OfficePerformance
 import TrendComparisonCard from '../../components/dashboard/TrendComparisonCard';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import { useComplaints } from '../../context/ComplaintsContext';
-import { STAGE_ORDER, STAGE_LABELS, SUB_STATUS, getSubStatusMeta } from '../../constants/complaintStatus';
+import { STAGE_ORDER, STAGE_LABELS, SUB_STATUS, getSubStatusMeta, stageProgressPercent } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
+import { PERIOD_OPTIONS, withinPeriod } from '../../constants/reportPeriods';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 
 const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-const PERIOD_OPTIONS = [
-  { value: 'all', label: 'All Time' },
-  { value: 'last_30', label: 'Last 30 Days' },
-  { value: 'last_90', label: 'Last 90 Days' },
-  { value: 'this_year', label: 'This Year' },
-  { value: 'last_year', label: 'Last Year' },
-];
-
-function withinPeriod(dateFiled, period) {
-  if (period === 'all') return true;
-  const d = new Date(dateFiled);
-  const now = new Date();
-  if (period === 'last_30') {
-    const cutoff = new Date(now);
-    cutoff.setDate(cutoff.getDate() - 30);
-    return d >= cutoff;
-  }
-  if (period === 'last_90') {
-    const cutoff = new Date(now);
-    cutoff.setDate(cutoff.getDate() - 90);
-    return d >= cutoff;
-  }
-  if (period === 'this_year') return d.getFullYear() === now.getFullYear();
-  if (period === 'last_year') return d.getFullYear() === now.getFullYear() - 1;
-  return true;
-}
 
 // The "current" year the trend widget compares against — for "Last Year" this shifts the
 // whole comparison back a year too, so the widget stays meaningful for whatever period is
@@ -168,6 +142,17 @@ function categoryBreakdown(complaints) {
   }));
 }
 
+function statusBreakdown(complaints) {
+  const counts = {};
+  complaints.forEach((c) => {
+    counts[c.subStatus] = (counts[c.subStatus] || 0) + 1;
+  });
+  const total = complaints.length || 1;
+  return Object.entries(counts)
+    .map(([key, count]) => ({ key, label: getSubStatusMeta(key).label, count, percent: Math.round((count / total) * 100) }))
+    .sort((a, b) => b.count - a.count);
+}
+
 function csvEscape(value) {
   const str = String(value ?? '');
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
@@ -211,7 +196,16 @@ export default function RegistryHeadBusinessIntelligencePage() {
   );
 
   const pendingCount = filtered.filter((c) => !INACTIVE_STATUSES.includes(c.subStatus)).length;
+  const resolvedCount = filtered.filter((c) => c.subStatus === SUB_STATUS.CLOSED).length;
   const activeOffices = new Set(filtered.map((c) => c.office).filter(Boolean)).size;
+
+  const decided = filtered.filter((c) => c.admissibility.decision);
+  const admissibleCount = decided.filter((c) => c.admissibility.decision === 'ADMISSIBLE').length;
+  const admissibleRate = decided.length ? Math.round((admissibleCount / decided.length) * 100) : 0;
+
+  const avgProgress = filtered.length
+    ? Math.round(filtered.reduce((sum, c) => sum + stageProgressPercent(c.stageIndex), 0) / filtered.length)
+    : 0;
 
   const avgCaseAgeDays = useMemo(() => {
     if (!filtered.length) return 0;
@@ -222,6 +216,7 @@ export default function RegistryHeadBusinessIntelligencePage() {
 
   const stageTimings = useMemo(() => computeStageTimings(filtered), [filtered]);
   const admissibilityTiming = stageTimings.find((row) => row.key === 'admissibility_check');
+  const pipelineStatusRows = useMemo(() => statusBreakdown(filtered), [filtered]);
 
   const officePerformance = useMemo(() => computePerformance(filtered, offices, 'office'), [filtered]);
   const departmentPerformance = useMemo(() => computePerformance(filtered, departments, 'department'), [filtered]);
@@ -234,7 +229,7 @@ export default function RegistryHeadBusinessIntelligencePage() {
     <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
       <PageHeader
         title="Business Intelligence"
-        subtitle="Cycle times, office/department performance, and period-over-period trends."
+        subtitle="Registry-wide trends, cycle times, office/department performance, and period-over-period trends."
         actions={
           <Button variant="secondary" icon={Download} onClick={() => exportCsv(filtered, period)}>
             Export Report
@@ -272,6 +267,18 @@ export default function RegistryHeadBusinessIntelligencePage() {
         <div className="stat-card">
           <h3>Avg. Admissibility Turnaround</h3>
           <div className="value">{admissibilityTiming?.avgMs != null ? formatDuration(admissibilityTiming.avgMs) : '—'}</div>
+        </div>
+        <div className="stat-card">
+          <h3>Resolved In Period</h3>
+          <div className="value">{resolvedCount}</div>
+        </div>
+        <div className="stat-card">
+          <h3>Admissible Rate</h3>
+          <div className="value">{admissibleRate}%</div>
+        </div>
+        <div className="stat-card">
+          <h3>Avg. Pipeline Progress</h3>
+          <div className="value">{avgProgress}%</div>
         </div>
       </div>
 
@@ -315,9 +322,11 @@ export default function RegistryHeadBusinessIntelligencePage() {
       </div>
 
       <div className="dashboard-grid">
+        <BreakdownList title="Pipeline Status Breakdown" rows={pipelineStatusRows} />
         <OfficePerformanceTable title="Office Performance" rows={officePerformance} />
-        <OfficePerformanceTable title="Department Performance" rows={departmentPerformance} />
       </div>
+
+      <OfficePerformanceTable title="Department Performance" rows={departmentPerformance} />
 
       <OffenderCaseHistoryDrawer
         open={!!historyComplaintId}

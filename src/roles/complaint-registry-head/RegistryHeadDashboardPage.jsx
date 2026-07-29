@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { FileText, Inbox, CheckCircle2, Clock, PlusCircle, Phone } from 'lucide-react';
+import { FileText, Inbox, CheckCircle2, Clock, PlusCircle } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import HeroBanner from '../../components/dashboard/HeroBanner';
+import QuickTrackerBlob from '../../components/dashboard/QuickTrackerBlob';
 import Button from '../../components/ui/Button';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import MakeComplaintModal from '../../components/complaints/MakeComplaintModal';
 import VoiceReportModal from '../../components/complaints/VoiceReportModal';
 import ReportChoiceModal from '../../components/complaints/ReportChoiceModal';
-import CallCenterModal from '../../components/complaints/CallCenterModal';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { SUB_STATUS, getSubStatusMeta } from '../../constants/complaintStatus';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
@@ -20,7 +20,6 @@ export default function RegistryHeadDashboardPage() {
   const [showReportChoice, setShowReportChoice] = useState(false);
   const [showMakeComplaint, setShowMakeComplaint] = useState(false);
   const [showVoiceReport, setShowVoiceReport] = useState(false);
-  const [showCallCenter, setShowCallCenter] = useState(false);
 
   const newCount = complaints.filter((c) => c.subStatus === SUB_STATUS.NEW).length;
   const resolvedCount = complaints.filter((c) => c.subStatus === SUB_STATUS.CLOSED).length;
@@ -62,10 +61,7 @@ export default function RegistryHeadDashboardPage() {
       <HeroBanner
         greetingName="Bem"
         situationMessages={situationMessages}
-        onOpenBlobAction={() => setShowCallCenter(true)}
-        blobTitle="Start a call center session"
-        blobAriaLabel="Start a call center session"
-        blobIcon={Phone}
+        rightSlot={<QuickTrackerBlob />}
         stats={[
           { icon: FileText, value: complaints.length, label: 'Total Complaints' },
           { icon: Inbox, value: newCount, label: 'New' },
@@ -93,7 +89,6 @@ export default function RegistryHeadDashboardPage() {
       />
       <MakeComplaintModal open={showMakeComplaint} onClose={() => setShowMakeComplaint(false)} />
       <VoiceReportModal open={showVoiceReport} onClose={() => setShowVoiceReport(false)} />
-      <CallCenterModal open={showCallCenter} onClose={() => setShowCallCenter(false)} />
     </AppShell>
   );
 }

@@ -138,10 +138,10 @@
 }
 
 /* ============================================================
-   Voice blob — an organic, morphing blob (not a sphere) toned to
-   match the banner's own green gradient, with a role-specific icon
-   (via HeroBanner's blobIcon prop) so it reads as a press-to-talk
-   control rather than a decoration.
+   Voice blob — an organic, morphing blob (not a sphere) toned to match the banner's own green
+   gradient. Rendered by QuickTrackerBlob.jsx (dashboard hero's rightSlot); clicking it opens the
+   Quick Complaint Tracker in a modal rather than call center. The same .mini variant of these
+   rules is also used by VoiceReportModal's own recording visualizer.
    ============================================================ */
 .voice-blob-btn {
   position: relative;

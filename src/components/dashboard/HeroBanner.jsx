@@ -1,5 +1,4 @@
 import React from 'react';
-import { Mic } from 'lucide-react';
 import { useTypewriter } from '../../hooks/useTypewriter';
 
 function getGreeting() {
@@ -9,17 +8,14 @@ function getGreeting() {
   return 'Good evening';
 }
 
-// The dashboard's hero: greeting + a rotating typewriter status line, a talking-blob button
-// (wired to whatever quick-entry flow the role wants via onOpenBlobAction — voice reporting,
-// call center, etc.), and a stats matrix strip along the bottom.
+// The dashboard's hero: greeting + a rotating typewriter status line, an optional rightSlot
+// (whatever quick-entry widget the role wants — a quick complaint tracker, a voice button, etc.),
+// and a stats matrix strip along the bottom.
 export default function HeroBanner({
   greetingName,
   situationMessages,
   stats,
-  onOpenBlobAction,
-  blobTitle = 'File a complaint by voice',
-  blobAriaLabel = 'Open AI voice report',
-  blobIcon: BlobIcon = Mic,
+  rightSlot,
 }) {
   const { text } = useTypewriter(situationMessages);
 
@@ -34,19 +30,7 @@ export default function HeroBanner({
           </p>
         </div>
 
-        <button
-          type="button"
-          className="voice-blob-btn"
-          onClick={onOpenBlobAction}
-          title={blobTitle}
-          aria-label={blobAriaLabel}
-        >
-          <span className="voice-blob-ring" />
-          <span className="voice-blob-shape">
-            <span className="voice-blob-shine" />
-          </span>
-          <BlobIcon size={24} className="voice-blob-icon" />
-        </button>
+        {rightSlot}
       </div>
 
       <div className="hero-stats-matrix">
