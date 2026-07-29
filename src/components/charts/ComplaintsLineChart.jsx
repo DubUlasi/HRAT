@@ -16,7 +16,12 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 // A smooth gradient-filled line/area chart — reads better than bars for a month-over-month
 // trend, which is what "Complaints Analysis" actually is. Built on Chart.js since a real
 // charting library is now in the project.
-export default function ComplaintsLineChart({ data }) {
+//
+// Optionally takes a second `compareData` series (same `{ label, value }[]` shape) to overlay
+// a prior period as a dashed reference line — used by the Business Intelligence page's
+// period-over-period trend widget. Omitting it renders exactly as before (single series, no
+// dataset label in the tooltip), so existing callers are unaffected.
+export default function ComplaintsLineChart({ data, compareData, compareLabel }) {
   const { isDark } = useTheme();
   const chartRef = useRef(null);
 
@@ -25,11 +30,12 @@ export default function ComplaintsLineChart({ data }) {
   const axisTextColor = isDark ? '#64748B' : '#667085';
   const tooltipBg = isDark ? '#F8FAFC' : '#101828';
   const tooltipText = isDark ? '#101828' : '#F8FAFC';
+  const compareColor = isDark ? 'rgba(148, 163, 184, 0.85)' : 'rgba(100, 116, 139, 0.75)';
 
-  const chartData = useMemo(() => ({
-    labels: data.map((d) => d.label),
-    datasets: [
+  const chartData = useMemo(() => {
+    const datasets = [
       {
+        label: compareData ? 'Current' : undefined,
         data: data.map((d) => d.value),
         borderColor: accent,
         borderWidth: 2.5,
@@ -49,8 +55,25 @@ export default function ComplaintsLineChart({ data }) {
           return gradient;
         },
       },
-    ],
-  }), [data, accent, isDark]);
+    ];
+
+    if (compareData) {
+      datasets.push({
+        label: compareLabel || 'Previous',
+        data: compareData.map((d) => d.value),
+        borderColor: compareColor,
+        borderWidth: 2,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: compareColor,
+        tension: 0.4,
+        fill: false,
+      });
+    }
+
+    return { labels: data.map((d) => d.label), datasets };
+  }, [data, compareData, compareLabel, accent, compareColor, isDark]);
 
   const options = useMemo(() => ({
     responsive: true,
@@ -67,7 +90,7 @@ export default function ComplaintsLineChart({ data }) {
         titleFont: { family: 'Inter', weight: '600' },
         bodyFont: { family: 'Inter', weight: '700' },
         callbacks: {
-          label: (item) => `${item.parsed.y} complaints`,
+          label: (item) => (item.dataset.label ? `${item.dataset.label}: ${item.parsed.y} complaints` : `${item.parsed.y} complaints`),
         },
       },
     },

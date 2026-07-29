@@ -7,42 +7,37 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import TextArea from '../ui/TextArea';
 import SuccessModal from '../ui/SuccessModal';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
 import PersonFields, { EMPTY_PERSON } from './PersonFields';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { useAudioRecorder } from '../../hooks/useAudioRecorder';
 import { useComplaints } from '../../context/ComplaintsContext';
-import { CATEGORY_LABELS } from '../../constants/complaintCategories';
+import { useTranslation } from '../../context/I18nContext';
+import { CATEGORY_LABELS, suggestCategoryFromText } from '../../constants/complaintCategories';
 import { offices } from '../../data/mockOfficers';
 
 const EMPTY_INCIDENT = { subject: '', description: '', officeId: '' };
 
 const TABS = [
-  { key: 'incident', label: 'Incident Details', icon: ShieldAlert },
-  { key: 'victim', label: 'Victim Info', icon: User },
-  { key: 'violator', label: 'Alleged Violator', icon: Users },
-  { key: 'category', label: 'Rights Category', icon: FileText },
+  { key: 'incident', labelKey: 'voiceReportModal.tabs.incident', icon: ShieldAlert },
+  { key: 'victim', labelKey: 'voiceReportModal.tabs.victim', icon: User },
+  { key: 'violator', labelKey: 'voiceReportModal.tabs.violator', icon: Users },
+  { key: 'category', labelKey: 'voiceReportModal.tabs.category', icon: FileText },
 ];
 
-const SPEECH_ERROR_MESSAGES = {
-  unsupported: "This browser doesn't support live speech-to-text. Recording will still be saved — just type the description below.",
-  'not-allowed': 'Microphone access was blocked. Allow microphone access for this site in your browser settings, then try again.',
-  'no-speech': "We didn't detect any speech. You can try again, or type the description below.",
-  'audio-capture': 'No microphone was found on this device.',
-  network: "Speech-to-text needs an internet connection and couldn't reach it. Recording will still be saved — just type the description below.",
-  aborted: 'Recording was interrupted.',
-};
+// Web Speech API locale codes — Pidgin has no dedicated speech-recognition locale, so it
+// falls back to en-US.
+const SPEECH_LOCALE_MAP = { en: 'en-US', ha: 'ha-NG', yo: 'yo-NG', ig: 'ig-NG', pcm: 'en-US' };
 
-const AUDIO_ERROR_MESSAGES = {
-  unsupported: "This browser can't record audio.",
-  'not-allowed': 'Microphone access was blocked, so the audio recording could not be saved.',
-  unavailable: 'The microphone could not be reached, so the audio recording could not be saved.',
-};
+const SPEECH_ERROR_KEYS = ['unsupported', 'not-allowed', 'no-speech', 'audio-capture', 'network', 'aborted'];
+const AUDIO_ERROR_KEYS = ['unsupported', 'not-allowed', 'unavailable'];
 
 // Voice-first "quick report": record (speech-to-text + raw audio in parallel) → simulate AI
 // processing → land on an editable review form (reusing the same field components as
 // MakeComplaintModal) → submit. Recording starts immediately on open — no setup step.
 export default function VoiceReportModal({ open, onClose }) {
   const { createComplaint } = useComplaints();
+  const { t, language } = useTranslation();
   const speech = useSpeechRecognition();
   const recorder = useAudioRecorder();
 
@@ -52,6 +47,7 @@ export default function VoiceReportModal({ open, onClose }) {
   const [violator, setViolator] = useState(EMPTY_PERSON);
   const [incident, setIncident] = useState(EMPTY_INCIDENT);
   const [category, setCategory] = useState('women_children');
+  const [suggestedCategory, setSuggestedCategory] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
@@ -63,20 +59,21 @@ export default function VoiceReportModal({ open, onClose }) {
     setViolator(EMPTY_PERSON);
     setIncident(EMPTY_INCIDENT);
     setCategory('women_children');
+    setSuggestedCategory(null);
 
     let cancelled = false;
     // Request the mic once via the recorder first (this both settles the permission prompt and
     // gets the raw-audio stream), then start SpeechRecognition — asking for the mic from two
     // independent APIs in the same tick can make some browsers drop speech results entirely.
     recorder.start().then(() => {
-      if (!cancelled) speech.start();
+      if (!cancelled) speech.start(SPEECH_LOCALE_MAP[language] || 'en-US');
     });
 
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, language]);
 
   const handleClose = () => {
     speech.stop();
@@ -89,7 +86,15 @@ export default function VoiceReportModal({ open, onClose }) {
     recorder.stop();
     setStep('processing');
     setTimeout(() => {
-      setIncident((prev) => ({ ...prev, description: speech.transcript }));
+      const transcript = speech.transcript;
+      setIncident((prev) => ({ ...prev, description: transcript }));
+
+      const suggestion = suggestCategoryFromText(transcript);
+      if (suggestion) {
+        setCategory(suggestion);
+        setSuggestedCategory(suggestion);
+      }
+
       setStep('review');
     }, 1200);
   };
@@ -129,9 +134,10 @@ export default function VoiceReportModal({ open, onClose }) {
         width="720px"
         title={
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <Sparkles size={18} /> Make a Complaint — AI Voice Report
+            <Sparkles size={18} /> {t('voiceReportModal.modalTitle')}
           </span>
         }
+        headerActions={<LanguageSwitcher />}
       >
         {step === 'recording' && (
           <div className="voice-step-recording">
@@ -140,36 +146,36 @@ export default function VoiceReportModal({ open, onClose }) {
               <span className="voice-blob-shape mini">
                 <span className="voice-blob-shine" />
               </span>
-              <Mic size={22} className="voice-blob-icon" />
+              <Mic size={18} className="voice-blob-icon" />
             </div>
 
             <div className="voice-status-heading">
               <span className="live-mic-pulse" />
-              <h4>Listening to your report...</h4>
-              <p>Describe what happened — you'll be able to review and edit everything before it's submitted.</p>
+              <h4>{t('voiceReportModal.recording.heading')}</h4>
+              <p>{t('voiceReportModal.recording.subtitle')}</p>
             </div>
 
             <div className="transcription-live-box">
-              <p>{speech.transcript || 'Start speaking now...'}</p>
+              <p>{speech.transcript || t('voiceReportModal.recording.placeholder')}</p>
             </div>
 
             {speech.error && (
               <div className="voice-error-note">
                 <AlertTriangle size={14} />
-                <span>{SPEECH_ERROR_MESSAGES[speech.error] || 'Something went wrong with speech-to-text.'}</span>
+                <span>{t(`voiceReportModal.errors.speech.${SPEECH_ERROR_KEYS.includes(speech.error) ? speech.error : 'default'}`)}</span>
               </div>
             )}
 
             {recorder.error && (
               <div className="voice-error-note">
                 <AlertTriangle size={14} />
-                <span>{AUDIO_ERROR_MESSAGES[recorder.error] || 'Something went wrong recording the audio.'}</span>
+                <span>{t(`voiceReportModal.errors.audio.${AUDIO_ERROR_KEYS.includes(recorder.error) ? recorder.error : 'default'}`)}</span>
               </div>
             )}
 
             <div className="voice-modal-actions">
               <Button variant="primary" icon={Square} onClick={handleStopRecording}>
-                Stop & Autofill Complaint Form
+                {t('voiceReportModal.recording.stopButton')}
               </Button>
             </div>
           </div>
@@ -178,8 +184,8 @@ export default function VoiceReportModal({ open, onClose }) {
         {step === 'processing' && (
           <div className="voice-step-processing">
             <Loader2 size={38} className="ai-processing-spinner" />
-            <h4>Autofilling complaint form...</h4>
-            <p>Structuring the incident description from your recording.</p>
+            <h4>{t('voiceReportModal.processing.heading')}</h4>
+            <p>{t('voiceReportModal.processing.subtitle')}</p>
           </div>
         )}
 
@@ -189,12 +195,12 @@ export default function VoiceReportModal({ open, onClose }) {
               <ShieldAlert size={16} />
               <span>
                 {incident.description
-                  ? 'Your recording has been transcribed into Incident Details — check it over for accuracy. '
-                  : "We couldn't transcribe your recording, so Incident Details is blank — please type it in below. "}
+                  ? t('voiceReportModal.review.introTranscribed')
+                  : t('voiceReportModal.review.introNotTranscribed')}
                 {recorder.audioUrl
-                  ? 'The original audio has been saved and will be attached to this complaint for future reference.'
-                  : "The audio recording itself couldn't be saved on this browser/device."}
-                {' '}Review and complete every tab below.
+                  ? t('voiceReportModal.review.audioSaved')
+                  : t('voiceReportModal.review.audioNotSaved')}
+                {t('voiceReportModal.review.reviewInstruction')}
               </span>
             </div>
 
@@ -207,22 +213,22 @@ export default function VoiceReportModal({ open, onClose }) {
                   onClick={() => setActiveTab(tab.key)}
                 >
                   <tab.icon size={14} />
-                  <span>{tab.label}</span>
+                  <span>{t(tab.labelKey)}</span>
                 </button>
               ))}
             </div>
 
             {activeTab === 'incident' && (
               <>
-                <FormField label="Subject" required>
+                <FormField label={t('voiceReportModal.incidentTab.subjectLabel')} required>
                   <Input
                     value={incident.subject}
                     onChange={(e) => setIncident({ ...incident, subject: e.target.value })}
-                    placeholder="Brief title of the incident"
+                    placeholder={t('voiceReportModal.incidentTab.subjectPlaceholder')}
                     required
                   />
                 </FormField>
-                <FormField label="Detailed Description" required>
+                <FormField label={t('voiceReportModal.incidentTab.descriptionLabel')} required>
                   <TextArea
                     rows={5}
                     value={incident.description}
@@ -230,9 +236,9 @@ export default function VoiceReportModal({ open, onClose }) {
                     required
                   />
                 </FormField>
-                <FormField label="Preferred Handling Office">
+                <FormField label={t('voiceReportModal.incidentTab.officeLabel')}>
                   <Select value={incident.officeId} onChange={(e) => setIncident({ ...incident, officeId: e.target.value })}>
-                    <option value="">-- Select Office --</option>
+                    <option value="">{t('common.selectOffice')}</option>
                     {offices.map((o) => (
                       <option key={o.id} value={o.id}>{o.name}</option>
                     ))}
@@ -245,7 +251,17 @@ export default function VoiceReportModal({ open, onClose }) {
             {activeTab === 'violator' && <PersonFields person={violator} onChange={setViolator} />}
 
             {activeTab === 'category' && (
-              <FormField label="Complaint Category" required>
+              <FormField
+                label={t('voiceReportModal.categoryTab.label')}
+                required
+                hint={
+                  suggestedCategory
+                    ? (category === suggestedCategory
+                      ? t('voiceReportModal.categoryTab.suggestedHintMatch')
+                      : t('voiceReportModal.categoryTab.suggestedHintChanged', { category: CATEGORY_LABELS[suggestedCategory] }))
+                    : undefined
+                }
+              >
                 <Select value={category} onChange={(e) => setCategory(e.target.value)}>
                   {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
@@ -255,8 +271,8 @@ export default function VoiceReportModal({ open, onClose }) {
             )}
 
             <div className="modal-actions space-between">
-              <Button variant="secondary" type="button" onClick={handleClose}>Cancel</Button>
-              <Button variant="submit" type="submit" icon={Send}>Submit Complaint</Button>
+              <Button variant="secondary" type="button" onClick={handleClose}>{t('voiceReportModal.actions.cancel')}</Button>
+              <Button variant="submit" type="submit" icon={Send}>{t('voiceReportModal.actions.submit')}</Button>
             </div>
           </form>
         )}
@@ -264,7 +280,7 @@ export default function VoiceReportModal({ open, onClose }) {
 
       <SuccessModal
         open={showSuccess}
-        message="Your voice complaint has been submitted successfully."
+        message={t('voiceReportModal.successMessage')}
         onClose={() => setShowSuccess(false)}
       />
     </>

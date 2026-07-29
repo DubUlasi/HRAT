@@ -316,6 +316,17 @@
   background: linear-gradient(135deg, #067A46 0%, #026038 100%);
 }
 
+.su-btn-purple-pill:disabled,
+.su-btn-green-submit:disabled,
+.bottom-sheet-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.su-btn-purple-pill:disabled:hover {
+  background: linear-gradient(135deg, #079455 0%, #027A48 100%);
+}
+
 .su-btn-green-submit {
   display: inline-flex;
   align-items: center;
@@ -766,4 +777,596 @@
   background-color: #1E293B;
   border-color: #334155;
   color: #F8FAFC;
+}
+
+.wizard-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+}
+
+.wizard-page-header-logo {
+  height: 34px;
+}
+
+/* ── Mobile-style 5-step wizard additions ─────────────────────────── */
+
+.su-field-hint-dark {
+  font-size: 12.5px;
+  color: #64748B;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.optional-note {
+  margin-bottom: 16px;
+}
+
+.su-more-about-section {
+  margin-top: 22px;
+  padding-top: 19px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+/* Step 1 — category tiles */
+.category-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 11px;
+  margin-bottom: 22px;
+}
+
+.category-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 10px;
+  background-color: #ffffff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.category-tile:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.category-tile.selected {
+  border-color: #079455;
+  background-color: #F0FDF4;
+}
+
+.category-tile-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: #F1F5F9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.category-tile.selected .category-tile-icon {
+  background-color: #079455;
+  color: #ffffff;
+}
+
+.category-tile-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+@media (max-width: 480px) {
+  .category-tile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Step 1 — sub-category pill list */
+.sub-category-section {
+  margin-bottom: 22px;
+  animation: su-fadeIn 0.3s ease forwards;
+}
+
+.sub-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.sub-category-pill {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 999px;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-category-pill:hover {
+  border-color: #CBD5E1;
+  background-color: #F8FAFC;
+}
+
+.sub-category-pill.selected {
+  border-color: #079455;
+  background-color: #079455;
+  color: #ffffff;
+}
+
+/* Location-style text input (no live geocoding yet — just a MapPin-prefixed field) */
+.location-input-wrap {
+  position: relative;
+}
+
+.location-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.location-input {
+  padding-left: 36px !important;
+}
+
+/* Step 2 — multi-file evidence chips */
+.evidence-upload-btn {
+  margin-bottom: 12px;
+}
+
+.evidence-chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evidence-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+}
+
+.evidence-chip-icon {
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.evidence-chip-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.evidence-chip-size {
+  font-size: 11px;
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.evidence-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: #94A3B8;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.evidence-chip-remove:hover {
+  background-color: #FEE2E2;
+  color: #EF4444;
+}
+
+/* Steps 3/4 — large toggle cards (Myself/Someone else, General/Key population) */
+.toggle-card-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.toggle-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 14px;
+  background-color: #ffffff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.toggle-card:hover {
+  border-color: #CBD5E1;
+  background-color: #F8FAFC;
+}
+
+.toggle-card.selected {
+  border-color: #079455;
+  background-color: #F0FDF4;
+}
+
+.toggle-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #F1F5F9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.toggle-card.selected .toggle-card-icon {
+  background-color: #079455;
+  color: #ffffff;
+}
+
+.toggle-card-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* Gender pill toggle */
+.pill-toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+.pill-toggle-option {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #E2E8F0;
+  background-color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.pill-toggle-option:hover {
+  border-color: #CBD5E1;
+}
+
+.pill-toggle-option.selected {
+  border-color: #079455;
+  background-color: #079455;
+  color: #ffffff;
+}
+
+/* Key-population summary chip shown on the main step once a group is confirmed */
+.key-population-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background-color: #F0FDF4;
+  border: 1px solid #6EE7B7;
+  color: #065F46;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.key-population-chip button {
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+  background: none;
+  border: none;
+  color: #065F46;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.key-population-chip button:hover {
+  opacity: 1;
+}
+
+/* Bottom sheet (Key Population group picker) — slides up, rounded top corners only, distinct
+   from the app's usual centered Modal since the mobile reference specifically calls for a
+   sheet here. */
+.bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(16, 24, 40, 0.45);
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bottom-sheet-panel {
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 10px 22px 22px;
+  animation: bottomSheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bottomSheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.bottom-sheet-handle {
+  display: block;
+  width: 36px;
+  height: 4px;
+  border-radius: 4px;
+  background-color: #E2E8F0;
+  margin: 0 auto 14px;
+}
+
+.bottom-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bottom-sheet-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.bottom-sheet-note {
+  font-size: 12.5px;
+  color: #64748B;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.key-population-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.key-population-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 15px;
+  background-color: #ffffff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.key-population-option:hover {
+  border-color: #CBD5E1;
+  background-color: #F8FAFC;
+}
+
+.key-population-option.selected {
+  border-color: #079455;
+  background-color: #F0FDF4;
+}
+
+.key-population-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background-color: #F1F5F9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.key-population-option.selected .key-population-icon {
+  background-color: #079455;
+  color: #ffffff;
+}
+
+.key-population-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.key-population-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.key-population-desc {
+  font-size: 11.5px;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.bottom-sheet-confirm {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Step 5 — review summary cards */
+.review-summary-card {
+  background-color: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 15px 17px;
+  margin-bottom: 13px;
+  text-align: left;
+}
+
+.review-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+
+.review-summary-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+}
+
+.review-edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #079455;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.review-edit-link:hover {
+  text-decoration: underline;
+}
+
+.review-summary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.review-summary-line {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.review-summary-line.strong {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.review-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748B;
+}
+
+/* ── Dark mode — new wizard pieces ────────────────────────────────── */
+[data-theme="dark"] .category-tile,
+[data-theme="dark"] .sub-category-pill,
+[data-theme="dark"] .toggle-card,
+[data-theme="dark"] .pill-toggle-option,
+[data-theme="dark"] .key-population-option,
+[data-theme="dark"] .review-summary-card {
+  background-color: #101523;
+  border-color: #1E293B;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .category-tile:hover,
+[data-theme="dark"] .sub-category-pill:hover,
+[data-theme="dark"] .toggle-card:hover,
+[data-theme="dark"] .key-population-option:hover {
+  background-color: #1E293B;
+}
+
+[data-theme="dark"] .category-tile-label,
+[data-theme="dark"] .toggle-card-label,
+[data-theme="dark"] .key-population-label,
+[data-theme="dark"] .review-summary-line.strong,
+[data-theme="dark"] .bottom-sheet-header h3 {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .sub-category-pill {
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .category-tile-icon,
+[data-theme="dark"] .toggle-card-icon,
+[data-theme="dark"] .key-population-icon {
+  background-color: #1E293B;
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .su-more-about-section {
+  border-top-color: #1E293B;
+}
+
+[data-theme="dark"] .evidence-chip {
+  background-color: #101523;
+  border-color: #1E293B;
+}
+
+[data-theme="dark"] .evidence-chip-name {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .bottom-sheet-panel {
+  background-color: #0B0F19;
+}
+
+[data-theme="dark"] .bottom-sheet-handle {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .bottom-sheet-note,
+[data-theme="dark"] .key-population-desc,
+[data-theme="dark"] .su-field-hint-dark,
+[data-theme="dark"] .review-summary-line,
+[data-theme="dark"] .review-summary-meta {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .review-summary-title {
+  color: #64748B;
 }

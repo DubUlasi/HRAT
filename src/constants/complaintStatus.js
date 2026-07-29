@@ -56,3 +56,19 @@ export function stageProgressPercent(stageIndex) {
   if (stageIndex < 0) return 4; // a sliver of progress so a brand-new complaint's bar isn't empty
   return Math.round(((stageIndex + 1) / STAGE_ORDER.length) * 100);
 }
+
+// Single source of truth for "what's the decision/outcome so far" on a complaint — used
+// anywhere a case's result needs to be summarized in one line (repeat-offender drawer/table,
+// related-complaints panel), so that logic isn't duplicated per component.
+export function getComplaintOutcomeSummary(complaint) {
+  if (complaint.admissibility?.decision === 'INADMISSIBLE') {
+    return `Ruled inadmissible${complaint.admissibility.explanation ? `, ${complaint.admissibility.explanation}` : ''}`;
+  }
+  if (complaint.subStatus === SUB_STATUS.CLOSED) {
+    return complaint.investigation?.finding || 'Closed.';
+  }
+  if (complaint.subStatus === SUB_STATUS.WITHDRAWN) {
+    return 'Withdrawn by complainant.';
+  }
+  return 'Still in progress.';
+}

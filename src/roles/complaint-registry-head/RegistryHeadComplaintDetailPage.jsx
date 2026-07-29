@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Building2, Briefcase, Mic } from 'lucide-react';
+import { ArrowLeft, Calendar, Building2, Briefcase, Mic, Activity, FileText, Hash, Tag, Paperclip } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -9,9 +9,11 @@ import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import SuccessModal from '../../components/ui/SuccessModal';
 import ComplaintProfileCard from '../../components/complaints/ComplaintProfileCard';
 import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
+import RelatedComplaintsPanel from '../../components/complaints/RelatedComplaintsPanel';
+import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { SUB_STATUS, stageProgressPercent } from '../../constants/complaintStatus';
-import { CATEGORY_LABELS } from '../../constants/complaintCategories';
+import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import AssignRegistryOfficerModal from './modals/AssignRegistryOfficerModal';
@@ -45,6 +47,7 @@ export default function RegistryHeadComplaintDetailPage() {
   const complaint = getComplaintById(complaintId);
   const [flow, setFlow] = useState({ type: null, step: null, payload: null });
   const [showActivityLog, setShowActivityLog] = useState(false);
+  const [showOffenderHistory, setShowOffenderHistory] = useState(false);
 
   if (!complaint) {
     return (
@@ -106,6 +109,7 @@ export default function RegistryHeadComplaintDetailPage() {
   const sortedActivity = [...complaint.activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const progressPct = stageProgressPercent(complaint.stageIndex);
   const actionButton = renderActionButton();
+  const categoryColor = CATEGORY_COLOR[complaint.category] || 'info';
 
   return (
     <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
@@ -115,11 +119,11 @@ export default function RegistryHeadComplaintDetailPage() {
         </Link>
       </div>
 
-      <div className="case-detail-hero">
+      <div className="case-detail-hero" style={{ borderTopColor: `var(--${categoryColor}-color)` }}>
         <div className="hero-left-content">
           <div className="hero-tags-row">
             {complaint.complaintNumber && <span className="detail-tracking-code">{complaint.complaintNumber}</span>}
-            <span className="category-pill">{CATEGORY_LABELS[complaint.category]}</span>
+            <span className={`category-pill pill-${categoryColor}`}>{CATEGORY_LABELS[complaint.category]}</span>
             {complaint.admissibility.decision && (
               <span className={`urgency-pill ${complaint.admissibility.decision === 'ADMISSIBLE' ? 'positive' : 'negative'}`}>
                 {complaint.admissibility.decision}
@@ -131,26 +135,20 @@ export default function RegistryHeadComplaintDetailPage() {
           <p className="hero-case-description">{complaint.description}</p>
 
           <div className="hero-meta-row">
-            <span><Calendar size={14} /> Filed {new Date(complaint.dateFiled).toDateString()}</span>
-            {officeName && <span><Building2 size={14} /> {officeName}</span>}
-            {departmentName && <span><Briefcase size={14} /> {departmentName}</span>}
+            <span><Calendar size={13} /> Filed {new Date(complaint.dateFiled).toDateString()}</span>
+            {officeName && <span><Building2 size={13} /> {officeName}</span>}
+            {departmentName && <span><Briefcase size={13} /> {departmentName}</span>}
           </div>
         </div>
 
         <div className="status-hero-card">
           <span className="status-card-label">Current Status</span>
-          <div className="status-card-badge-row">
-            <span className="status-pulse-dot" />
-            <StatusBadge status={complaint.subStatus} />
-          </div>
+          <StatusBadge status={complaint.subStatus} />
 
-          <div className="status-card-progress">
-            <div className="status-pct-row">
-              <span>Pipeline Progress</span>
-              <span>{progressPct}%</span>
-            </div>
-            <div className="status-bar-track">
-              <div className="status-bar-fill" style={{ width: `${progressPct}%` }} />
+          <div className="status-progress-ring" style={{ '--pct': progressPct }}>
+            <div className="status-progress-ring-inner">
+              <span className="status-progress-value">{progressPct}%</span>
+              <span className="status-progress-caption">Complete</span>
             </div>
           </div>
 
@@ -164,7 +162,7 @@ export default function RegistryHeadComplaintDetailPage() {
         <div className="detail-column-left">
           <div className="detail-section-card">
             <div className="section-header-flex">
-              <h3 className="section-card-title">Activity Timeline</h3>
+              <h3 className="section-card-title"><Activity size={14} /> Activity Timeline</h3>
               <button type="button" className="btn-link" onClick={() => setShowActivityLog(true)}>View Full Log</button>
             </div>
             <div className="activity-vertical-timeline">
@@ -175,7 +173,7 @@ export default function RegistryHeadComplaintDetailPage() {
                   </span>
                   <div className="activity-item-content">
                     <div className="activity-item-header">{entry.message}</div>
-                    <div className="activity-item-date">{new Date(entry.timestamp).toLocaleString()} — {entry.actor}</div>
+                    <div className="activity-item-date">{new Date(entry.timestamp).toLocaleString()}, {entry.actor}</div>
                   </div>
                 </div>
               ))}
@@ -185,26 +183,26 @@ export default function RegistryHeadComplaintDetailPage() {
 
         <div className="detail-column-right">
           <div className="detail-section-card">
-            <h3 className="section-card-title">Case Details</h3>
+            <h3 className="section-card-title"><FileText size={14} /> Case Details</h3>
             <div className="case-spec-list">
               <div className="spec-item">
-                <span className="spec-label">Complaint No.</span>
+                <span className="spec-label"><Hash size={12} /> Complaint No.</span>
                 <span className="spec-value mono">{complaint.complaintNumber || '—'}</span>
               </div>
               <div className="spec-item">
-                <span className="spec-label">Category</span>
+                <span className="spec-label"><Tag size={12} /> Category</span>
                 <span className="spec-value">{CATEGORY_LABELS[complaint.category]}</span>
               </div>
               <div className="spec-item">
-                <span className="spec-label">Handling Office</span>
+                <span className="spec-label"><Building2 size={12} /> Handling Office</span>
                 <span className="spec-value">{officeName || '—'}</span>
               </div>
               <div className="spec-item">
-                <span className="spec-label">Handling Dept.</span>
+                <span className="spec-label"><Briefcase size={12} /> Handling Dept.</span>
                 <span className="spec-value">{departmentName || '—'}</span>
               </div>
               <div className="spec-item">
-                <span className="spec-label">Date Filed</span>
+                <span className="spec-label"><Calendar size={12} /> Date Filed</span>
                 <span className="spec-value">{new Date(complaint.dateFiled).toDateString()}</span>
               </div>
             </div>
@@ -213,13 +211,31 @@ export default function RegistryHeadComplaintDetailPage() {
           {complaint.voiceRecordingUrl && (
             <div className="detail-section-card">
               <h3 className="section-card-title"><Mic size={15} /> Voice Recording</h3>
-              <p className="voice-recording-note">Original audio submitted with this complaint — always available for reference.</p>
+              <p className="voice-recording-note">Original audio submitted with this complaint, always available for reference.</p>
               <audio controls src={complaint.voiceRecordingUrl} className="voice-recording-player" />
+            </div>
+          )}
+
+          {complaint.evidence?.length > 0 && (
+            <div className="detail-section-card">
+              <h3 className="section-card-title"><Paperclip size={15} /> Evidence ({complaint.evidence.length})</h3>
+              <div className="evidence-file-list">
+                {complaint.evidence.map((file, idx) => (
+                  <a key={`${file.name}-${idx}`} href={file.url} target="_blank" rel="noreferrer" className="evidence-file-row">
+                    <FileText size={14} />
+                    <span className="evidence-file-name">{file.name}</span>
+                  </a>
+                ))}
+              </div>
             </div>
           )}
 
           <ComplaintProfileCard roleLabel="Victim" person={complaint.victim} tagVariant="victim" />
           <ComplaintProfileCard roleLabel="Alleged Violator" person={complaint.allegedViolator} tagVariant="violator" />
+          <RelatedComplaintsPanel
+            complaintId={complaint.id}
+            onViewFullHistory={() => setShowOffenderHistory(true)}
+          />
         </div>
       </div>
 
@@ -269,6 +285,12 @@ export default function RegistryHeadComplaintDetailPage() {
         open={showActivityLog}
         onClose={() => setShowActivityLog(false)}
         activityLog={complaint.activityLog}
+      />
+
+      <OffenderCaseHistoryDrawer
+        open={showOffenderHistory}
+        onClose={() => setShowOffenderHistory(false)}
+        complaintId={complaint.id}
       />
     </AppShell>
   );

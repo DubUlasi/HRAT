@@ -1,0 +1,200 @@
+{
+  "_note": "TODO: Nigerian Pidgin — rough draft translation, needs review by a native speaker before shipping.",
+  "common": {
+    "back": "Go back",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "chooseFile": "Choose File",
+    "noFileChosen": "No file dey chosen",
+    "selectOffice": "-- Choose Office --",
+    "selectGender": "-- Choose Gender --",
+    "genderFemale": "Woman",
+    "genderMale": "Man",
+    "genderRatherNotSay": "I no wan talk am",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "gender": "Gender",
+    "address": "Address"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  },
+  "login": {
+    "title": "Human Right Tracker",
+    "subtitle": "Welcome back! Abeg enter your details.",
+    "googleSignIn": "Sign in with Google",
+    "googleAuthenticating": "E dey authenticate with Google...",
+    "orDivider": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Sign in",
+    "signingIn": "E dey sign you in...",
+    "errorInvalid": "Email or password no correct. Try the demo details wey dey below.",
+    "demoAccessLabel": "Demo access: {{email}} / {{password}}",
+    "noAccount": "You no get account?",
+    "signUpLink": "Sign up"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "subtitle": "Create your account so you fit submit and track complaints",
+    "googleSignUp": "Sign up with Google",
+    "googleAuthenticating": "E dey authenticate with Google...",
+    "orDivider": "or",
+    "firstNameLabel": "First Name",
+    "firstNamePlaceholder": "First Name",
+    "lastNameLabel": "Last Name",
+    "lastNamePlaceholder": "Last Name",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "Phone Number",
+    "genderLabel": "Gender",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm Password",
+    "submit": "Submit",
+    "submitting": "E dey submit...",
+    "alreadyHaveAccount": "You don get account before?",
+    "signInLink": "Sign in"
+  },
+  "wizard": {
+    "stepLabel": "Step {{current}} out of {{total}}",
+    "optional": "optional",
+    "stepper": {
+      "category": "Category",
+      "incident": "Wetin Happen",
+      "victim": "Victim",
+      "violator": "Person Wey Do Am",
+      "review": "Check Am"
+    },
+    "phoneGate": {
+      "title": "Make we start",
+      "subtitle": "Enter your phone number make we fit know you and help you track this complaint.",
+      "label": "Phone Number",
+      "placeholder": "e.g. 08012345678"
+    },
+    "category": {
+      "title": "Wetin happen?",
+      "subtitle": "Choose the category wey fit wetin you experience well well.",
+      "subLabel": "Wetin describe am well?"
+    },
+    "incident": {
+      "title": "Tell us more",
+      "subtitle": "Share as much detail as you fit, every detail dey help.",
+      "subjectLabel": "Give am short title",
+      "subjectPlaceholder": "Small title for the incident",
+      "descriptionLabel": "Tell us wetin happen",
+      "descriptionPlaceholder": "Share as much detail as you fit, every detail dey help us understand and respond to your situation.",
+      "locationLabel": "Where e happen?",
+      "locationPlaceholder": "State, town, or landmark",
+      "dateLabel": "When e happen?",
+      "evidenceLabel": "Attach evidence",
+      "evidenceHint": "Photos, videos, or documents wey support your complaint."
+    },
+    "victim": {
+      "title": "Who e affect?",
+      "subtitle": "Tell us about the person wey this happen to.",
+      "whoExperienced": "Who experience this?",
+      "myself": "Myself (Na me be the victim)",
+      "someoneElse": "Someone else (I dey report for them)",
+      "moreAboutYou": "Small more about you",
+      "addressPlaceholder": "Street, town, state",
+      "populationQuestion": "You be general population or key population?",
+      "generalPopulation": "General Population",
+      "keyPopulation": "Key Population",
+      "keyPopulationSheetTitle": "Which group dem belong?",
+      "keyPopulationConfidentialityNote": "This dey help us track vulnerability pattern. Your answer na secret.",
+      "confirmSelection": "Confirm Am"
+    },
+    "violator": {
+      "title": "Who dey responsible?",
+      "subtitle": "Give detail of the person, organization, or officer wey responsible, if you know am.",
+      "optionalNote": "Every field wey dey below na optional except the name, share whatever you know."
+    },
+    "review": {
+      "title": "Check & Submit",
+      "subtitle": "Check everything wey dey below before you submit your complaint.",
+      "edit": "Edit",
+      "sectionCategory": "Category",
+      "sectionIncident": "Incident Details",
+      "sectionVictim": "Victim",
+      "sectionViolator": "Person Wey Do Am",
+      "officeLabel": "Office wey You Prefer",
+      "submitButton": "Submit Complaint",
+      "submitting": "E dey submit...",
+      "offices": {
+        "abuja": "Headquarters - Abuja",
+        "lagos": "Lagos State Office",
+        "kano": "Kano State Office",
+        "enugu": "Enugu State Office",
+        "rivers": "Rivers State Office"
+      }
+    }
+  },
+  "makeComplaintModal": {
+    "title": "File New Complaint",
+    "subtitle": "Complete every step so you fit submit complaint for victim behalf."
+  },
+  "voiceReportModal": {
+    "modalTitle": "Make Complaint, AI Voice Report",
+    "recording": {
+      "heading": "E dey listen to your report...",
+      "subtitle": "Talk wetin happen, you go fit review and change everything before e submit am.",
+      "placeholder": "Start to talk now...",
+      "stopButton": "Stop & Autofill Complaint Form"
+    },
+    "processing": {
+      "heading": "E dey autofill complaint form...",
+      "subtitle": "E dey arrange the incident description from your recording."
+    },
+    "review": {
+      "introTranscribed": "Your recording don transcribe enter Incident Details, check am well for accuracy. ",
+      "introNotTranscribed": "We no fit transcribe your recording, so Incident Details empty, abeg type am for below. ",
+      "audioSaved": "The original audio don save and e go attach to this complaint for future reference.",
+      "audioNotSaved": "We no fit save the audio recording for this browser/device.",
+      "reviewInstruction": " Review and complete every tab for below."
+    },
+    "tabs": {
+      "incident": "Incident Details",
+      "victim": "Victim Info",
+      "violator": "Alleged Violator",
+      "category": "Rights Category"
+    },
+    "incidentTab": {
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Small title for the incident",
+      "descriptionLabel": "Full Description",
+      "officeLabel": "Office wey You Prefer"
+    },
+    "categoryTab": {
+      "label": "Complaint Category",
+      "suggestedHintMatch": "We suggest this one from your recording, based on wetin we hear, change am if e no fit.",
+      "suggestedHintChanged": "We first suggest \"{{category}}\" based on your recording."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Submit Complaint"
+    },
+    "successMessage": "Your voice complaint don submit well well.",
+    "errors": {
+      "speech": {
+        "unsupported": "This browser no support live speech-to-text. Recording go still save, just type the description for below.",
+        "not-allowed": "Dem block microphone access. Allow microphone access for this site for your browser settings, then try again.",
+        "no-speech": "We no hear any speech. You fit try again, or type the description for below.",
+        "audio-capture": "We no see microphone for this device.",
+        "network": "Speech-to-text need internet connection and e no fit reach am. Recording go still save, just type the description for below.",
+        "aborted": "Recording stop for middle.",
+        "default": "Something spoil with speech-to-text."
+      },
+      "audio": {
+        "unsupported": "This browser no fit record audio.",
+        "not-allowed": "Dem block microphone access, so audio recording no fit save.",
+        "unavailable": "We no fit reach microphone, so audio recording no fit save.",
+        "default": "Something spoil while e dey record the audio."
+      }
+    }
+  }
+}

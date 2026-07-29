@@ -1,0 +1,200 @@
+{
+  "_note": "TODO: Igbo — rough machine-assisted draft, needs review by a native speaker before shipping.",
+  "common": {
+    "back": "Laghachi Azụ",
+    "continue": "Gaa n'ihu",
+    "cancel": "Kagbuo",
+    "chooseFile": "Họrọ Faịlụ",
+    "noFileChosen": "Ahọrọbeghị faịlụ",
+    "selectOffice": "-- Họrọ Ụlọ Ọrụ --",
+    "selectGender": "-- Họrọ Okike --",
+    "genderFemale": "Nwaanyị",
+    "genderMale": "Nwoke",
+    "genderRatherNotSay": "Achọghị m ikwu",
+    "firstName": "Aha Mbụ",
+    "lastName": "Aha Ikpeazụ",
+    "email": "Ozi-e",
+    "phone": "Nọmba Ekwentị",
+    "gender": "Okike",
+    "address": "Adreesị"
+  },
+  "languageSwitcher": {
+    "label": "Asụsụ"
+  },
+  "login": {
+    "title": "Ngwa Nrịbama Ikike Mmadụ",
+    "subtitle": "Nnọọ azụ! Biko tinye nkọwa gị.",
+    "googleSignIn": "Banye site na Google",
+    "googleAuthenticating": "Na-akwado gị site na Google...",
+    "orDivider": "ma ọ bụ",
+    "emailLabel": "Ozi-e",
+    "emailPlaceholder": "Tinye ozi-e gị",
+    "passwordLabel": "Okwuntughe",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Banye",
+    "signingIn": "Na-abanye...",
+    "errorInvalid": "Ozi-e ma ọ bụ okwuntughe ezighị ezi. Nwaa nkọwa nnwale dị n'okpuru.",
+    "demoAccessLabel": "Ịbanye nnwale: {{email}} / {{password}}",
+    "noAccount": "Ị nweghị akaụntụ?",
+    "signUpLink": "Debanye aha"
+  },
+  "signup": {
+    "title": "Debanye Aha",
+    "subtitle": "Mepụta akaụntụ gị iji tinye ma soro mkpesa gị",
+    "googleSignUp": "Debanye aha site na Google",
+    "googleAuthenticating": "Na-akwado gị site na Google...",
+    "orDivider": "ma ọ bụ",
+    "firstNameLabel": "Aha Mbụ",
+    "firstNamePlaceholder": "Aha Mbụ",
+    "lastNameLabel": "Aha Ikpeazụ",
+    "lastNamePlaceholder": "Aha Ikpeazụ",
+    "emailLabel": "Ozi-e",
+    "phoneLabel": "Nọmba Ekwentị",
+    "phonePlaceholder": "Nọmba Ekwentị",
+    "genderLabel": "Okike",
+    "passwordLabel": "Okwuntughe",
+    "confirmPasswordLabel": "Kwado Okwuntughe",
+    "confirmPasswordPlaceholder": "Kwado Okwuntughe",
+    "submit": "Zipu",
+    "submitting": "Na-ezipu...",
+    "alreadyHaveAccount": "Ị nweelarị akaụntụ?",
+    "signInLink": "Banye"
+  },
+  "wizard": {
+    "stepLabel": "Nzọụkwụ {{current}} nke {{total}}",
+    "optional": "nhọrọ",
+    "stepper": {
+      "category": "Ụdị",
+      "incident": "Ihe Omume",
+      "victim": "Onye E Mere Ihe",
+      "violator": "Onye A Na-Ebo Ebubo",
+      "review": "Nyocha"
+    },
+    "phoneGate": {
+      "title": "Ka anyị malite",
+      "subtitle": "Tinye nọmba ekwentị gị ka anyị nwee ike ịmata gị ma nyere gị aka ịchọpụta mkpesa a.",
+      "label": "Nọmba Ekwentị",
+      "placeholder": "dịka 08012345678"
+    },
+    "category": {
+      "title": "Gịnị mere?",
+      "subtitle": "Họrọ ụdị kacha kwado ihe ị nwetara.",
+      "subLabel": "Gịnị ka ọ kacha kọwaa ya?"
+    },
+    "incident": {
+      "title": "Gwa anyị ihe ndị ọzọ",
+      "subtitle": "Kesaa nkọwa dịka ị masịrị, nkọwa ọ bụla na-enyere anyị aka.",
+      "subjectLabel": "Nye nke a aha dị mkpirikpi",
+      "subjectPlaceholder": "Nkenke aha ihe omume ahụ",
+      "descriptionLabel": "Gwa anyị ihe merenụ",
+      "descriptionPlaceholder": "Kesaa nkọwa dịka ị masịrị, nkọwa ọ bụla na-enyere anyị aka ịghọta ma zaghachi ọnọdụ gị.",
+      "locationLabel": "Ebee ka ọ merenụ?",
+      "locationPlaceholder": "Steeti, obodo, ma ọ bụ ebe a ma ama",
+      "dateLabel": "Kedu mgbe ọ merenụ?",
+      "evidenceLabel": "Tinye ihe akaebe",
+      "evidenceHint": "Foto, vidiyo, ma ọ bụ akwụkwọ na-akwado mkpesa gị."
+    },
+    "victim": {
+      "title": "Kedu onye ọ metụtara?",
+      "subtitle": "Gwa anyị maka onye ihe a mere.",
+      "whoExperienced": "Kedu onye nwetara nke a?",
+      "myself": "Mụ onwe m (Ọ bụ m ka e mere ihe)",
+      "someoneElse": "Onye ọzọ (Ana m akọ maka ha)",
+      "moreAboutYou": "Nkọwa ọzọ gbasara gị",
+      "addressPlaceholder": "Okporo ámá, obodo, steeti",
+      "populationQuestion": "Ị bụ onye ọtụtụ ndị mmadụ ma ọ bụ otu pụrụ iche?",
+      "generalPopulation": "Ọtụtụ Ndị Mmadụ",
+      "keyPopulation": "Otu Pụrụ Iche",
+      "keyPopulationSheetTitle": "Kedu otu ha bụ?",
+      "keyPopulationConfidentialityNote": "Nke a na-enyere anyị aka ịchọpụta ọnọdụ ihe egwu. Azịza gị bụ nzuzo.",
+      "confirmSelection": "Kwado Nhọrọ"
+    },
+    "violator": {
+      "title": "Kedu onye kpatara ya?",
+      "subtitle": "Nye nkọwa onye, ụlọ ọrụ, ma ọ bụ onye ọrụ kpatara ya, ma ọ bụrụ na a maara.",
+      "optionalNote": "Ngalaba niile dị n'okpuru bụ nhọrọ ma ewezuga aha, kesaa ihe ọ bụla ị maara."
+    },
+    "review": {
+      "title": "Nyocha & Nnyefe",
+      "subtitle": "Lelee ihe niile dị n'okpuru tupu i nyefee mkpesa gị.",
+      "edit": "Dezie",
+      "sectionCategory": "Ụdị",
+      "sectionIncident": "Nkọwa Ihe Omume",
+      "sectionVictim": "Onye E Mere Ihe",
+      "sectionViolator": "Onye A Na-Ebo Ebubo",
+      "officeLabel": "Ụlọ Ọrụ Ị Chọrọ",
+      "submitButton": "Nyefee Mkpesa",
+      "submitting": "Na-enyefe...",
+      "offices": {
+        "abuja": "Isi Ụlọ Ọrụ - Abuja",
+        "lagos": "Ụlọ Ọrụ Steeti Eko",
+        "kano": "Ụlọ Ọrụ Steeti Kano",
+        "enugu": "Ụlọ Ọrụ Steeti Enugu",
+        "rivers": "Ụlọ Ọrụ Steeti Rivers"
+      }
+    }
+  },
+  "makeComplaintModal": {
+    "title": "Tinye Mkpesa Ọhụrụ",
+    "subtitle": "Mezuo nzọụkwụ ọ bụla iji tinye mkpesa n'aha onye a mesoro njọ."
+  },
+  "voiceReportModal": {
+    "modalTitle": "Mee Mkpesa, Akụkọ Olu AI",
+    "recording": {
+      "heading": "Na-ege ntị na akụkọ gị...",
+      "subtitle": "Kọwaa ihe merenụ, ị ga-enwe ike inyocha ma dezie ihe niile tupu e zipu ya.",
+      "placeholder": "Malite ikwu okwu ugbu a...",
+      "stopButton": "Kwụsị & Mejuo Fọrm Mkpesa"
+    },
+    "processing": {
+      "heading": "Na-emeju fọrm mkpesa...",
+      "subtitle": "Na-ahazi nkọwa ihe merenụ site na ndekọ gị."
+    },
+    "review": {
+      "introTranscribed": "Edeela ndekọ gị n'ime Nkọwa Ihe Merenụ, nyochaa ya maka izi ezi. ",
+      "introNotTranscribed": "Anyị enweghị ike ide ndekọ gị, ya mere Nkọwa Ihe Merenụ efu, biko tinye ya n'okpuru. ",
+      "audioSaved": "Echekwaala ndekọ olu izizi ma a ga-etinyekọ ya na mkpesa a maka ntụaka n'ọdịnihu.",
+      "audioNotSaved": "Enweghị ike ichekwa ndekọ olu ahụ na igwe/ihe nlele a.",
+      "reviewInstruction": " Nyochaa ma mezuo tab ọ bụla n'okpuru."
+    },
+    "tabs": {
+      "incident": "Nkọwa Ihe Merenụ",
+      "victim": "Nkọwa Onye A Mesoro Njọ",
+      "violator": "Onye Emere Ihe Ọjọọ",
+      "category": "Ụdị Ikike"
+    },
+    "incidentTab": {
+      "subjectLabel": "Isiokwu",
+      "subjectPlaceholder": "Nkenke aha ihe merenụ",
+      "descriptionLabel": "Nkọwa Zuru Ezu",
+      "officeLabel": "Ụlọ Ọrụ Ị Chọrọ"
+    },
+    "categoryTab": {
+      "label": "Ụdị Mkpesa",
+      "suggestedHintMatch": "Atụnyere nke a site na ndekọ gị, dabere n'okwu ndị ọ chọtara, gbanwee ya ma ọ bụrụ na ọ dabaghị.",
+      "suggestedHintChanged": "Anyị buru ụzọ tụọ aro \"{{category}}\" dabere na ndekọ gị."
+    },
+    "actions": {
+      "cancel": "Kagbuo",
+      "submit": "Zipu Mkpesa"
+    },
+    "successMessage": "Ezipula mkpesa olu gị nke ọma.",
+    "errors": {
+      "speech": {
+        "unsupported": "Ihe nlele a anaghị akwado ide okwu olu ozugbo. A ka ga-echekwa ndekọ ahụ, naanị dee nkọwa ahụ n'okpuru.",
+        "not-allowed": "Egbochiri ohere iji mikrophone. Nye ohere mikrophone maka saịtị a n'ntọala igwe nlele gị, ma nwaa ọzọ.",
+        "no-speech": "Anyị achọtaghị okwu ọ bụla. Ị nwere ike ịnwa ọzọ, ma ọ bụ dee nkọwa ahụ n'okpuru.",
+        "audio-capture": "Achọtaghị mikrophone na ngwaọrụ a.",
+        "network": "Ide okwu olu ozugbo chọrọ njikọ ịntanetị nke o nweghị ike iru, a ka ga-echekwa ndekọ ahụ, naanị dee nkọwa ahụ n'okpuru.",
+        "aborted": "Akwụsịla ndekọ ahụ n'etiti ya.",
+        "default": "Ihe adịghị mma mere gbasara ide okwu olu ozugbo."
+      },
+      "audio": {
+        "unsupported": "Ihe nlele a enweghị ike ịdekọ olu.",
+        "not-allowed": "Egbochiri ohere iji mikrophone, ya mere ejighị ike chekwaa ndekọ olu ahụ.",
+        "unavailable": "Enweghị ike iru mikrophone, ya mere ejighị ike chekwaa ndekọ olu ahụ.",
+        "default": "Ihe adịghị mma mere mgbe a na-edekọ olu ahụ."
+      }
+    }
+  }
+}

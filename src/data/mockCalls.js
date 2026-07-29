@@ -1,0 +1,117 @@
+// Seeded call log entries for the Call Center feature. Several deliberately reuse a victim's
+// phone number from mockComplaints.js (via linkedComplaintIds) so the "returning caller" match
+// in CallsContext/ComplaintsContext has real data to show, alongside a few brand-new numbers
+// that represent first-time callers.
+
+export const mockCalls = [
+  {
+    id: 'call-1',
+    phoneNumber: '08053647328', // Lucine Dub — victim on c2
+    callerType: 'returning',
+    linkedComplaintIds: ['c2'],
+    suggestedCategory: 'women_children',
+    notes: 'Caller followed up on the status of her existing complaint against Mr. Chuks. Advised it is still pending complaint number assignment.',
+    handledBy: 'Sam Peter',
+    timestamp: '2024-10-09T09:15:00',
+    outcome: 'complaint_linked',
+  },
+  {
+    id: 'call-2',
+    phoneNumber: '08099998877',
+    callerType: 'new',
+    linkedComplaintIds: [],
+    suggestedCategory: 'civil_political',
+    notes: 'Caller described being detained overnight at a checkpoint without being told why, then released without charge. Wants to file formally.',
+    handledBy: 'Mike Peter',
+    timestamp: '2024-10-08T14:20:00',
+    outcome: 'new_complaint_started',
+  },
+  {
+    id: 'call-3',
+    phoneNumber: '08012345678', // Oche Daniel — victim on c3
+    callerType: 'returning',
+    linkedComplaintIds: ['c3'],
+    suggestedCategory: 'eco_soc',
+    notes: 'Caller asked whether his workplace safety complaint has been assigned to a department yet.',
+    handledBy: 'Sam Peter',
+    timestamp: '2024-10-07T11:05:00',
+    outcome: 'info_only',
+  },
+  {
+    id: 'call-4',
+    phoneNumber: '08170001122',
+    callerType: 'new',
+    linkedComplaintIds: [],
+    suggestedCategory: 'vulnerable',
+    notes: 'General inquiry about how to file a complaint on behalf of an elderly relative who cannot come in person.',
+    handledBy: 'Mike Peter',
+    timestamp: '2024-10-06T16:40:00',
+    outcome: 'info_only',
+  },
+  {
+    id: 'call-5',
+    phoneNumber: '08076543210', // Shehu Maigam — victim on c5
+    callerType: 'returning',
+    linkedComplaintIds: ['c5'],
+    suggestedCategory: 'civil_political',
+    notes: 'Caller wanted an update on the checkpoint battery case, informed it has been confirmed admissible and is moving to department assignment.',
+    handledBy: 'Sam Peter',
+    timestamp: '2024-10-05T10:30:00',
+    outcome: 'complaint_linked',
+  },
+  {
+    id: 'call-6',
+    phoneNumber: '08144009911',
+    callerType: 'new',
+    linkedComplaintIds: [],
+    suggestedCategory: 'women_children',
+    notes: 'Caller reported suspected child labor at a factory in Nyanya. Provided a rough location and description of the site.',
+    handledBy: 'Mike Peter',
+    timestamp: '2024-10-04T13:10:00',
+    outcome: 'new_complaint_started',
+  },
+  {
+    id: 'call-7',
+    phoneNumber: '08034561122', // Odinaka David — victim on c4
+    callerType: 'returning',
+    linkedComplaintIds: ['c4'],
+    suggestedCategory: 'eco_soc',
+    notes: 'Caller disputes the inadmissible ruling on his eviction case and asked how to appeal or resubmit once the court matter concludes.',
+    handledBy: 'Sam Peter',
+    timestamp: '2024-10-03T15:50:00',
+    outcome: 'info_only',
+  },
+  {
+    id: 'call-8',
+    phoneNumber: '08155223344',
+    callerType: 'new',
+    linkedComplaintIds: [],
+    suggestedCategory: 'vulnerable',
+    notes: 'Caller reported an elderly neighbor being denied access to their own pension payments by a live-in caregiver.',
+    handledBy: 'Williams Peter',
+    timestamp: '2024-10-02T09:00:00',
+    outcome: 'new_complaint_started',
+  },
+  {
+    id: 'call-9',
+    phoneNumber: '08011223344', // Chuks Ike — victim on c6
+    callerType: 'returning',
+    linkedComplaintIds: ['c6'],
+    suggestedCategory: 'civil_political',
+    notes: 'Caller asked when the department supervisor would be assigning an investigator to his assault case.',
+    handledBy: 'Mike Peter',
+    timestamp: '2024-10-01T12:25:00',
+    outcome: 'info_only',
+  },
+  {
+    id: 'call-10',
+    phoneNumber: '08199887766',
+    callerType: 'new',
+    linkedComplaintIds: [],
+    suggestedCategory: null,
+    notes: 'Caller hung up before providing details; unable to determine the nature of the complaint.',
+    handledBy: 'Sam Peter',
+    timestamp: '2024-09-30T17:45:00',
+    outcome: 'info_only',
+  },
+];

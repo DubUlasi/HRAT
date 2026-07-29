@@ -10,13 +10,13 @@
 
 /* Sidebar */
 .sidebar {
-  width: 256px;
+  width: 208px;
   min-height: 100vh;
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
-  padding: 20px 14px 16px 14px;
+  padding: 16px 11px 13px 11px;
   position: fixed;
   top: 0;
   left: 0;
@@ -25,8 +25,8 @@
 }
 
 .sidebar.collapsed {
-  width: 76px;
-  padding: 20px 10px 16px;
+  width: 62px;
+  padding: 16px 8px 13px;
 }
 
 .sidebar.collapsed .logo-container {
@@ -39,12 +39,12 @@
 
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 10px;
+  padding: 8px;
 }
 
 .sidebar.collapsed .profile-card-block {
   justify-content: center;
-  padding: 10px 6px;
+  padding: 8px 5px;
 }
 
 .sidebar.collapsed .profile-card {
@@ -55,8 +55,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 22px;
-  padding: 0 4px;
+  margin-bottom: 18px;
+  padding: 0 3px;
 }
 
 /* Sidebar collapse toggle — a small circular "rail" button straddling the sidebar's edge,
@@ -64,10 +64,10 @@
    free for the collapse control. */
 .sidebar-collapse-btn {
   position: absolute;
-  top: 30px;
-  right: -12px;
-  width: 24px;
-  height: 24px;
+  top: 24px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 1px solid var(--sidebar-border);
   background-color: var(--card-bg);
@@ -98,17 +98,17 @@
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
 }
 
 .logo-icon {
-  height: 34px;
+  height: 28px;
   object-fit: contain;
 }
 
 .logo-text {
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -117,8 +117,8 @@
 /* Theme Toggle Switch Handle */
 .theme-switch {
   position: relative;
-  width: 44px;
-  height: 24px;
+  width: 40px;
+  height: 22px;
   background-color: var(--toggle-bg);
   border-radius: 100px;
   cursor: pointer;
@@ -129,8 +129,8 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   background-color: var(--toggle-handle);
   border-radius: 50px;
   transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
@@ -138,26 +138,26 @@
 }
 
 [data-theme="dark"] .theme-switch-handle {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
 /* Nav Section */
 .nav-section {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 9px;
+  padding: 6px 8px;
+  border-radius: 8px;
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 13.5px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 400;
   cursor: pointer;
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
@@ -168,11 +168,15 @@
 }
 
 /* Active nav item picks up the brand green, so the shell reads as one system with the
-   green-accented cards rather than a neutral-gray highlight. */
+   green-accented cards rather than a neutral-gray highlight. A thin left accent bar (via
+   box-shadow, so it doesn't shift layout/padding) makes the current page easier to spot at a
+   glance alongside the grouped sections below — kept light (thin bar, medium weight) so it
+   reads as a subtle marker rather than a heavy block. */
 .nav-item.active {
   background-color: var(--accent-light);
   color: var(--accent-color);
-  font-weight: 700;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--accent-color);
 }
 
 .nav-item.active svg {
@@ -182,18 +186,18 @@
 .nav-item-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   background-color: var(--accent-color);
   border-radius: 50%;
 }
 
 .plus-btn {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--text-muted);
   font-weight: 400;
 }
@@ -201,38 +205,45 @@
 .sidebar-divider {
   height: 1px;
   background-color: var(--sidebar-border);
-  margin: 13px 0;
+  margin: 10px 0;
 }
 
-.collapsible-group {
-  margin-bottom: 8px;
+/* Static (non-collapsible) sidebar section — just a label over a group of links, with a little
+   breathing room between one section and the next so the list still reads as distinct blocks. */
+.nav-group {
+  margin-bottom: 12px;
 }
 
-.collapsible-group summary {
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
+.nav-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Extra gap specifically between the flat Dashboard link and the first section below it, so
+   Dashboard doesn't visually blend into the "Complaints" group. */
+.nav-item + .nav-group {
+  margin-top: 10px;
+}
+
+.nav-group-label {
+  padding: 6px 8px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  cursor: pointer;
 }
 
-.collapsible-content {
+.nav-group-content {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding-top: 4px;
+  padding-top: 3px;
 }
 
 /* Sidebar Footer / User Profile */
 .sidebar-footer {
   margin-top: auto;
-  padding-top: 13px;
+  padding-top: 10px;
   border-top: 1px solid var(--sidebar-border);
   position: relative;
 }
@@ -242,16 +253,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   background-color: var(--active-bg);
-  border-radius: 12px;
-  padding: 13px 12px;
+  border-radius: 10px;
+  padding: 10px 9px;
 }
 
 .profile-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   text-decoration: none;
   cursor: pointer;
   flex-grow: 1;
@@ -260,14 +271,14 @@
 
 .avatar-container {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
 }
 
 .profile-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -276,8 +287,8 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   background-color: var(--accent-color);
   border: 2px solid var(--sidebar-bg);
   border-radius: 50%;
@@ -290,7 +301,7 @@
 }
 
 .profile-name {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -299,7 +310,7 @@
 }
 
 .profile-email {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -307,8 +318,8 @@
 }
 
 .settings-btn {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
   background: none;
   border: none;
@@ -328,17 +339,17 @@
 
 .profile-menu {
   position: absolute;
-  bottom: 78px;
+  bottom: 64px;
   left: 0;
-  width: 224px;
+  width: 190px;
   background-color: var(--sidebar-bg);
   border: 1px solid var(--sidebar-border);
   border-radius: 8px;
   box-shadow: none !important;
-  padding: 7px;
+  padding: 6px;
   display: none;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   z-index: 10;
 }
 
@@ -349,10 +360,10 @@
 .profile-menu-item {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 7px 9px;
+  gap: 8px;
+  padding: 6px 8px;
   border-radius: 6px;
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--text-secondary);
   text-decoration: none;
   cursor: pointer;
@@ -366,20 +377,20 @@
 
 /* Main Content Area */
 .main-content {
-  margin-left: 256px;
+  margin-left: 208px;
   flex-grow: 1;
   min-width: 0;
   min-height: 100vh;
-  padding: 34px;
+  padding: 27px;
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 21px;
   background-color: var(--bg-color);
   transition: background-color var(--transition-speed), margin-left var(--transition-speed);
 }
 
 .main-content.sidebar-collapsed {
-  margin-left: 76px;
+  margin-left: 62px;
 }
 
 .content-header {
@@ -389,26 +400,27 @@
 }
 
 .header-title-area h1 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.03em;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .header-title-area p {
-  font-size: 13.5px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
+  gap: 7px;
+  padding: 9px 16px;
   background-color: var(--accent-color);
   color: #FFFFFF;
   border-radius: 8px;
+  font-size: 13.5px;
   font-weight: 600;
   text-decoration: none;
   border: none;
@@ -423,47 +435,88 @@
 /* Stats Cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .stat-card {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 11px;
+  padding: 16px;
   box-shadow: var(--card-shadow);
   transition: background-color var(--transition-speed), border-color var(--transition-speed);
 }
 
 .stat-card h3 {
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--text-muted);
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .stat-card .value {
-  font-size: 26px;
+  font-size: 21px;
   font-weight: 800;
   color: var(--text-primary);
+}
+
+/* Repeat Offenders teaser card (Business Intelligence page) */
+.repeat-offenders-teaser {
+  margin: 14px 0;
+}
+
+.repeat-offenders-teaser-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.repeat-offenders-teaser-header h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--danger-color);
+}
+
+.repeat-offenders-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border);
+}
+
+.repeat-offenders-preview-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11.5px;
+}
+
+.repeat-offenders-preview-list li span {
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 /* Recent Activity */
 .recent-activity {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 11px;
+  padding: 16px;
   box-shadow: var(--card-shadow);
   transition: background-color var(--transition-speed), border-color var(--transition-speed);
 }
 
 .recent-activity h2 {
-  font-size: 17px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  margin-bottom: 13px;
 }
 
 table {
@@ -472,25 +525,25 @@ table {
 }
 
 th, td {
-  padding: 13px;
+  padding: 10px;
   text-align: left;
   border-bottom: 1px solid var(--card-border);
-  font-size: 13.5px;
+  font-size: 12px;
   color: var(--text-primary);
 }
 
 th {
   color: var(--text-muted);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .status-badge {
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: 20px;
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 600;
 }
 
@@ -521,6 +574,6 @@ th {
   .main-content,
   .main-content.sidebar-collapsed {
     margin-left: 0;
-    padding: 18px;
+    padding: 15px;
   }
 }

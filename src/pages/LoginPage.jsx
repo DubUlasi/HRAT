@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import ShowcaseGrid from '../components/ShowcaseGrid';
+import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import { useTranslation } from '../context/I18nContext';
 import '../styles/login.css';
 
 // No backend yet — this stands in for the Complaint Registry Head's login until real auth
@@ -11,6 +13,7 @@ const DEMO_PASSWORD = 'password123';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +30,7 @@ export default function LoginPage() {
       if (matches) {
         navigate('/registry-head');
       } else {
-        setError('Incorrect email or password. Try the demo credentials below.');
+        setError(t('login.errorInvalid'));
         setSubmitting(false);
       }
     }, 600);
@@ -49,9 +52,12 @@ export default function LoginPage() {
       <div className="login-form-container">
         <div className="login-card">
           <div className="login-card-header">
-            <img src="/hrat_nhrc_logo.png" alt="HRAT Logo" className="login-card-logo" />
-            <h2>Human Right Tracker</h2>
-            <p>Welcome back! Please enter your details.</p>
+            <div className="login-card-header-top">
+              <img src="/hrat_nhrc_logo.png" alt="HRAT Logo" className="login-card-logo" />
+              <LanguageSwitcher />
+            </div>
+            <h2>{t('login.title')}</h2>
+            <p>{t('login.subtitle')}</p>
           </div>
 
           <button
@@ -66,10 +72,10 @@ export default function LoginPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05" />
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
-            {googleSubmitting ? 'Authenticating with Google...' : 'Sign in with Google'}
+            {googleSubmitting ? t('login.googleAuthenticating') : t('login.googleSignIn')}
           </button>
 
-          <div className="divider">or</div>
+          <div className="divider">{t('login.orDivider')}</div>
 
           {error && (
             <div className="form-error">
@@ -80,12 +86,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="loginEmail" className="form-label">Email</label>
+              <label htmlFor="loginEmail" className="form-label">{t('login.emailLabel')}</label>
               <input
                 type="email"
                 id="loginEmail"
                 className="form-input"
-                placeholder="Enter your email"
+                placeholder={t('login.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -94,13 +100,13 @@ export default function LoginPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="loginPassword" className="form-label">Password</label>
+              <label htmlFor="loginPassword" className="form-label">{t('login.passwordLabel')}</label>
               <div className="password-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="loginPassword"
                   className="form-input"
-                  placeholder="••••••••"
+                  placeholder={t('login.passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -118,19 +124,19 @@ export default function LoginPage() {
             </div>
 
             <button type="submit" className="btn-submit" disabled={submitting}>
-              {submitting ? 'Signing in...' : 'Sign in'}
+              {submitting ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
 
           <div className="demo-hint">
-            Demo access: <strong>{DEMO_EMAIL}</strong> / <strong>{DEMO_PASSWORD}</strong>
+            {t('login.demoAccessLabel', { email: DEMO_EMAIL, password: DEMO_PASSWORD })}
           </div>
 
           <div className="login-card-footer">
             <p>
-              Don't have an account?{' '}
+              {t('login.noAccount')}{' '}
               <Link to="/signup" className="signup-link">
-                Sign up
+                {t('login.signUpLink')}
               </Link>
             </p>
           </div>

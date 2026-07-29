@@ -199,9 +199,15 @@ body {
   text-align: center;
 }
 
+.login-card-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .login-card-logo {
   height: 44px;
-  margin-bottom: 16px;
 }
 
 .login-card-header h2 {

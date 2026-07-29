@@ -1,13 +1,11 @@
 import React from 'react';
-import { User } from 'lucide-react';
+import Avatar from '../ui/Avatar';
 
 export default function ComplaintProfileCard({ roleLabel, person, tagVariant = 'default' }) {
   return (
     <div className="profile-card-block">
       <div className="profile-card-top">
-        <div className="profile-card-avatar">
-          <User size={26} />
-        </div>
+        <Avatar name={person.name} size={40} />
         <div className="profile-card-info">
           <span className="profile-card-name">{person.name}</span>
           <span className={`profile-card-tag tag-${tagVariant}`}>{roleLabel}</span>

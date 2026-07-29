@@ -26,11 +26,11 @@ export default function ComplaintCard({ complaint }) {
 
       <div className="complaint-card-people">
         <div className="person-cell">
-          <Avatar name={complaint.victim.name} size={26} />
+          <Avatar name={complaint.victim.name} size={21} />
           <span>{complaint.victim.name}</span>
         </div>
         <div className="person-cell">
-          <Avatar name={complaint.allegedViolator.name} size={26} />
+          <Avatar name={complaint.allegedViolator.name} size={21} />
           <span>{complaint.allegedViolator.name}</span>
         </div>
       </div>

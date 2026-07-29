@@ -1,0 +1,200 @@
+{
+  "_note": "TODO: Yoruba — rough machine-assisted draft, needs review by a native speaker before shipping.",
+  "common": {
+    "back": "Padà",
+    "continue": "Tẹ̀síwájú",
+    "cancel": "Fagilé",
+    "chooseFile": "Yan Fáìlì",
+    "noFileChosen": "Kò sí fáìlì tí a yàn",
+    "selectOffice": "-- Yan Ọ́fíìsì --",
+    "selectGender": "-- Yan Ìbálòpọ̀ --",
+    "genderFemale": "Obìnrin",
+    "genderMale": "Ọkùnrin",
+    "genderRatherNotSay": "Mo fẹ́ kì n má sọ",
+    "firstName": "Orúkọ Àkọ́kọ́",
+    "lastName": "Orúkọ Ìdílé",
+    "email": "Ímeèlì",
+    "phone": "Nọ́mbà Fóònù",
+    "gender": "Ìbálòpọ̀",
+    "address": "Àdírẹ́sì"
+  },
+  "languageSwitcher": {
+    "label": "Èdè"
+  },
+  "login": {
+    "title": "Ẹ̀rọ Àmójútó Ẹ̀tọ́ Ọmọnìyàn",
+    "subtitle": "Kaàbọ̀ padà! Jọ̀wọ́ tẹ àwọn àlàyé rẹ sí.",
+    "googleSignIn": "Wọlé pẹ̀lú Google",
+    "googleAuthenticating": "Ń fọwọ́ sí i pẹ̀lú Google...",
+    "orDivider": "tàbí",
+    "emailLabel": "Ímeèlì",
+    "emailPlaceholder": "Tẹ ímeèlì rẹ sí",
+    "passwordLabel": "Ọ̀rọ̀ Ìgbaniwọlé",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Wọlé",
+    "signingIn": "Ń wọlé...",
+    "errorInvalid": "Ímeèlì tàbí ọ̀rọ̀ ìgbaniwọlé kò tọ́. Gbìyànjú àwọn àlàyé àpẹẹrẹ tí ó wà ní ìsàlẹ̀.",
+    "demoAccessLabel": "Ìwọlé àpẹẹrẹ: {{email}} / {{password}}",
+    "noAccount": "Ṣé o kò ní àkọọ́lẹ̀?",
+    "signUpLink": "Forúkọsílẹ̀"
+  },
+  "signup": {
+    "title": "Forúkọsílẹ̀",
+    "subtitle": "Ṣẹ̀dá àkọọ́lẹ̀ rẹ láti fi ẹ̀sùn hàn àti láti tọpasẹ̀ wọn",
+    "googleSignUp": "Forúkọsílẹ̀ pẹ̀lú Google",
+    "googleAuthenticating": "Ń fọwọ́ sí i pẹ̀lú Google...",
+    "orDivider": "tàbí",
+    "firstNameLabel": "Orúkọ Àkọ́kọ́",
+    "firstNamePlaceholder": "Orúkọ Àkọ́kọ́",
+    "lastNameLabel": "Orúkọ Ìdílé",
+    "lastNamePlaceholder": "Orúkọ Ìdílé",
+    "emailLabel": "Ímeèlì",
+    "phoneLabel": "Nọ́mbà Fóònù",
+    "phonePlaceholder": "Nọ́mbà Fóònù",
+    "genderLabel": "Ìbálòpọ̀",
+    "passwordLabel": "Ọ̀rọ̀ Ìgbaniwọlé",
+    "confirmPasswordLabel": "Jẹ́rìí Ọ̀rọ̀ Ìgbaniwọlé",
+    "confirmPasswordPlaceholder": "Jẹ́rìí Ọ̀rọ̀ Ìgbaniwọlé",
+    "submit": "Fi Ránṣẹ́",
+    "submitting": "Ń fi ránṣẹ́...",
+    "alreadyHaveAccount": "Ṣé o ti ní àkọọ́lẹ̀ tẹ́lẹ̀?",
+    "signInLink": "Wọlé"
+  },
+  "wizard": {
+    "stepLabel": "Ìgbésẹ̀ {{current}} nínú {{total}}",
+    "optional": "yiyan",
+    "stepper": {
+      "category": "Ẹ̀ka",
+      "incident": "Ìṣẹ̀lẹ̀",
+      "victim": "Ẹni tí a Ṣẹ̀",
+      "violator": "Ẹlẹ́sùn",
+      "review": "Àyẹ̀wò"
+    },
+    "phoneGate": {
+      "title": "Jẹ́ ká bẹ̀rẹ̀",
+      "subtitle": "Tẹ nọ́mbà fóònù rẹ sí kí a lè dá ọ mọ̀ àti ràn ọ́ lọ́wọ́ láti tọpasẹ̀ ẹ̀sùn yìí.",
+      "label": "Nọ́mbà Fóònù",
+      "placeholder": "f.a. 08012345678"
+    },
+    "category": {
+      "title": "Kí ni ó ṣẹlẹ̀?",
+      "subtitle": "Yan ẹ̀ka tí ó bá ohun tí o ní ìrírí rẹ̀ mu jùlọ.",
+      "subLabel": "Kí ni ó ṣàpèjúwe rẹ̀ jùlọ?"
+    },
+    "incident": {
+      "title": "Sọ fún wa síwájú sí i",
+      "subtitle": "Pín àlàyé bí o ṣe rí i pé o lè ṣe é, gbogbo àlàyé ń ràn wá lọ́wọ́.",
+      "subjectLabel": "Fún èyí ní àkọlé kúkúrú",
+      "subjectPlaceholder": "Kúkúrú orúkọ ìṣẹ̀lẹ̀ náà",
+      "descriptionLabel": "Sọ fún wa ohun tí ó ṣẹlẹ̀",
+      "descriptionPlaceholder": "Pín àlàyé bí o ṣe rí i pé o lè ṣe é, gbogbo àlàyé ń ràn wá lọ́wọ́ láti lóye àti dáhùn sí ipò rẹ.",
+      "locationLabel": "Níbo ni ó ti ṣẹlẹ̀?",
+      "locationPlaceholder": "Ìpínlẹ̀, ìlú, tàbí àmì ààlà",
+      "dateLabel": "Nígbà wo ni ó ṣẹlẹ̀?",
+      "evidenceLabel": "So ẹ̀rí kún",
+      "evidenceHint": "Àwòrán, fídíò, tàbí àwọn ìwé tí ó ṣe àtìlẹ́yìn fún ẹ̀sùn rẹ."
+    },
+    "victim": {
+      "title": "Ta ni ó kan?",
+      "subtitle": "Sọ fún wa nípa ẹni tí èyí ṣẹlẹ̀ sí.",
+      "whoExperienced": "Ta ni ó ní ìrírí èyí?",
+      "myself": "Èmi ni (Èmi ni ẹni tí a ṣẹ̀)",
+      "someoneElse": "Ẹlòmíràn (Mo ń jábọ̀ ní orúkọ wọn)",
+      "moreAboutYou": "Àlàyé díẹ̀ síi nípa rẹ",
+      "addressPlaceholder": "Òpópónà, ìlú, ìpínlẹ̀",
+      "populationQuestion": "Ṣé o wà nínú àwùjọ gbogbogbò tàbí àkànṣe àwùjọ?",
+      "generalPopulation": "Àwùjọ Gbogbogbò",
+      "keyPopulation": "Àkànṣe Àwùjọ",
+      "keyPopulationSheetTitle": "Ẹ̀wo ìjọ ni wọ́n wà?",
+      "keyPopulationConfidentialityNote": "Èyí ń ràn wá lọ́wọ́ láti mọ àwọn ipò ewu. Ìdáhùn rẹ jẹ́ ìkọ̀kọ̀.",
+      "confirmSelection": "Jẹ́rìí Yíyàn"
+    },
+    "violator": {
+      "title": "Ta ni ó ní ẹ̀bi?",
+      "subtitle": "Pèsè àlàyé ẹni, àjọ, tàbí ọ̀gá tí ó ní ẹ̀bi, tí a bá mọ̀.",
+      "optionalNote": "Gbogbo àwọn ẹ̀ka tí ó wà nísàlẹ̀ jẹ́ yiyan àyàfi orúkọ, pín ohunkóhun tí o mọ̀."
+    },
+    "review": {
+      "title": "Àyẹ̀wò & Fífi Ránṣẹ́",
+      "subtitle": "Ṣàyẹ̀wò ohun gbogbo nísàlẹ̀ kí o tó fi ẹ̀sùn rẹ ránṣẹ́.",
+      "edit": "Ṣàtúnṣe",
+      "sectionCategory": "Ẹ̀ka",
+      "sectionIncident": "Àlàyé Ìṣẹ̀lẹ̀",
+      "sectionVictim": "Ẹni tí a Ṣẹ̀",
+      "sectionViolator": "Ẹlẹ́sùn",
+      "officeLabel": "Ọ́fíìsì tí O Fẹ́",
+      "submitButton": "Fi Ẹ̀sùn Ránṣẹ́",
+      "submitting": "Ń fi ránṣẹ́...",
+      "offices": {
+        "abuja": "Olú-iṣẹ́ - Abuja",
+        "lagos": "Ọ́fíìsì Ìpínlẹ̀ Èkó",
+        "kano": "Ọ́fíìsì Ìpínlẹ̀ Kano",
+        "enugu": "Ọ́fíìsì Ìpínlẹ̀ Enugu",
+        "rivers": "Ọ́fíìsì Ìpínlẹ̀ Rivers"
+      }
+    }
+  },
+  "makeComplaintModal": {
+    "title": "Fi Ẹ̀sùn Tuntun Sílẹ̀",
+    "subtitle": "Parí ìgbésẹ̀ kọ̀ọ̀kan láti fi ẹ̀sùn sílẹ̀ ní orúkọ ẹni tí a ṣẹ̀."
+  },
+  "voiceReportModal": {
+    "modalTitle": "Fi Ẹ̀sùn Sílẹ̀, Ìròyìn Ohùn AI",
+    "recording": {
+      "heading": "Ń tẹ́tí sí ìròyìn rẹ...",
+      "subtitle": "Ṣàlàyé ohun tí ó ṣẹlẹ̀, o lè ṣàyẹ̀wò kí o sì ṣàtúnṣe ohun gbogbo kí ó tó fi ránṣẹ́.",
+      "placeholder": "Bẹ̀rẹ̀ sí sọ̀rọ̀ nísisìyí...",
+      "stopButton": "Dúró & Fọwọ́ Fi Fọ́ọ̀mù Ẹ̀sùn kún"
+    },
+    "processing": {
+      "heading": "Ń fọwọ́ fi fọ́ọ̀mù ẹ̀sùn kún...",
+      "subtitle": "Ń ṣètò àlàyé ìṣẹ̀lẹ̀ láti inú gbohùngbohùn rẹ."
+    },
+    "review": {
+      "introTranscribed": "A ti kọ ohun tí o gbà sílẹ̀ sínú Àlàyé Ìṣẹ̀lẹ̀, ṣàyẹ̀wò rẹ̀ fún ìdánilójú. ",
+      "introNotTranscribed": "A kò lè kọ ohun tí o gbà sílẹ̀, nítorí náà Àlàyé Ìṣẹ̀lẹ̀ ṣófo, jọ̀wọ́ tẹ̀ ẹ́ sílẹ̀ ní ìsàlẹ̀. ",
+      "audioSaved": "A ti fi ohùn àkọ́kọ́ pamọ́ yóò sì so mọ́ ẹ̀sùn yìí fún ìtọ́kasí ọjọ́ iwájú.",
+      "audioNotSaved": "A kò lè fi gbohùngbohùn náà pamọ́ sórí ẹ̀rọ tàbí àtọ́nà yìí.",
+      "reviewInstruction": " Ṣàyẹ̀wò kí o sì parí ojú-ìwé kọ̀ọ̀kan ní ìsàlẹ̀."
+    },
+    "tabs": {
+      "incident": "Àlàyé Ìṣẹ̀lẹ̀",
+      "victim": "Àlàyé Ẹni tí a Ṣẹ̀",
+      "violator": "Ẹlẹ́sùn",
+      "category": "Ẹ̀ka Ẹ̀tọ́"
+    },
+    "incidentTab": {
+      "subjectLabel": "Kókó",
+      "subjectPlaceholder": "Kúkúrú orúkọ ìṣẹ̀lẹ̀ náà",
+      "descriptionLabel": "Àlàyé Kíkún",
+      "officeLabel": "Ọ́fíìsì tí O Fẹ́"
+    },
+    "categoryTab": {
+      "label": "Ẹ̀ka Ẹ̀sùn",
+      "suggestedHintMatch": "A dábàá èyí láti inú gbohùngbohùn rẹ, gẹ́gẹ́ bí àwọn ọ̀rọ̀ tí a rí i, yí i padà bí kò bá bá a mu.",
+      "suggestedHintChanged": "A ti dábàá \"{{category}}\" ní àkọ́kọ́ gẹ́gẹ́ bí gbohùngbohùn rẹ."
+    },
+    "actions": {
+      "cancel": "Fagilé",
+      "submit": "Fi Ẹ̀sùn Ránṣẹ́"
+    },
+    "successMessage": "A ti fi ẹ̀sùn ohùn rẹ ránṣẹ́ ní àṣeyọrí.",
+    "errors": {
+      "speech": {
+        "unsupported": "Àtọ́nà yìí kò ṣe àtìlẹ́yìn fún ìkọ ọ̀rọ̀ láti ohùn lọ́gán. Gbohùngbohùn yóò ṣì wà ní fífi pamọ́, kàn tẹ àlàyé náà sílẹ̀ ní ìsàlẹ̀.",
+        "not-allowed": "A kọ̀ láti fún láàyè láti lo gbohùngbohùn. Fún láàyè fún ojú-òpó yìí nínú ìtòlẹ́sẹẹsẹ àtọ́nà rẹ, kí o sì tún gbìyànjú.",
+        "no-speech": "A kò rí ọ̀rọ̀ sísọ kankan. O lè tún gbìyànjú, tàbí kí o tẹ àlàyé náà sílẹ̀ ní ìsàlẹ̀.",
+        "audio-capture": "A kò rí gbohùngbohùn kankan lórí àtọ́nà yìí.",
+        "network": "Ìkọ ọ̀rọ̀ láti ohùn lọ́gán nílò ìsopọ̀ ayélujára tí kò sì lè dé ọ̀dọ̀ rẹ̀. Gbohùngbohùn yóò ṣì wà ní fífi pamọ́, kàn tẹ àlàyé náà sílẹ̀ ní ìsàlẹ̀.",
+        "aborted": "A dá gbígbà sílẹ̀ dúró.",
+        "default": "Nǹkan kan ṣẹlẹ̀ ní àṣìṣe pẹ̀lú ìkọ ọ̀rọ̀ láti ohùn."
+      },
+      "audio": {
+        "unsupported": "Àtọ́nà yìí kò lè gba ohùn sílẹ̀.",
+        "not-allowed": "A kọ̀ láti fún láàyè láti lo gbohùngbohùn, nítorí náà a kò lè fi gbohùngbohùn náà pamọ́.",
+        "unavailable": "A kò lè dé ọ̀dọ̀ gbohùngbohùn, nítorí náà a kò lè fi gbohùngbohùn náà pamọ́.",
+        "default": "Nǹkan kan ṣẹlẹ̀ ní àṣìṣe nígbà tí a ń gba ohùn sílẹ̀."
+      }
+    }
+  }
+}

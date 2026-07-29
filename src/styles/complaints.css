@@ -8,8 +8,8 @@
 /* Progress bar */
 .progress-bar-track {
   width: 100%;
-  max-width: 130px;
-  height: 6px;
+  max-width: 105px;
+  height: 5px;
   border-radius: 20px;
   background-color: var(--sidebar-border);
   overflow: hidden;
@@ -24,8 +24,8 @@
 
 /* Action icon button (row "->") */
 .action-icon-btn {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 999px;
   border: 1px solid var(--card-border);
   background-color: var(--card-bg);
@@ -52,11 +52,18 @@
   overflow-x: auto;
 }
 
-/* When the table is embedded inside another card (e.g. the dashboard's "Complaints" panel),
-   let the outer card supply the border/shadow so they don't double up. */
-.recent-complaints-card .complaints-table-wrap {
+/* When the table is embedded inside another card (e.g. the dashboard's "Complaints" panel, or
+   the Business Intelligence office/department performance tables), let the outer card supply
+   the border/shadow so they don't double up. */
+.recent-complaints-card .complaints-table-wrap,
+.performance-table-wrap {
   border: none;
   border-radius: 0;
+}
+
+/* This one has only 3 narrow columns, so it shouldn't inherit the wider table's 720px floor. */
+.performance-table-wrap .complaints-table {
+  min-width: 100%;
 }
 
 /* Transparent rows separated by a plain divider line, instead of a filled background per row. */
@@ -67,14 +74,14 @@
 
 .complaints-table thead th {
   border-bottom: 1px solid var(--card-border);
-  padding: 0 14px 10px;
+  padding: 0 11px 8px;
   color: var(--text-muted);
 }
 
 .complaints-table tbody tr td {
   background-color: transparent;
   border-bottom: 1px solid var(--card-border);
-  padding: 14px;
+  padding: 11px;
   transition: background-color var(--transition-speed);
 }
 
@@ -95,7 +102,7 @@
 .person-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .avatar-chip {
@@ -110,11 +117,11 @@
 
 .complaint-subject {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .complaint-date {
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: var(--text-muted);
 }
 
@@ -133,9 +140,9 @@
 .stepper-visualizer-card {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
-  padding: 22px 20px 16px;
-  margin-bottom: 18px;
+  border-radius: 14px;
+  padding: 18px 16px 13px;
+  margin-bottom: 14px;
 }
 
 .stepper-track-row {
@@ -144,7 +151,7 @@
 
 .stepper-line-track {
   position: absolute;
-  top: 15px;
+  top: 13px;
   left: calc(100% / 14);
   right: calc(100% / 14);
   height: 3px;
@@ -172,17 +179,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 3px;
   text-align: center;
 }
 
 .stepper-circle {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background-color: var(--bg-color);
   border: 2px solid var(--card-border);
@@ -190,7 +197,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
   transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed), box-shadow var(--transition-speed);
@@ -207,11 +214,11 @@
 }
 
 .stepper-node-label {
-  font-size: 11px;
+  font-size: 9.5px;
   font-weight: 600;
   color: var(--text-muted);
   line-height: 1.3;
-  max-width: 92px;
+  max-width: 80px;
 }
 
 .stepper-node-item.reached .stepper-node-label {
@@ -228,17 +235,20 @@
   }
 }
 
-/* Case detail hero — replaces the plain title/status header on the complaint detail page */
+/* Case detail hero — replaces the plain title/status header on the complaint detail page. The
+   top border's color is set inline per-category (see CATEGORY_COLOR) so the hero reads as
+   "this kind of case" at a glance. */
 .case-detail-hero {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 22px;
+  gap: 18px;
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
-  padding: 22px;
-  margin-bottom: 18px;
+  border-top: 4px solid var(--accent-color);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
 }
 
 .hero-left-content {
@@ -250,8 +260,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 11px;
+  gap: 6px;
+  margin-bottom: 9px;
 }
 
 .detail-tracking-code {
@@ -259,27 +269,34 @@
   letter-spacing: 0.02em;
   background-color: var(--active-bg);
   color: var(--text-secondary);
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .category-pill {
   background-color: var(--info-light);
   color: var(--info-color);
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
+/* Category-specific coloring (opt-in via an extra class) — used on the complaint detail hero
+   so each rights category reads distinctly instead of every pill sharing the same blue. */
+.category-pill.pill-violet { background-color: var(--violet-light); color: var(--violet-color); }
+.category-pill.pill-info { background-color: var(--info-light); color: var(--info-color); }
+.category-pill.pill-warning { background-color: var(--warning-light); color: var(--warning-color); }
+.category-pill.pill-danger { background-color: var(--danger-light); color: var(--danger-color); }
+
 .urgency-pill {
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -296,103 +313,107 @@
 }
 
 .hero-case-title {
-  font-size: 21px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
 
 .hero-case-description {
-  font-size: 13.5px;
+  font-size: 12px;
   line-height: 1.6;
   color: var(--text-secondary);
   max-width: 640px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .hero-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 8px;
 }
 
 .hero-meta-row span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.hero-meta-row span svg {
   color: var(--text-muted);
 }
 
 .status-hero-card {
-  width: 240px;
+  width: 210px;
   flex-shrink: 0;
   background-color: var(--bg-color);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 16px 13px 13px;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
 }
 
 .status-card-label {
-  font-size: 10.5px;
+  font-size: 9.5px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
   font-weight: 700;
 }
 
-.status-card-badge-row {
+/* Circular pipeline-progress ring — a conic-gradient "dial" reading the case's overall
+   progress, replacing the old linear bar for a more distinctive focal point on the hero. */
+.status-progress-ring {
+  --pct: 0;
+  width: 92px;
+  height: 92px;
+  margin: 2px 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent-color) calc(var(--pct) * 3.6deg), var(--sidebar-border) 0deg);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  transition: background 0.4s ease;
 }
 
-.status-pulse-dot {
-  width: 8px;
-  height: 8px;
+.status-progress-ring-inner {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background-color: var(--accent-color);
-  animation: statusPulse 1.6s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.75); }
-}
-
-.status-card-progress {
+  background-color: var(--card-bg);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
 }
 
-.status-pct-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11.5px;
-  font-weight: 600;
+.status-progress-value {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.status-progress-caption {
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
 
-.status-bar-track {
-  height: 6px;
-  border-radius: 20px;
-  background-color: var(--sidebar-border);
-  overflow: hidden;
-}
-
-.status-bar-fill {
-  height: 100%;
-  background-color: var(--accent-color);
-  border-radius: 20px;
-  transition: width var(--transition-speed);
-}
-
 .status-card-action {
+  width: 100%;
   margin-top: 3px;
 }
 
@@ -405,14 +426,14 @@
 .detail-top-nav-bar {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .back-to-cases-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
+  gap: 5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-secondary);
   text-decoration: none;
@@ -427,7 +448,7 @@
 .case-detail-content-grid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 18px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -447,21 +468,21 @@
 .detail-column-right {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 13px;
 }
 
 .detail-section-card {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 17px;
+  border-radius: 12px;
+  padding: 14px;
 }
 
 .section-header-flex {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .section-header-flex h2 {
@@ -471,28 +492,62 @@
 .section-card-title {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14.5px;
+  gap: 5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .voice-recording-note {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  margin: 6px 0 10px;
+  margin: 5px 0 8px;
 }
 
 .voice-recording-player {
   width: 100%;
-  height: 38px;
+  height: 34px;
+}
+
+/* Evidence files attached at filing (complaint detail page) */
+.evidence-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.evidence-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 11.5px;
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+}
+
+.evidence-file-row:hover {
+  background-color: var(--active-bg);
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.evidence-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .btn-link {
   background: none;
   border: none;
   color: var(--accent-color);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -506,9 +561,9 @@
 
 .activity-timeline-item {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   position: relative;
-  padding-bottom: 17px;
+  padding-bottom: 14px;
 }
 
 .activity-timeline-item:last-child {
@@ -518,16 +573,16 @@
 .activity-timeline-item:not(:last-child)::before {
   content: '';
   position: absolute;
-  left: 11px;
-  top: 24px;
+  left: 9px;
+  top: 20px;
   bottom: 0;
   width: 2px;
   background-color: var(--card-border);
 }
 
 .activity-node-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: var(--bg-color);
   border: 2px solid var(--card-border);
@@ -562,7 +617,7 @@
 }
 
 .activity-item-header {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 3px;
@@ -570,7 +625,7 @@
 }
 
 .activity-item-date {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
 }
 
@@ -578,15 +633,15 @@
 .case-spec-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .spec-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 10px;
+  gap: 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--card-border);
 }
 
@@ -596,12 +651,15 @@
 }
 
 .spec-label {
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
 .spec-value {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-primary);
   text-align: right;
@@ -616,27 +674,15 @@
 .profile-card-block {
   background-color: var(--bg-color);
   border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 13px;
 }
 
 .profile-card-top {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 13px;
-}
-
-.profile-card-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--active-bg);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  margin-bottom: 10px;
 }
 
 .profile-card-info {
@@ -651,9 +697,9 @@
 
 .profile-card-tag {
   align-self: flex-start;
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -666,7 +712,7 @@
 .profile-card-fields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px 13px;
+  gap: 8px 11px;
 }
 
 .profile-card-fields > div {
@@ -674,7 +720,7 @@
 }
 
 .profile-card-fields dt {
-  font-size: 10.5px;
+  font-size: 9.5px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -682,7 +728,7 @@
 }
 
 .profile-card-fields dd {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 500;
   overflow-wrap: anywhere;
 }
@@ -822,8 +868,8 @@
    StageTracker used on the detail page. */
 .complaints-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 11px;
 }
 
 .complaint-card {
@@ -831,8 +877,8 @@
   flex-direction: column;
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 12px;
   text-decoration: none;
   color: inherit;
   transition: background-color var(--transition-speed), border-color var(--transition-speed);
@@ -847,16 +893,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .complaint-card-subject {
-  font-size: 14.5px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   /* Keep the tile compact even for long subjects. */
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -865,27 +911,27 @@
 }
 
 .complaint-card-date {
-  font-size: 11.5px;
+  font-size: 10px;
   color: var(--text-muted);
-  margin-bottom: 11px;
+  margin-bottom: 9px;
 }
 
 .complaint-card-people {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-bottom: 12px;
+  gap: 6px 11px;
+  margin-bottom: 10px;
 }
 
 .complaint-card-people .person-cell {
-  font-size: 12px;
+  font-size: 10.5px;
   color: var(--text-secondary);
 }
 
 .mini-stepper {
   position: relative;
-  padding: 3px 0;
-  margin-bottom: 6px;
+  padding: 2px 0;
+  margin-bottom: 5px;
 }
 
 .mini-stepper-track-bg {
@@ -929,9 +975,9 @@
 
 .mini-stepper-label {
   display: block;
-  font-size: 10.5px;
+  font-size: 9.5px;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 9px;
 }
 
 .complaint-card-footer {
@@ -939,7 +985,7 @@
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: 11px;
+  padding-top: 9px;
   border-top: 1px solid var(--card-border);
 }
 
@@ -947,7 +993,315 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--accent-color);
+}
+
+/* Repeat Offenders table — categories-involved cell */
+.offender-categories-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* Offender case history drawer (shared by the standalone page, BI teaser, and detail page) */
+.offender-history-drawer {
+  width: 420px;
+}
+
+.offender-summary-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.offender-summary-count {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.offender-case-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.offender-case-row:last-child {
+  border-bottom: none;
+}
+
+.offender-case-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.offender-case-subject {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.offender-case-subject:hover {
+  color: var(--accent-color);
+}
+
+.offender-case-date {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.offender-case-outcome {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Related Complaints panel (complaint detail page) */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background-color: var(--danger-light);
+  color: var(--danger-color);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.related-complaints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.related-complaint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 9px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+}
+
+.related-complaint-row:hover {
+  background-color: var(--active-bg);
+  border-color: var(--accent-color);
+}
+
+.related-complaint-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.related-complaint-subject {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.related-complaint-date {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.related-complaint-outcome {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Call Center */
+.call-phone-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.call-phone-cell svg {
+  color: var(--text-muted);
+}
+
+/* Shared table-cell helper: an icon + text pairing (used for dates/timestamps) */
+.table-date-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+.table-date-cell svg {
+  color: var(--text-muted);
+}
+
+/* Rows that open a drawer/detail on click (Repeat Offenders, Call Center tables) */
+.clickable-row {
+  cursor: pointer;
+}
+
+/* Repeat Offenders / Call Center — same complaints-table skeleton, slightly bolder header to
+   read as a "flagged list" rather than a plain record table. */
+.repeat-offenders-table thead th,
+.call-log-table thead th {
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.call-session {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.call-session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.call-session-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.call-session-block {
+  margin-bottom: 14px;
+}
+
+.call-session-new-caller {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.call-category-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: -4px 0 14px;
+}
+
+.call-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.call-detail-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.call-detail-section .spec-value {
+  text-align: left;
+}
+
+.call-detail-notes {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.call-detail-timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-align: left;
+}
+
+/* Track Complaint — search/filter results list */
+.track-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.track-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--card-border);
+  background-color: var(--bg-color);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-family);
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+}
+
+.track-result-row:hover {
+  background-color: var(--active-bg);
+  border-color: var(--accent-color);
+}
+
+.track-result-row.active {
+  background-color: var(--accent-light);
+  border-color: var(--accent-color);
+}
+
+.track-result-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.track-result-subject {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.track-result-meta {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

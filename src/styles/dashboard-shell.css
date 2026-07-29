@@ -1,17 +1,167 @@
 /* Additive rules for the shared dashboard shell — base sidebar/main-content/content-header
    rules already live in style.css and are reused as-is. */
 
-.header-actions {
+/* Small custom legend for TrendComparisonCard — the chart itself has no legend plugin
+   registered, so this is plain HTML/CSS instead of a Chart.js option. */
+.trend-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trend-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.trend-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trend-legend-dot.current {
+  background-color: var(--accent-color);
+}
+
+.trend-legend-dot.previous {
+  background-color: var(--text-muted);
+}
+
+/* Business Intelligence page's period filter — constrained to a sensible width instead of
+   stretching full-page like a modal form field would. */
+.bi-filter-row {
+  display: flex;
+  align-items: flex-end;
+  max-width: 220px;
+}
+
+.bi-filter-row .form-field {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+/* Generic "search + filters" toolbar reused above list/table views (Complaints, Call Center,
+   Repeat Offenders, Track Complaint) — a search bar that grows to fill space, plus any number
+   of Select filters sized to their content. */
+.filter-toolbar {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-toolbar .search-bar {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filter-toolbar .select-wrap {
+  min-width: 170px;
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-bar-input {
+  width: 100%;
+  padding: 9px 34px;
+  border-radius: 9px;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 12.5px;
+  transition: border-color var(--transition-speed);
+}
+
+.search-bar-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.search-bar-clear {
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.search-bar-clear:hover {
+  background-color: var(--active-bg);
+  color: var(--text-primary);
+}
+
+/* List/Tile view segmented toggle — sits alongside the search bar in a filter-toolbar. */
+.view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.view-toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+  background-color: var(--card-bg);
+  color: var(--accent-color);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .notification-bell {
   position: relative;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   background: none;
   border: 1px solid var(--card-border);
   display: flex;
@@ -41,8 +191,8 @@
 /* Dashboard home: banner (full width) -> [chart | categories] row -> table (full width) */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(195px, 260px);
+  gap: 16px;
   align-items: stretch;
 }
 
@@ -60,16 +210,16 @@
 .recent-complaints-card {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 16px;
 }
 
 .analysis-card h2,
 .categories-card h2,
 .recent-complaints-card h2 {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  margin-bottom: 13px;
+  margin-bottom: 10px;
 }
 
 /* Complaints analysis chart (Chart.js) — needs an explicit height since the chart is
@@ -77,35 +227,35 @@
 .complaints-line-chart {
   position: relative;
   width: 100%;
-  height: 190px;
+  height: 155px;
 }
 
 /* Categories list */
 .category-row {
-  padding: 10px;
-  border-radius: 10px;
+  padding: 8px;
+  border-radius: 9px;
   background-color: var(--bg-color);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .category-row-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 600;
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .category-row-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .category-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }

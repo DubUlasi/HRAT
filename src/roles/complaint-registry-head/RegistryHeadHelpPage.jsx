@@ -12,8 +12,8 @@ const PIPELINE_STEPS = [
 ];
 
 const FAQS = [
-  { q: 'Why can\'t I assign a department yet?', a: 'A complaint must be confirmed admissible first — the "Assign To Department" action only appears once that step is complete.' },
-  { q: 'What happens after I assign a department?', a: 'The Department Director takes over from there — assigning a supervisor, then an investigator, until findings come back to the registry.' },
+  { q: 'Why can\'t I assign a department yet?', a: 'A complaint must be confirmed admissible first, the "Assign To Department" action only appears once that step is complete.' },
+  { q: 'What happens after I assign a department?', a: 'The Department Director takes over from there, assigning a supervisor, then an investigator, until findings come back to the registry.' },
   { q: 'Can a complainant withdraw a complaint?', a: 'Yes, from their own dashboard. Withdrawn complaints stay visible here for your records but drop out of active pipelines.' },
 ];
 

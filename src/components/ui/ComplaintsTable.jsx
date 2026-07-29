@@ -18,7 +18,7 @@ export default function ComplaintsTable({ complaints, getActionHref }) {
           <tr>
             <th>Complaint Subject</th>
             <th>Victim</th>
-            <th>Alleged Accused</th>
+            <th>Alleged Violator</th>
             <th>Status</th>
             <th>Case Progress</th>
             <th></th>
@@ -35,13 +35,13 @@ export default function ComplaintsTable({ complaints, getActionHref }) {
               </td>
               <td>
                 <div className="person-cell">
-                  <Avatar name={c.victim.name} size={38} />
+                  <Avatar name={c.victim.name} size={28} />
                   <span>{c.victim.name}</span>
                 </div>
               </td>
               <td>
                 <div className="person-cell">
-                  <Avatar name={c.allegedViolator.name} />
+                  <Avatar name={c.allegedViolator.name} size={28} />
                   <span>{c.allegedViolator.name}</span>
                 </div>
               </td>

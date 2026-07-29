@@ -1,0 +1,200 @@
+{
+  "_note": "TODO: Hausa — rough machine-assisted draft, needs review by a native speaker before shipping.",
+  "common": {
+    "back": "Koma Baya",
+    "continue": "Ci Gaba",
+    "cancel": "Soke",
+    "chooseFile": "Zaɓi Fayil",
+    "noFileChosen": "Ba a zaɓi fayil ba",
+    "selectOffice": "-- Zaɓi Ofis --",
+    "selectGender": "-- Zaɓi Jinsi --",
+    "genderFemale": "Mace",
+    "genderMale": "Namiji",
+    "genderRatherNotSay": "Na fi son kada in faɗa",
+    "firstName": "Sunan Farko",
+    "lastName": "Sunan Ƙarshe",
+    "email": "Imel",
+    "phone": "Lambar Waya",
+    "gender": "Jinsi",
+    "address": "Adireshi"
+  },
+  "languageSwitcher": {
+    "label": "Harshe"
+  },
+  "login": {
+    "title": "Na'urar Bin Diddigin Haƙƙin Ɗan Adam",
+    "subtitle": "Barka da dawowa! Da fatan za a shigar da bayananka.",
+    "googleSignIn": "Shiga da Google",
+    "googleAuthenticating": "Ana tantancewa da Google...",
+    "orDivider": "ko",
+    "emailLabel": "Imel",
+    "emailPlaceholder": "Shigar da imel ɗinka",
+    "passwordLabel": "Kalmar Sirri",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Shiga",
+    "signingIn": "Ana shiga...",
+    "errorInvalid": "Imel ko kalmar sirri ba daidai ba ne. Gwada bayanan gwaji da ke ƙasa.",
+    "demoAccessLabel": "Shiga na gwaji: {{email}} / {{password}}",
+    "noAccount": "Ba ka da asusu?",
+    "signUpLink": "Yi rajista"
+  },
+  "signup": {
+    "title": "Yi Rajista",
+    "subtitle": "Ƙirƙiri asusunka don ba da rahoto da bin diddigin ƙara",
+    "googleSignUp": "Yi rajista da Google",
+    "googleAuthenticating": "Ana tantancewa da Google...",
+    "orDivider": "ko",
+    "firstNameLabel": "Sunan Farko",
+    "firstNamePlaceholder": "Sunan Farko",
+    "lastNameLabel": "Sunan Ƙarshe",
+    "lastNamePlaceholder": "Sunan Ƙarshe",
+    "emailLabel": "Imel",
+    "phoneLabel": "Lambar Waya",
+    "phonePlaceholder": "Lambar Waya",
+    "genderLabel": "Jinsi",
+    "passwordLabel": "Kalmar Sirri",
+    "confirmPasswordLabel": "Tabbatar Kalmar Sirri",
+    "confirmPasswordPlaceholder": "Tabbatar Kalmar Sirri",
+    "submit": "Aika",
+    "submitting": "Ana aikawa...",
+    "alreadyHaveAccount": "Kana da asusu tuni?",
+    "signInLink": "Shiga"
+  },
+  "wizard": {
+    "stepLabel": "Mataki na {{current}} daga cikin {{total}}",
+    "optional": "na zaɓi",
+    "stepper": {
+      "category": "Rukuni",
+      "incident": "Lamari",
+      "victim": "Wanda Aka Cutar",
+      "violator": "Wanda Ake Zargi",
+      "review": "Dubawa"
+    },
+    "phoneGate": {
+      "title": "Bari mu fara",
+      "subtitle": "Shigar da lambar wayarka domin mu iya gane ka mu taimake ka bin diddigin wannan ƙara.",
+      "label": "Lambar Waya",
+      "placeholder": "misali 08012345678"
+    },
+    "category": {
+      "title": "Me ya faru?",
+      "subtitle": "Zaɓi rukunin da ya fi dacewa da abin da ka fuskanta.",
+      "subLabel": "Me ya fi bayyana shi?"
+    },
+    "incident": {
+      "title": "Gaya mana ƙarin bayani",
+      "subtitle": "Ba da bayani gwargwadon yadda kake jin daɗi, kowane bayani yana taimakawa.",
+      "subjectLabel": "Bayar da taƙaitaccen take",
+      "subjectPlaceholder": "Taƙaitaccen take na lamarin",
+      "descriptionLabel": "Gaya mana abin da ya faru",
+      "descriptionPlaceholder": "Ba da bayani gwargwadon yadda kake jin daɗi, kowane bayani yana taimaka mana mu fahimci kuma mu amsa yanayinka.",
+      "locationLabel": "Ina lamarin ya faru?",
+      "locationPlaceholder": "Jiha, gari, ko wurin da aka sani",
+      "dateLabel": "Yaushe lamarin ya faru?",
+      "evidenceLabel": "Haɗa shaida",
+      "evidenceHint": "Hotuna, bidiyo, ko takardu da suke tallafawa ƙararka."
+    },
+    "victim": {
+      "title": "Wa ya shafa?",
+      "subtitle": "Gaya mana game da mutumin da wannan ya faru masa.",
+      "whoExperienced": "Wa ya fuskanci wannan?",
+      "myself": "Ni ne (Ni ne wanda aka cutar)",
+      "someoneElse": "Wani (Ina ba da rahoto a madadinsu)",
+      "moreAboutYou": "Ƙarin bayani game da kai",
+      "addressPlaceholder": "Titi, gari, jiha",
+      "populationQuestion": "Kana cikin babban jama'a ko ƙungiya ta musamman?",
+      "generalPopulation": "Babban Jama'a",
+      "keyPopulation": "Ƙungiya ta Musamman",
+      "keyPopulationSheetTitle": "Wace ƙungiya suke ciki?",
+      "keyPopulationConfidentialityNote": "Wannan yana taimaka mana mu bin diddigin yanayin rauni. Amsarka sirri ce.",
+      "confirmSelection": "Tabbatar da Zaɓi"
+    },
+    "violator": {
+      "title": "Wane ne ke da alhaki?",
+      "subtitle": "Bayar da bayanin mutum, ƙungiya, ko jami'in da ke da alhaki, idan an sani.",
+      "optionalNote": "Duk fannonin da ke ƙasa na zaɓi ne sai dai suna, raba duk abin da ka sani."
+    },
+    "review": {
+      "title": "Dubawa & Aikawa",
+      "subtitle": "Duba komai a ƙasa kafin ka aika ƙararka.",
+      "edit": "Gyara",
+      "sectionCategory": "Rukuni",
+      "sectionIncident": "Bayanin Lamari",
+      "sectionVictim": "Wanda Aka Cutar",
+      "sectionViolator": "Wanda Ake Zargi",
+      "officeLabel": "Ofishin da Ake So",
+      "submitButton": "Aika Ƙara",
+      "submitting": "Ana aikawa...",
+      "offices": {
+        "abuja": "Hedikwata - Abuja",
+        "lagos": "Ofishin Jihar Legas",
+        "kano": "Ofishin Jihar Kano",
+        "enugu": "Ofishin Jihar Enugu",
+        "rivers": "Ofishin Jihar Rivers"
+      }
+    }
+  },
+  "makeComplaintModal": {
+    "title": "Shigar da Sabuwar Ƙara",
+    "subtitle": "Kammala kowane mataki don shigar da ƙara a madadin wanda aka cutar."
+  },
+  "voiceReportModal": {
+    "modalTitle": "Yi Ƙara, Rahoton Murya na AI",
+    "recording": {
+      "heading": "Ana saurarar rahotonka...",
+      "subtitle": "Bayyana abin da ya faru, za ka iya duba kuma gyara komai kafin a aika shi.",
+      "placeholder": "Fara magana yanzu...",
+      "stopButton": "Tsayar da Aikawa & Cika Fom ɗin Ƙara"
+    },
+    "processing": {
+      "heading": "Ana cika fom ɗin ƙara kai tsaye...",
+      "subtitle": "Ana tsara bayanin lamarin daga rikodinka."
+    },
+    "review": {
+      "introTranscribed": "An rubuta rikodinka a cikin Bayanin Lamari, duba shi don tabbatar da daidaito. ",
+      "introNotTranscribed": "Ba mu iya rubuta rikodinka ba, don haka Bayanin Lamari babu kome, da fatan za a rubuta shi a ƙasa. ",
+      "audioSaved": "An adana asalin rikodin sauti kuma za a haɗa shi da wannan ƙara don la'akari nan gaba.",
+      "audioNotSaved": "Ba a iya adana rikodin sauti a wannan burauza/na'ura ba.",
+      "reviewInstruction": " Duba kuma kammala kowace shafi a ƙasa."
+    },
+    "tabs": {
+      "incident": "Bayanin Lamari",
+      "victim": "Bayanin Wanda Aka Cutar",
+      "violator": "Wanda Ake Zargi",
+      "category": "Rukunin Haƙƙi"
+    },
+    "incidentTab": {
+      "subjectLabel": "Batu",
+      "subjectPlaceholder": "Taƙaitaccen take na lamarin",
+      "descriptionLabel": "Cikakken Bayani",
+      "officeLabel": "Ofishin da Ake So"
+    },
+    "categoryTab": {
+      "label": "Rukunin Ƙara",
+      "suggestedHintMatch": "An ba da shawara kai tsaye daga rikodinka, dangane da kalmomin da aka gani, canza shi idan bai dace ba.",
+      "suggestedHintChanged": "Da farko mun ba da shawarar \"{{category}}\" dangane da rikodinka."
+    },
+    "actions": {
+      "cancel": "Soke",
+      "submit": "Aika Ƙara"
+    },
+    "successMessage": "An aika ƙararka ta murya cikin nasara.",
+    "errors": {
+      "speech": {
+        "unsupported": "Wannan burauza ba ta goyi bayan rubuta magana kai tsaye ba. Za a ci gaba da adana rikodi, kawai a rubuta bayanin a ƙasa.",
+        "not-allowed": "An hana samun damar makirifo. Ba da izinin makirifo ga wannan shafi a saitunan burauzarka, sannan a sake gwadawa.",
+        "no-speech": "Ba mu gano wata magana ba. Za ka iya sake gwadawa, ko rubuta bayanin a ƙasa.",
+        "audio-capture": "Ba a sami makirifo a wannan na'ura ba.",
+        "network": "Rubuta magana kai tsaye yana buƙatar haɗin intanet kuma bai iya samu ba. Za a ci gaba da adana rikodi, kawai a rubuta bayanin a ƙasa.",
+        "aborted": "An katse rikodin.",
+        "default": "Wani abu ya faru ba daidai ba tare da rubuta magana kai tsaye."
+      },
+      "audio": {
+        "unsupported": "Wannan burauza ba ta iya adana sauti ba.",
+        "not-allowed": "An hana samun damar makirifo, don haka ba a adana rikodin sauti ba.",
+        "unavailable": "Ba a iya samun makirifo ba, don haka ba a adana rikodin sauti ba.",
+        "default": "Wani abu ya faru ba daidai ba yayin adana sautin."
+      }
+    }
+  }
+}

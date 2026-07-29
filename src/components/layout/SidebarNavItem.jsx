@@ -10,7 +10,7 @@ export default function SidebarNavItem({ to, icon: Icon, label, end = false, bad
       title={collapsed ? label : undefined}
     >
       <div className="nav-item-content">
-        <Icon size={iconSize} />
+        <Icon size={iconSize} strokeWidth={1.75} />
         {!collapsed && <span>{label}</span>}
       </div>
       {!collapsed && badge}

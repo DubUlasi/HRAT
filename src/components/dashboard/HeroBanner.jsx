@@ -10,8 +10,17 @@ function getGreeting() {
 }
 
 // The dashboard's hero: greeting + a rotating typewriter status line, a talking-blob button
-// that opens the voice-report flow, and a stats matrix strip along the bottom.
-export default function HeroBanner({ greetingName, situationMessages, stats, onOpenVoiceReport }) {
+// (wired to whatever quick-entry flow the role wants via onOpenBlobAction — voice reporting,
+// call center, etc.), and a stats matrix strip along the bottom.
+export default function HeroBanner({
+  greetingName,
+  situationMessages,
+  stats,
+  onOpenBlobAction,
+  blobTitle = 'File a complaint by voice',
+  blobAriaLabel = 'Open AI voice report',
+  blobIcon: BlobIcon = Mic,
+}) {
   const { text } = useTypewriter(situationMessages);
 
   return (
@@ -28,15 +37,15 @@ export default function HeroBanner({ greetingName, situationMessages, stats, onO
         <button
           type="button"
           className="voice-blob-btn"
-          onClick={onOpenVoiceReport}
-          title="File a complaint by voice"
-          aria-label="Open AI voice report"
+          onClick={onOpenBlobAction}
+          title={blobTitle}
+          aria-label={blobAriaLabel}
         >
           <span className="voice-blob-ring" />
           <span className="voice-blob-shape">
             <span className="voice-blob-shine" />
           </span>
-          <Mic size={30} className="voice-blob-icon" />
+          <BlobIcon size={24} className="voice-blob-icon" />
         </button>
       </div>
 
@@ -47,7 +56,7 @@ export default function HeroBanner({ greetingName, situationMessages, stats, onO
             <div className="hero-stat-item">
               {stat.icon && (
                 <div className="hero-stat-icon-box">
-                  <stat.icon size={18} />
+                  <stat.icon size={15} />
                 </div>
               )}
               <div className="hero-stat-info">

@@ -4,15 +4,39 @@ import { Settings, LogOut, Moon, Sun, MoreVertical, ChevronLeft } from 'lucide-r
 import SidebarNavItem from './SidebarNavItem';
 import { useTheme } from '../../hooks/useTheme';
 
+// Items sharing a `section` collapse into one labeled group; items without one (Dashboard,
+// Help, Settings) stay flat top/bottom-level links, same as before this grouping existed.
+function groupNavItems(navItems) {
+  const blocks = [];
+  let currentGroup = null;
+
+  navItems.forEach((item) => {
+    if (item.section) {
+      if (currentGroup && currentGroup.label === item.section) {
+        currentGroup.items.push(item);
+      } else {
+        currentGroup = { label: item.section, items: [item] };
+        blocks.push(currentGroup);
+      }
+    } else {
+      currentGroup = null;
+      blocks.push(item);
+    }
+  });
+
+  return blocks;
+}
+
 /**
  * Reusable left sidebar shell used by every internal-staff dashboard.
- * navItems: [{ to, icon, label, end?, badge? }]
+ * navItems: [{ to, icon, label, end?, badge?, section? }]
  * user: { name, email, avatarSrc }
  */
 export default function Sidebar({ navItems, user, collapsed = false, onToggleCollapsed, logoHref = '/', logoSrc = '/hrat_nhrc_logo.png' }) {
   const { isDark, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const settingsHref = navItems.find((item) => item.label === 'Settings')?.to || '/settings';
+  const navBlocks = groupNavItems(navItems);
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -33,9 +57,24 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
       </div>
 
       <nav className="nav-section">
-        {navItems.map((item) => (
-          <SidebarNavItem key={item.to} {...item} collapsed={collapsed} />
-        ))}
+        {collapsed
+          ? navItems.map((item) => (
+              <SidebarNavItem key={item.to} {...item} collapsed={collapsed} />
+            ))
+          : navBlocks.map((block, idx) =>
+              Array.isArray(block.items) ? (
+                <div key={`${block.label}-${idx}`} className="nav-group">
+                  <div className="nav-group-label">{block.label}</div>
+                  <div className="nav-group-content">
+                    {block.items.map((item) => (
+                      <SidebarNavItem key={item.to} {...item} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <SidebarNavItem key={block.to} {...block} />
+              )
+            )}
       </nav>
 
       <div className="sidebar-footer">
