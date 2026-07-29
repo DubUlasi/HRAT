@@ -284,6 +284,9 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  /* Hugs its own text width even when it's a flex item inside a column flex container (e.g.
+     the Review step's summary cards) — otherwise it stretches to the container's full width. */
+  align-self: flex-start;
 }
 
 /* Category-specific coloring (opt-in via an extra class) — used on the complaint detail hero

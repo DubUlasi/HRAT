@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowRight, Upload, MapPin, FileImage, FileVideo, FileText, X } from 'lucide-react';
+import { ArrowRight, Upload, FileImage, FileVideo, FileText, X } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
+import LocationAutocomplete from '../../ui/LocationAutocomplete';
 
 function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -70,16 +71,11 @@ export default function StepIncidentDetails({ value, onChange, onBack, onContinu
 
         <div className="su-field-group full-width">
           <label className="su-label-dark">{t('wizard.incident.locationLabel')}</label>
-          <div className="location-input-wrap">
-            <MapPin size={16} className="location-input-icon" />
-            <input
-              type="text"
-              className="su-input-white location-input"
-              placeholder={t('wizard.incident.locationPlaceholder')}
-              value={value.location}
-              onChange={(e) => onChange({ location: e.target.value })}
-            />
-          </div>
+          <LocationAutocomplete
+            value={value.location}
+            onChange={(location) => onChange({ location })}
+            placeholder={t('wizard.incident.locationPlaceholder')}
+          />
         </div>
 
         <div className="su-field-group full-width">

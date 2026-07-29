@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '../../../constants/complaintCategories';
 import { getSubCategories } from '../../../constants/complaintSubCategories';
@@ -30,13 +30,15 @@ export default function StepCategory({ category, subCategory, onCategoryChange, 
         <div className="category-tile-grid">
           {Object.keys(CATEGORY_LABELS).map((key) => {
             const Icon = CATEGORY_ICONS[key];
+            const isSelected = category === key;
             return (
               <button
                 type="button"
                 key={key}
-                className={`category-tile ${category === key ? 'selected' : ''}`}
+                className={`category-tile ${isSelected ? 'selected' : ''}`}
                 onClick={() => handleSelectCategory(key)}
               >
+                {isSelected && <span className="category-tile-check"><Check size={11} /></span>}
                 <span className="category-tile-icon"><Icon size={22} /></span>
                 <span className="category-tile-label">{CATEGORY_LABELS[key]}</span>
               </button>
@@ -48,16 +50,20 @@ export default function StepCategory({ category, subCategory, onCategoryChange, 
           <div className="sub-category-section">
             <div className="su-section-label">{t('wizard.category.subLabel')}</div>
             <div className="sub-category-list">
-              {subOptions.map((opt) => (
-                <button
-                  type="button"
-                  key={opt.value}
-                  className={`sub-category-pill ${subCategory === opt.value ? 'selected' : ''}`}
-                  onClick={() => onSubCategoryChange(opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {subOptions.map((opt) => {
+                const isSelected = subCategory === opt.value;
+                return (
+                  <button
+                    type="button"
+                    key={opt.value}
+                    className={`sub-category-pill ${isSelected ? 'selected' : ''}`}
+                    onClick={() => onSubCategoryChange(opt.value)}
+                  >
+                    <span>{opt.label}</span>
+                    {isSelected && <span className="sub-category-pill-check"><Check size={13} /></span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

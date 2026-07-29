@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowRight, ChevronDown, MapPin } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
+import LocationAutocomplete from '../../ui/LocationAutocomplete';
 
 // Step 4 of 5 — "Who is responsible?" New to the mobile-style flow (the reference design
 // doesn't show it, but the web form already collects it) — same simplified visual language as
@@ -85,15 +86,10 @@ export default function StepViolatorDetails({ value, onChange, onBack, onContinu
 
           <div className="su-field-group full-width">
             <label className="su-label-dark">{t('common.address')} ({t('wizard.optional')})</label>
-            <div className="location-input-wrap">
-              <MapPin size={16} className="location-input-icon" />
-              <input
-                type="text"
-                className="su-input-white location-input"
-                value={value.address}
-                onChange={(e) => onChange({ address: e.target.value })}
-              />
-            </div>
+            <LocationAutocomplete
+              value={value.address}
+              onChange={(address) => onChange({ address })}
+            />
           </div>
         </div>
 

@@ -2,12 +2,12 @@ import React from 'react';
 import { Keyboard, Mic } from 'lucide-react';
 import Modal from '../ui/Modal';
 
-// The "Report a Case Today" entry point — sits in front of MakeComplaintModal and
+// The "Make a Complaint" entry point — sits in front of MakeComplaintModal and
 // VoiceReportModal so the Make a Complaint button offers a real choice instead of always
 // jumping straight into the typed wizard.
 export default function ReportChoiceModal({ open, onClose, onSelectType, onSelectSpeak }) {
   return (
-    <Modal open={open} onClose={onClose} title="Report a Case Today" width="480px">
+    <Modal open={open} onClose={onClose} title="Make a Complaint" width="480px">
       <p className="report-choice-intro">Choose how you'd like to file this complaint.</p>
       <div className="report-choice-grid">
         <button type="button" className="report-choice-card" onClick={onSelectType}>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowRight, UserCircle, Users, MapPin, Pencil } from 'lucide-react';
+import { ArrowRight, UserCircle, Users, Pencil } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { getKeyPopulation } from '../../../constants/keyPopulations';
 import KeyPopulationSheet from './KeyPopulationSheet';
+import LocationAutocomplete from '../../ui/LocationAutocomplete';
 
 const GENDER_OPTIONS = ['female', 'male', 'rather_not_say'];
 
@@ -139,16 +140,11 @@ export default function StepVictimDetails({ value, onChange, onBack, onContinue,
 
           <div className="su-field-group full-width">
             <label className="su-label-dark">{t('common.address')} ({t('wizard.optional')})</label>
-            <div className="location-input-wrap">
-              <MapPin size={16} className="location-input-icon" />
-              <input
-                type="text"
-                className="su-input-white location-input"
-                placeholder={t('wizard.victim.addressPlaceholder')}
-                value={value.address}
-                onChange={(e) => onChange({ address: e.target.value })}
-              />
-            </div>
+            <LocationAutocomplete
+              value={value.address}
+              onChange={(address) => onChange({ address })}
+              placeholder={t('wizard.victim.addressPlaceholder')}
+            />
           </div>
 
           <div className="su-field-group full-width">

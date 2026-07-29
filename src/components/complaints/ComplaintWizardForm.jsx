@@ -116,12 +116,18 @@ export default function ComplaintWizardForm({ onComplete, initialVictimPhone, sk
             return (
               <React.Fragment key={step.num}>
                 {idx > 0 && <div className={`wizard-step-connector ${step.num <= currentStep ? 'filled' : ''}`} />}
-                <div className={`wizard-step-node ${reached ? 'reached' : ''} ${isCurrent ? 'current' : ''}`}>
+                <button
+                  type="button"
+                  className={`wizard-step-node ${reached ? 'reached' : ''} ${isCurrent ? 'current' : ''}`}
+                  onClick={() => reached && setCurrentStep(step.num)}
+                  disabled={!reached}
+                  aria-current={isCurrent ? 'step' : undefined}
+                >
                   <span className="wizard-step-circle">
                     {reached && !isCurrent ? <Check size={14} /> : step.num}
                   </span>
                   <span className="wizard-step-label">{t(step.labelKey)}</span>
-                </div>
+                </button>
               </React.Fragment>
             );
           })}

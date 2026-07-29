@@ -24,6 +24,17 @@
   align-items: center;
   gap: 7px;
   flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  cursor: not-allowed;
+}
+
+/* Only steps already reached are clickable, so you can jump back (or re-forward) through
+   anything you've already been to, but never skip ahead. */
+.wizard-step-node.reached {
+  cursor: pointer;
 }
 
 .wizard-step-circle {
@@ -283,7 +294,7 @@
   font-weight: 600;
   font-family: inherit;
   color: #475569;
-  background-color: #F1F5F9;
+  background-color: transparent;
   border: 1px solid #CBD5E1;
   border-radius: 999px;
   cursor: pointer;
@@ -386,10 +397,27 @@
   text-decoration: underline;
 }
 
+/* Base field-group rule — fields rendered outside .victim-form-grid (most of the new 5-step
+   wizard) previously had no spacing/alignment of their own and silently inherited .su-main's
+   center text-align, which centered every label. This is the single source of truth for both
+   now. */
+.su-field-group {
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.su-field-group:last-child {
+  margin-bottom: 0;
+}
+
 .victim-form-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 13px;
+  gap: 13px 18px;
+}
+
+.victim-form-grid .su-field-group {
+  margin-bottom: 0;
 }
 
 .victim-form-grid .su-field-group {
@@ -414,7 +442,7 @@
 
 .su-label-dark {
   display: block;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #334155;
   margin-bottom: 6px;
@@ -424,6 +452,9 @@
   color: #EF4444;
 }
 
+/* Both variants now share a transparent background (the wizard always sits on a solid white
+   page, so "transparent" and "white" read identically) — .su-input-blue used to tint name
+   fields pale blue, which read as inconsistent next to the rest of the form. */
 .su-input-white,
 .su-input-blue {
   width: 100%;
@@ -431,21 +462,26 @@
   font-size: 13.5px;
   font-family: inherit;
   color: #0F172A;
-  background-color: #ffffff;
+  background-color: transparent;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
   outline: none;
   transition: all 0.2s ease;
 }
 
+.su-input-white::placeholder,
+.su-input-blue::placeholder {
+  font-size: 11.5px;
+  color: #94A3B8;
+}
+
 .su-input-blue {
-  background-color: #EFF6FF;
   border-color: #DBEAFE;
 }
 
 .su-input-white:focus,
 .su-input-blue:focus {
-  background-color: #ffffff;
+  background-color: transparent;
   border-color: #079455;
   box-shadow: none !important;
 }
@@ -619,15 +655,20 @@
 .su-textarea-white {
   width: 100%;
   padding: 11px 14px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-family: inherit;
   color: #0F172A;
-  background-color: #ffffff;
+  background-color: transparent;
   border: 1.5px solid #E2E8F0;
   border-radius: 10px;
   outline: none;
   resize: vertical;
   transition: all 0.2s ease;
+}
+
+.su-textarea-white::placeholder {
+  font-size: 11.5px;
+  color: #94A3B8;
 }
 
 .su-textarea-white:focus {
@@ -664,7 +705,7 @@
   font-size: 13.5px;
   font-weight: 600;
   color: #334155;
-  background-color: #F1F5F9;
+  background-color: transparent;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
   cursor: pointer;
@@ -738,7 +779,7 @@
 [data-theme="dark"] .su-input-white,
 [data-theme="dark"] .su-input-blue,
 [data-theme="dark"] .su-textarea-white {
-  background-color: #1E293B;
+  background-color: transparent;
   border-color: #334155;
   color: #F8FAFC;
 }
@@ -774,7 +815,7 @@
 }
 
 [data-theme="dark"] .su-btn-light-pill {
-  background-color: #1E293B;
+  background-color: transparent;
   border-color: #334155;
   color: #F8FAFC;
 }
@@ -820,6 +861,7 @@
 }
 
 .category-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -838,9 +880,26 @@
   border-color: #CBD5E1;
 }
 
+/* Selected state — a solid brand-gradient fill (matching the primary button treatment)
+   instead of a pale tint, plus a small checkmark badge for a clear, unmistakable "picked"
+   signal. */
 .category-tile.selected {
   border-color: #079455;
-  background-color: #F0FDF4;
+  background: linear-gradient(135deg, #079455 0%, #027A48 100%);
+}
+
+.category-tile-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #079455;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .category-tile-icon {
@@ -856,7 +915,7 @@
 }
 
 .category-tile.selected .category-tile-icon {
-  background-color: #079455;
+  background-color: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
@@ -865,6 +924,11 @@
   font-weight: 600;
   color: #1E293B;
   line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+.category-tile.selected .category-tile-label {
+  color: #ffffff;
 }
 
 @media (max-width: 480px) {
@@ -926,6 +990,45 @@
 
 .location-input {
   padding-left: 36px !important;
+}
+
+.location-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background-color: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.location-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.location-suggestion-item:hover {
+  background-color: #F8FAFC;
+}
+
+.location-suggestion-item svg {
+  color: #94A3B8;
+  flex-shrink: 0;
 }
 
 /* Step 2 — multi-file evidence chips */
@@ -1365,6 +1468,19 @@
 [data-theme="dark"] .review-summary-line,
 [data-theme="dark"] .review-summary-meta {
   color: #94A3B8;
+}
+
+[data-theme="dark"] .location-suggestions {
+  background-color: #101523;
+  border-color: #1E293B;
+}
+
+[data-theme="dark"] .location-suggestion-item {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .location-suggestion-item:hover {
+  background-color: #1E293B;
 }
 
 [data-theme="dark"] .review-summary-title {
