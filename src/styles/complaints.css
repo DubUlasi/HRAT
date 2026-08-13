@@ -4,6 +4,7 @@
 .status-warning { background-color: var(--warning-light); color: var(--warning-color); }
 .status-success { background-color: var(--accent-light); color: var(--accent-color); }
 .status-danger { background-color: var(--danger-light); color: var(--danger-color); }
+.status-violet { background-color: var(--violet-light); color: var(--violet-color); }
 
 /* Progress bar */
 .progress-bar-track {
@@ -74,7 +75,7 @@
 
 .complaints-table thead th {
   border-bottom: 1px solid var(--card-border);
-  padding: 0 11px 8px;
+  padding: 10px 11px;
   color: var(--text-muted);
 }
 
@@ -96,13 +97,47 @@
 .complaint-subject-cell {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+}
+
+.complaint-subject-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Optional reason line (ComplaintsTable's `getReason` prop) — why this row showed up in a
+   filtered "needs action" list, so a table row alone explains itself without a click-through. */
+.complaint-subject-reason {
+  font-size: 10.5px;
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+.complaint-subject-meta-row .category-pill {
+  padding: 2px 9px;
+  font-size: 8.5px;
 }
 
 .person-cell {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.person-cell-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background-color: var(--active-bg);
+  color: var(--text-secondary);
+  font-size: 9.5px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .avatar-chip {
@@ -235,20 +270,39 @@
   }
 }
 
-/* Case detail hero — replaces the plain title/status header on the complaint detail page. The
-   top border's color is set inline per-category (see CATEGORY_COLOR) so the hero reads as
-   "this kind of case" at a glance. */
+/* Case detail hero — the case's "cover page": category-coded spine + soft tinted wash (set via
+   the --category-color/--category-tint custom properties each detail page passes inline from
+   CATEGORY_COLOR), a top row of case info + live status, and a "People Involved" section
+   beneath it. Victim/violator profiles used to live buried in the right-hand sidebar; they're
+   central to the case, so they live where the description and current status already are. */
 .case-detail-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: linear-gradient(160deg, var(--category-tint, var(--card-bg)) 0%, var(--card-bg) 52%);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 22px 24px 22px 28px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.case-detail-hero::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background-color: var(--category-color, var(--accent-color));
+}
+
+.hero-top-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 18px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-top: 4px solid var(--accent-color);
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 14px;
+  gap: 22px;
 }
 
 .hero-left-content {
@@ -256,29 +310,45 @@
   min-width: 0;
 }
 
+.hero-people-section {
+  border-top: 1px solid var(--card-border);
+  padding-top: 18px;
+}
+
+.hero-people-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.hero-people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
 .hero-tags-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
+  gap: 8px;
+  margin-bottom: 11px;
 }
 
-.detail-tracking-code {
-  font-family: monospace;
-  letter-spacing: 0.02em;
-  background-color: var(--active-bg);
-  color: var(--text-secondary);
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
+/* Base category pill — shared by the wizard review step, complaint cards, call center modal,
+   repeat-violators table, etc. (NOT hero-exclusive). Kept in sync with .urgency-pill's 20px
+   radius/padding scale so any page mixing the two (like the hero's tags row) reads as one
+   consistent pill family. */
 .category-pill {
   background-color: var(--info-light);
   color: var(--info-color);
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 9.5px;
   font-weight: 700;
@@ -289,47 +359,78 @@
   align-self: flex-start;
 }
 
-/* Category-specific coloring (opt-in via an extra class) — used on the complaint detail hero
-   so each rights category reads distinctly instead of every pill sharing the same blue. */
 .category-pill.pill-violet { background-color: var(--violet-light); color: var(--violet-color); }
 .category-pill.pill-info { background-color: var(--info-light); color: var(--info-color); }
 .category-pill.pill-warning { background-color: var(--warning-light); color: var(--warning-color); }
 .category-pill.pill-danger { background-color: var(--danger-light); color: var(--danger-color); }
 .category-pill.pill-accent { background-color: var(--accent-light); color: var(--accent-color); }
 
-.urgency-pill {
-  padding: 3px 10px;
+/* Scoped to the hero (higher specificity than the shared .category-pill/.detail-tracking-code
+   base rules used elsewhere) so only the hero's own tags get this treatment; nothing outside
+   the hero is touched. Radius/padding intentionally match .urgency-pill and .category-pill's
+   base scale so all three tags in the hero's tags row read as one family. */
+.case-detail-hero .hero-tags-row .detail-tracking-code {
+  font-family: monospace;
+  letter-spacing: 0.02em;
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--card-border);
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 9.5px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.case-detail-hero .hero-tags-row .category-pill {
+  background-color: var(--category-color, var(--info-color));
+  color: #FFFFFF;
+  padding: 4px 12px;
+  font-size: 10px;
+}
+
+.urgency-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
+.repeat-violator-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Solid, high-contrast treatment (not the old light-tint + colored border combo, which read
+   muddy next to the hero's other tags) — matches the category pill's solid style so the whole
+   tags row reads as one consistent family. */
 .urgency-pill.positive {
-  background-color: var(--accent-light);
-  color: var(--accent-color);
+  background-color: var(--accent-color);
+  color: #FFFFFF;
 }
 
 .urgency-pill.negative {
-  background-color: var(--danger-light);
-  color: var(--danger-color);
+  background-color: var(--danger-color);
+  color: #FFFFFF;
 }
 
 .hero-case-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 21px;
+  font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 6px;
-  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
 }
 
 .hero-case-description {
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: 12.5px;
+  line-height: 1.65;
   color: var(--text-secondary);
   max-width: 640px;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .hero-meta-row {
@@ -343,48 +444,52 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
+  font-weight: 500;
   color: var(--text-secondary);
-  background-color: var(--bg-color);
+  background-color: var(--card-bg);
   border: 1px solid var(--card-border);
   padding: 4px 10px;
   border-radius: 20px;
 }
 
 .hero-meta-row span svg {
-  color: var(--text-muted);
+  color: var(--category-color, var(--text-muted));
 }
 
+/* The status "glance" — label + badge + the circular progress ring. Still noticeably shorter
+   than the original design because CTAs no longer live inside this block at all — they moved
+   to their own full-width .hero-actions-row below .hero-top-row, so button count/label length
+   never affects this block's height. */
 .status-hero-card {
-  width: 210px;
+  width: 220px;
   flex-shrink: 0;
-  background-color: var(--bg-color);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 16px 13px 13px;
+  background-color: var(--category-tint, var(--bg-color));
+  border-radius: 14px;
+  padding: 13px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-align: center;
 }
 
 .status-card-label {
   font-size: 9.5px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
   font-weight: 700;
 }
 
 /* Circular pipeline-progress ring — a conic-gradient "dial" reading the case's overall
-   progress, replacing the old linear bar for a more distinctive focal point on the hero. */
+   progress, colored by the case's own category rather than a fixed accent. */
 .status-progress-ring {
   --pct: 0;
-  width: 92px;
-  height: 92px;
+  width: 88px;
+  height: 88px;
   margin: 2px 0;
   border-radius: 50%;
-  background: conic-gradient(var(--accent-color) calc(var(--pct) * 3.6deg), var(--sidebar-border) 0deg);
+  background: conic-gradient(var(--category-color, var(--accent-color)) calc(var(--pct) * 3.6deg), var(--card-bg) 0deg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -392,8 +497,8 @@
 }
 
 .status-progress-ring-inner {
-  width: 72px;
-  height: 72px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   background-color: var(--card-bg);
   display: flex;
@@ -416,14 +521,108 @@
   color: var(--text-muted);
 }
 
-.status-card-action {
-  width: 100%;
-  margin-top: 3px;
+/* Full-width action bar beneath the top row — buttons lay out horizontally with room to use
+   their real label width instead of being squeezed into a narrow side card. */
+.hero-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
 }
 
-.status-card-action .btn {
-  width: 100%;
-  justify-content: center;
+.hero-actions-row .btn {
+  border-radius: 999px;
+}
+
+/* Shown in place of the action button while a complaint is waiting on someone else's step
+   (e.g. a Desk Officer processing a number/decision) rather than the viewer's own. */
+.status-waiting-note {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Hero "People Involved" contact cards (HeroPersonCard) — sits on --bg-color so it reads as a
+   recessed inset against the hero's own tinted card background. Also reused as-is by Track
+   Complaint, which has no tinted hero background of its own. */
+.hero-person-card {
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.hero-person-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 12px;
+}
+
+.hero-person-identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-person-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-person-subline {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.hero-person-tag {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hero-person-tag.tag-victim { background-color: var(--info-light); color: var(--info-color); }
+.hero-person-tag.tag-violator { background-color: var(--danger-light); color: var(--danger-color); }
+.hero-person-tag.tag-default { background-color: var(--active-bg); color: var(--text-secondary); }
+
+.hero-person-contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border);
+}
+
+.hero-person-contact span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-person-contact svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.hero-person-contact-wide {
+  grid-column: 1 / -1;
 }
 
 /* Top nav row above the hero */
@@ -460,11 +659,14 @@
   .case-detail-content-grid {
     grid-template-columns: 1fr;
   }
-  .case-detail-hero {
+  .hero-top-row {
     flex-direction: column;
   }
   .status-hero-card {
     width: 100%;
+  }
+  .hero-people-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -550,6 +752,22 @@
 }
 
 .evidence-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.evidence-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.evidence-file-meta {
+  font-size: 10px;
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -641,6 +859,30 @@
   color: var(--text-muted);
 }
 
+/* A step that bounced the case backward (sent back / rejected / reopened) gets a warning-toned
+   node instead of the plain progress dot, so scanning the timeline top-to-bottom makes it
+   obvious the case looped instead of just moving forward. */
+.activity-timeline-item.bounce-back .activity-node-icon {
+  border-color: var(--warning-color);
+  background-color: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.bounce-back-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background-color: var(--warning-light);
+  color: var(--warning-color);
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+
 /* Case spec list — compact key/value rows */
 .case-spec-list {
   display: flex;
@@ -682,69 +924,6 @@
   letter-spacing: 0.02em;
 }
 
-/* Complaint profile card */
-.profile-card-block {
-  background-color: var(--bg-color);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 13px;
-}
-
-.profile-card-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.profile-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.profile-card-name {
-  font-weight: 700;
-}
-
-.profile-card-tag {
-  align-self: flex-start;
-  font-size: 9.5px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.profile-card-tag.tag-victim { background-color: var(--info-light); color: var(--info-color); }
-.profile-card-tag.tag-violator { background-color: var(--danger-light); color: var(--danger-color); }
-.profile-card-tag.tag-default { background-color: var(--active-bg); color: var(--text-secondary); }
-
-.profile-card-fields {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px 11px;
-}
-
-.profile-card-fields > div {
-  min-width: 0;
-}
-
-.profile-card-fields dt {
-  font-size: 9.5px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 2px;
-}
-
-.profile-card-fields dd {
-  font-size: 11.5px;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-
 /* Complaint detail layout (still used by Track Complaint's inline detail card) */
 .complaint-detail-main {
   background-color: var(--card-bg);
@@ -762,20 +941,71 @@
 }
 
 .complaint-detail-main-header h2 {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .complaint-number {
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--text-muted);
   margin-top: 3px;
 }
 
 .complaint-description {
+  font-size: 12.5px;
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 12px 0 18px 0;
+}
+
+.track-detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.track-clear-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background-color: var(--bg-color);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed);
+}
+
+.track-clear-btn:hover {
+  background-color: var(--danger-light);
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+/* Collapsed state — replaces the whole search/filter panel with one small pill once a
+   complaint has been picked, so the tracked complaint isn't crowded by search UI underneath it. */
+.track-search-again-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed);
+}
+
+.track-search-again-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .admissibility-summary {
@@ -873,6 +1103,40 @@
   margin-left: auto;
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.activity-attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.activity-attachment-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 11px;
+  overflow: hidden;
+  transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed);
+}
+
+.activity-attachment-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-attachment-row:hover {
+  background-color: var(--active-bg);
+  border-color: var(--accent-color);
+  color: var(--text-primary);
 }
 
 /* Complaints card grid — used by the Complaints / New / Treated list views (the dashboard
@@ -1095,7 +1359,7 @@
 .related-complaints-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
 }
 
 .related-complaint-row {
@@ -1103,18 +1367,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px;
-  border-radius: 9px;
+  padding: 12px 13px;
+  border-radius: 12px;
   background-color: var(--bg-color);
   border: 1px solid var(--card-border);
   text-decoration: none;
   color: inherit;
-  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+  transition: background-color var(--transition-speed), border-color var(--transition-speed), transform var(--transition-speed);
 }
 
 .related-complaint-row:hover {
   background-color: var(--active-bg);
   border-color: var(--accent-color);
+  transform: translateX(2px);
 }
 
 .related-complaint-main {
@@ -1144,6 +1409,117 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+.related-complaint-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.related-complaint-chevron {
+  color: var(--text-muted);
+}
+
+/* Scoped smaller/tighter empty state just for this panel — the shared .empty-state (used all
+   over the app) stays untouched at its default size. */
+.related-complaints-empty .empty-state {
+  padding: 20px 10px;
+  gap: 8px;
+}
+
+.related-complaints-empty .empty-state svg {
+  width: 26px;
+  height: 26px;
+}
+
+.related-complaints-empty .empty-state p {
+  font-size: 11.5px;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* Repeat Violator detail page */
+.violator-detail-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+}
+
+.violator-detail-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.violator-detail-identity h1 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.violator-detail-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.violator-detail-contact-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.violator-detail-stats {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.violator-detail-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background-color: var(--danger-light);
+}
+
+.violator-detail-stat .value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--danger-color);
+}
+
+.violator-detail-stat .label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--danger-color);
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.violator-detail-categories {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 16px 22px;
+}
+
+.violator-detail-categories .hero-tags-row {
+  margin-bottom: 0;
 }
 
 /* Call Center */
@@ -1263,12 +1639,20 @@
   text-align: left;
 }
 
-/* Track Complaint — search/filter results list */
+/* Track Complaint — search/filter results list. Same "transparent row + divider line" language
+   as .complaints-table (the All Complaints list) instead of individually-boxed rows, so the two
+   read as one consistent table language rather than two different visual systems. */
+.track-search-panel {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
 .track-results-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 360px;
+  max-height: 380px;
   overflow-y: auto;
 }
 
@@ -1277,24 +1661,26 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 11px 13px;
-  border-radius: 9px;
-  border: 1px solid var(--card-border);
-  background-color: var(--bg-color);
+  padding: 11px 4px;
+  border: none;
+  border-bottom: 1px solid var(--card-border);
+  background-color: transparent;
   cursor: pointer;
   text-align: left;
   font-family: var(--font-family);
-  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+  transition: background-color var(--transition-speed);
+}
+
+.track-results-list .track-result-row:last-child {
+  border-bottom: none;
 }
 
 .track-result-row:hover {
   background-color: var(--active-bg);
-  border-color: var(--accent-color);
 }
 
 .track-result-row.active {
   background-color: var(--accent-light);
-  border-color: var(--accent-color);
 }
 
 .track-result-main {
@@ -1305,7 +1691,7 @@
 }
 
 .track-result-subject {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-primary);
 }

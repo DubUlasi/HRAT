@@ -1,20 +1,25 @@
 import React, { useMemo, useState } from 'react';
-import { Download, AlertOctagon } from 'lucide-react';
+import { Download, AlertOctagon, FileText, Clock, CalendarClock, Building2, Timer, CheckCircle2, ShieldCheck, TrendingUp } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
 import Select from '../../components/ui/Select';
+import Input from '../../components/ui/Input';
 import BreakdownList from '../../components/dashboard/BreakdownList';
 import OfficePerformanceTable from '../../components/dashboard/OfficePerformanceTable';
 import TrendComparisonCard from '../../components/dashboard/TrendComparisonCard';
+import Pagination from '../../components/ui/Pagination';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { STAGE_ORDER, STAGE_LABELS, SUB_STATUS, getSubStatusMeta, stageProgressPercent } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
 import { PERIOD_OPTIONS, withinPeriod } from '../../constants/reportPeriods';
+import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
+import { ROLE_NAV_ITEMS } from '../roleNavMap';
 
 const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -158,7 +163,7 @@ function csvEscape(value) {
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
-function exportCsv(complaints, period) {
+function exportCsv(complaints, period, customRange) {
   const headers = ['Subject', 'Category', 'Status', 'Stage', 'Date Filed', 'Office', 'Department'];
   const rows = complaints.map((c) => [
     c.subject,
@@ -175,7 +180,8 @@ function exportCsv(complaints, period) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `hrat-business-intelligence-${period}.csv`;
+  const periodSlug = period === 'custom' ? `${customRange?.start || 'any'}_to_${customRange?.end || 'any'}` : period;
+  link.download = `hrat-business-intelligence-${periodSlug}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -183,16 +189,20 @@ function exportCsv(complaints, period) {
 }
 
 export default function RegistryHeadBusinessIntelligencePage() {
+  const { user } = useAuth();
+  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const { complaints, getRepeatOffenders } = useComplaints();
   const [period, setPeriod] = useState('all');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
   const [historyComplaintId, setHistoryComplaintId] = useState(null);
 
   const repeatOffenders = useMemo(() => getRepeatOffenders(), [getRepeatOffenders]);
   const topRepeatOffenders = repeatOffenders.slice(0, 3);
 
   const filtered = useMemo(
-    () => complaints.filter((c) => withinPeriod(c.dateFiled, period)),
-    [complaints, period]
+    () => complaints.filter((c) => withinPeriod(c.dateFiled, period, { start: customStart, end: customEnd })),
+    [complaints, period, customStart, customEnd]
   );
 
   const pendingCount = filtered.filter((c) => !INACTIVE_STATUSES.includes(c.subStatus)).length;
@@ -220,18 +230,20 @@ export default function RegistryHeadBusinessIntelligencePage() {
 
   const officePerformance = useMemo(() => computePerformance(filtered, offices, 'office'), [filtered]);
   const departmentPerformance = useMemo(() => computePerformance(filtered, departments, 'department'), [filtered]);
+  const officePagination = usePagination(officePerformance, 10, `${period}|${customStart}|${customEnd}`);
+  const departmentPagination = usePagination(departmentPerformance, 10, `${period}|${customStart}|${customEnd}`);
 
   const comparisonYear = comparisonYearFor(period, complaints);
   const currentYearTrend = useMemo(() => monthlyCountsForYear(complaints, comparisonYear), [complaints, comparisonYear]);
   const previousYearTrend = useMemo(() => monthlyCountsForYear(complaints, comparisonYear - 1), [complaints, comparisonYear]);
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser}>
       <PageHeader
         title="Business Intelligence"
         subtitle="Registry-wide trends, cycle times, office/department performance, and period-over-period trends."
         actions={
-          <Button variant="secondary" icon={Download} onClick={() => exportCsv(filtered, period)}>
+          <Button variant="secondary" icon={Download} onClick={() => exportCsv(filtered, period, { start: customStart, end: customEnd })}>
             Export Report
           </Button>
         }
@@ -245,47 +257,65 @@ export default function RegistryHeadBusinessIntelligencePage() {
             ))}
           </Select>
         </FormField>
+        {period === 'custom' && (
+          <>
+            <FormField label="From">
+              <Input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+            </FormField>
+            <FormField label="To">
+              <Input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+            </FormField>
+          </>
+        )}
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card accent-info">
+          <div className="stat-card-icon"><FileText size={16} /></div>
           <h3>Complaints In Period</h3>
           <div className="value">{filtered.length}</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-warning">
+          <div className="stat-card-icon"><Clock size={16} /></div>
           <h3>Pending In Period</h3>
           <div className="value">{pendingCount}</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-violet">
+          <div className="stat-card-icon"><CalendarClock size={16} /></div>
           <h3>Avg. Case Age</h3>
           <div className="value">{avgCaseAgeDays}d</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-accent">
+          <div className="stat-card-icon"><Building2 size={16} /></div>
           <h3>Active Offices</h3>
           <div className="value">{activeOffices}</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-info">
+          <div className="stat-card-icon"><Timer size={16} /></div>
           <h3>Avg. Admissibility Turnaround</h3>
           <div className="value">{admissibilityTiming?.avgMs != null ? formatDuration(admissibilityTiming.avgMs) : '—'}</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-accent">
+          <div className="stat-card-icon"><CheckCircle2 size={16} /></div>
           <h3>Resolved In Period</h3>
           <div className="value">{resolvedCount}</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-accent">
+          <div className="stat-card-icon"><ShieldCheck size={16} /></div>
           <h3>Admissible Rate</h3>
           <div className="value">{admissibleRate}%</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card accent-violet">
+          <div className="stat-card-icon"><TrendingUp size={16} /></div>
           <h3>Avg. Pipeline Progress</h3>
           <div className="value">{avgProgress}%</div>
         </div>
       </div>
 
-      <div className="stat-card repeat-offenders-teaser">
+      <div className="stat-card accent-danger repeat-offenders-teaser">
         <div className="repeat-offenders-teaser-header">
           <div>
-            <h3><AlertOctagon size={13} /> Repeat Offenders Flagged</h3>
+            <h3><AlertOctagon size={13} /> Repeat Violators Flagged</h3>
             <div className="value">{repeatOffenders.length}</div>
           </div>
           <Button variant="secondary" to="/registry-head/repeat-offenders">View All</Button>
@@ -323,10 +353,30 @@ export default function RegistryHeadBusinessIntelligencePage() {
 
       <div className="dashboard-grid">
         <BreakdownList title="Pipeline Status Breakdown" rows={pipelineStatusRows} />
-        <OfficePerformanceTable title="Office Performance" rows={officePerformance} />
+        <div>
+          <OfficePerformanceTable title="Office Performance" rows={officePagination.pageItems} />
+          <Pagination
+            page={officePagination.page}
+            pageCount={officePagination.pageCount}
+            pageSize={officePagination.pageSize}
+            totalItems={officePagination.totalItems}
+            onPageChange={officePagination.setPage}
+            onPageSizeChange={officePagination.setPageSize}
+          />
+        </div>
       </div>
 
-      <OfficePerformanceTable title="Department Performance" rows={departmentPerformance} />
+      <div>
+        <OfficePerformanceTable title="Department Performance" rows={departmentPagination.pageItems} />
+        <Pagination
+          page={departmentPagination.page}
+          pageCount={departmentPagination.pageCount}
+          pageSize={departmentPagination.pageSize}
+          totalItems={departmentPagination.totalItems}
+          onPageChange={departmentPagination.setPage}
+          onPageSizeChange={departmentPagination.setPageSize}
+        />
+      </div>
 
       <OffenderCaseHistoryDrawer
         open={!!historyComplaintId}

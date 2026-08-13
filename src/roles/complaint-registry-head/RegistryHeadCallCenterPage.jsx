@@ -5,9 +5,11 @@ import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
 import CallLogTable from '../../components/ui/CallLogTable';
 import SearchBar from '../../components/ui/SearchBar';
+import Pagination from '../../components/ui/Pagination';
 import CallCenterModal from '../../components/complaints/CallCenterModal';
 import CallDetailDrawer from '../../components/complaints/CallDetailDrawer';
 import { useCalls } from '../../context/CallsContext';
+import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 
 function matchesSearch(call, search) {
@@ -27,6 +29,7 @@ export default function RegistryHeadCallCenterPage() {
   const sortedCalls = [...calls]
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .filter((call) => matchesSearch(call, search));
+  const pagination = usePagination(sortedCalls, 10, search);
 
   return (
     <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
@@ -48,7 +51,16 @@ export default function RegistryHeadCallCenterPage() {
         />
       </div>
 
-      <CallLogTable calls={sortedCalls} onViewDetails={(call) => setSelectedCall(call)} />
+      <CallLogTable calls={pagination.pageItems} onViewDetails={(call) => setSelectedCall(call)} />
+
+      <Pagination
+        page={pagination.page}
+        pageCount={pagination.pageCount}
+        pageSize={pagination.pageSize}
+        totalItems={pagination.totalItems}
+        onPageChange={pagination.setPage}
+        onPageSizeChange={pagination.setPageSize}
+      />
 
       <CallCenterModal open={showCallCenter} onClose={() => setShowCallCenter(false)} />
 

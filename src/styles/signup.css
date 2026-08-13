@@ -452,6 +452,30 @@
   color: #EF4444;
 }
 
+.recommended-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background-color: rgba(7, 148, 85, 0.12);
+  color: #079455;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.recommended-tag-inline {
+  position: absolute;
+  right: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0;
+  pointer-events: none;
+}
+
 /* Both variants now share a transparent background (the wizard always sits on a solid white
    page, so "transparent" and "white" read identically) — .su-input-blue used to tint name
    fields pale blue, which read as inconsistent next to the rest of the form. */
@@ -493,6 +517,8 @@
 
 .su-select {
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   padding-right: 36px;
   cursor: pointer;
 }
@@ -504,6 +530,26 @@
   transform: translateY(-50%);
   pointer-events: none;
   color: #64748B;
+}
+
+.office-head-office-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background-color: #FFFAEB;
+  border: 1px solid #FEDF89;
+  color: #B54708;
+  font-size: 11.5px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.office-head-office-warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .add-victim-wrap {
@@ -774,6 +820,11 @@
 
 [data-theme="dark"] .su-label-dark {
   color: #CBD5E1;
+}
+
+[data-theme="dark"] .recommended-tag {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #10B981;
 }
 
 [data-theme="dark"] .su-input-white,
@@ -1246,54 +1297,6 @@
 /* Bottom sheet (Key Population group picker) — slides up, rounded top corners only, distinct
    from the app's usual centered Modal since the mobile reference specifically calls for a
    sheet here. */
-.bottom-sheet-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(16, 24, 40, 0.45);
-  z-index: 400;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.bottom-sheet-panel {
-  width: 100%;
-  max-width: 520px;
-  max-height: 85vh;
-  overflow-y: auto;
-  background-color: #ffffff;
-  border-radius: 20px 20px 0 0;
-  padding: 10px 22px 22px;
-  animation: bottomSheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes bottomSheetSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-.bottom-sheet-handle {
-  display: block;
-  width: 36px;
-  height: 4px;
-  border-radius: 4px;
-  background-color: #E2E8F0;
-  margin: 0 auto 14px;
-}
-
-.bottom-sheet-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.bottom-sheet-header h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: #0F172A;
-}
-
 .bottom-sheet-note {
   font-size: 12.5px;
   color: #64748B;
@@ -1438,6 +1441,82 @@
   color: #64748B;
 }
 
+.review-summary-person-block {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #E2E8F0;
+}
+
+.review-summary-person-block:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+/* Steps 3 & 4 — one card per victim/violator, so a group complaint is just more cards */
+.multi-person-card {
+  background-color: transparent;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 18px;
+}
+
+.multi-person-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.multi-person-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.multi-person-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #D92D20;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.multi-person-remove:hover {
+  text-decoration: underline;
+}
+
+.multi-person-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 20px;
+  background: none;
+  border: 1.5px dashed #94A3B8;
+  border-radius: 14px;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.multi-person-add:hover {
+  border-color: #079455;
+  color: #079455;
+  background-color: rgba(7, 148, 85, 0.05);
+}
+
 /* ── Dark mode — new wizard pieces ────────────────────────────────── */
 [data-theme="dark"] .category-tile,
 [data-theme="dark"] .sub-category-pill,
@@ -1481,8 +1560,7 @@
 [data-theme="dark"] .category-tile-label,
 [data-theme="dark"] .toggle-card-label,
 [data-theme="dark"] .key-population-label,
-[data-theme="dark"] .review-summary-line.strong,
-[data-theme="dark"] .bottom-sheet-header h3 {
+[data-theme="dark"] .review-summary-line.strong {
   color: #F8FAFC;
 }
 
@@ -1510,14 +1588,6 @@
   color: #F8FAFC;
 }
 
-[data-theme="dark"] .bottom-sheet-panel {
-  background-color: #0B0F19;
-}
-
-[data-theme="dark"] .bottom-sheet-handle {
-  background-color: #334155;
-}
-
 [data-theme="dark"] .bottom-sheet-note,
 [data-theme="dark"] .key-population-desc,
 [data-theme="dark"] .su-field-hint-dark,
@@ -1537,6 +1607,30 @@
 
 [data-theme="dark"] .location-suggestion-item:hover {
   background-color: #1E293B;
+}
+
+[data-theme="dark"] .multi-person-card {
+  background-color: transparent;
+  border-color: #1E293B;
+}
+
+[data-theme="dark"] .multi-person-card-title {
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .multi-person-add {
+  border-color: #334155;
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .multi-person-add:hover {
+  border-color: #079455;
+  color: #10B981;
+  background-color: rgba(7, 148, 85, 0.1);
+}
+
+[data-theme="dark"] .review-summary-person-block {
+  border-bottom-color: #1E293B;
 }
 
 [data-theme="dark"] .review-summary-title {

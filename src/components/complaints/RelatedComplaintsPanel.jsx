@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, ChevronRight } from 'lucide-react';
 import StatusBadge from '../ui/StatusBadge';
 import EmptyState from '../ui/EmptyState';
 import { useComplaints } from '../../context/ComplaintsContext';
@@ -25,7 +25,9 @@ export default function RelatedComplaintsPanel({ complaintId, onViewFullHistory 
       </div>
 
       {related.length === 0 ? (
-        <EmptyState icon={ShieldAlert} message="No other complaints found against this alleged violator." />
+        <div className="related-complaints-empty">
+          <EmptyState icon={ShieldAlert} message="No other complaints found against this alleged violator." />
+        </div>
       ) : (
         <div className="related-complaints-list">
           {related.slice(0, 5).map((c) => (
@@ -35,7 +37,10 @@ export default function RelatedComplaintsPanel({ complaintId, onViewFullHistory 
                 <span className="related-complaint-date">Filed {new Date(c.dateFiled).toDateString()}</span>
                 <span className="related-complaint-outcome">{getComplaintOutcomeSummary(c)}</span>
               </div>
-              <StatusBadge status={c.subStatus} />
+              <div className="related-complaint-side">
+                <StatusBadge status={c.subStatus} />
+                <ChevronRight size={15} className="related-complaint-chevron" />
+              </div>
             </Link>
           ))}
         </div>

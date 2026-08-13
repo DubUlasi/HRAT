@@ -6,17 +6,25 @@ export const registryOfficers = [
   { id: 'off-sam', name: 'Sam Peter', email: 'sampete@example.com' },
 ];
 
+// `departmentId` scopes each person to one department (matches `departments[].id` below), so a
+// department's Director/Supervisor/Investigator dashboards can filter "my department's people"
+// instead of assigning from the whole flat roster.
 export const departmentSupervisors = [
-  { id: 'sup-williams', name: 'Williams Peter', email: 'will@example.com' },
-  { id: 'sup-mark', name: 'Mark Peter', email: 'mark@example.com' },
+  { id: 'sup-williams', name: 'Williams Peter', email: 'will@example.com', departmentId: 'civil-political' },
+  { id: 'sup-mark', name: 'Mark Peter', email: 'mark@example.com', departmentId: 'vulnerable-groups' },
 ];
 
 export const investigationOfficers = [
-  { id: 'inv-henry', name: 'Henry Peter', email: 'henry@example.com' },
+  { id: 'inv-henry', name: 'Henry Peter', email: 'henry@example.com', departmentId: 'civil-political' },
 ];
 
 export const departmentDirectors = [
-  { id: 'dir-matthew', name: 'Matthew Peter', email: 'matthew@example.com' },
+  { id: 'dir-matthew', name: 'Matthew Peter', email: 'matthew@example.com', departmentId: 'civil-political' },
+];
+
+// One Executive Secretary — sees every complaint, no department scoping.
+export const executiveSecretaries = [
+  { id: 'es-grace', name: 'Grace Nnadi', email: 'grace.nnadi@example.com' },
 ];
 
 export const offices = [

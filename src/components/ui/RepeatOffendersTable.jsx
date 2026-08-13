@@ -10,7 +10,7 @@ import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 // plain record list.
 export default function RepeatOffendersTable({ offenders, onViewHistory }) {
   if (!offenders.length) {
-    return <EmptyState message="No repeat offenders flagged yet" />;
+    return <EmptyState message="No repeat violators flagged yet" />;
   }
 
   return (

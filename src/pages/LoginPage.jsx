@@ -1,34 +1,44 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, KeyRound } from 'lucide-react';
 import ShowcaseGrid from '../components/ShowcaseGrid';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import Modal from '../components/ui/Modal';
 import { useTranslation } from '../context/I18nContext';
+import { useAuth } from '../context/AuthContext';
+import { mockUsers, ROLE_HOME } from '../data/mockUsers';
 import '../styles/login.css';
+import '../styles/modals.css';
 
-// No backend yet — this stands in for the Complaint Registry Head's login until real auth
-// exists, matching the mock identity used throughout the registry-head role (navConfig.js).
-const DEMO_EMAIL = 'sampete@example.com';
-const DEMO_PASSWORD = 'password123';
+const ROLE_LABELS = {
+  'registry-head': 'Complaint Registry Head',
+  'desk-officer': 'Complaint Registry Desk Officer',
+  'department-director': 'Department Director',
+  'department-supervisor': 'Department Supervisor',
+  'department-investigator': 'Department Investigator',
+  'executive-secretary': 'Executive Secretary',
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showCredentials, setShowCredentials] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     setTimeout(() => {
-      const matches = email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD;
-      if (matches) {
-        navigate('/registry-head');
+      const user = login(email, password);
+      if (user) {
+        navigate(ROLE_HOME[user.role] || '/registry-head');
       } else {
         setError(t('login.errorInvalid'));
         setSubmitting(false);
@@ -39,6 +49,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = () => {
     setGoogleSubmitting(true);
     setTimeout(() => {
+      login('sampete@example.com', 'password123');
       navigate('/registry-head');
     }, 600);
   };
@@ -128,9 +139,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="demo-hint">
-            {t('login.demoAccessLabel', { email: DEMO_EMAIL, password: DEMO_PASSWORD })}
-          </div>
+          <button type="button" className="demo-credentials-link" onClick={() => setShowCredentials(true)}>
+            <KeyRound size={13} /> View demo login credentials
+          </button>
 
           <div className="login-card-footer">
             <p>
@@ -142,6 +153,17 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <Modal open={showCredentials} onClose={() => setShowCredentials(false)} title="Demo Accounts" width="440px">
+        <p className="modal-description">One mock account per role, for testing only. This list will be removed before going live.</p>
+        <ul className="demo-hint-list">
+          {mockUsers.map((demoUser) => (
+            <li key={demoUser.id}>
+              <strong>{ROLE_LABELS[demoUser.role]}:</strong> {t('login.demoAccessLabel', { email: demoUser.email, password: demoUser.password })}
+            </li>
+          ))}
+        </ul>
+      </Modal>
     </div>
   );
 }

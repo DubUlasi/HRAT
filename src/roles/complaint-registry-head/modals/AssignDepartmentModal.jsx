@@ -5,6 +5,7 @@ import FormField from '../../../components/ui/FormField';
 import Select from '../../../components/ui/Select';
 import TextArea from '../../../components/ui/TextArea';
 import Input from '../../../components/ui/Input';
+import AttachDocumentsField from '../../../components/complaints/AttachDocumentsField';
 import { offices, departments } from '../../../data/mockOfficers';
 
 // Two-step per the manual: pick the handling office, then pick the department + a remark.
@@ -13,6 +14,7 @@ export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
   const [officeId, setOfficeId] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [remark, setRemark] = useState('');
+  const [files, setFiles] = useState([]);
 
   const office = offices.find((o) => o.id === officeId);
 
@@ -21,6 +23,7 @@ export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
     setOfficeId('');
     setDepartmentId('');
     setRemark('');
+    setFiles([]);
     onClose();
   };
 
@@ -34,7 +37,7 @@ export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
     e.preventDefault();
     if (!departmentId) return;
     const department = departments.find((d) => d.id === departmentId);
-    onSubmit({ officeId, officeName: office?.name, departmentId, departmentName: department?.name, remark });
+    onSubmit({ officeId, officeName: office?.name, departmentId, departmentName: department?.name, remark, files });
     // Don't reset/close here — the parent flips `open` off once it moves to its confirm step,
     // same as AssignPersonModal. Closing here too would race the flow back to null instantly.
   };
@@ -73,6 +76,7 @@ export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
           <FormField label="Remarks" required>
             <TextArea value={remark} onChange={(e) => setRemark(e.target.value)} required />
           </FormField>
+          <AttachDocumentsField files={files} onChange={setFiles} />
           <div className="modal-actions">
             <Button type="submit" variant="submit">Submit</Button>
           </div>

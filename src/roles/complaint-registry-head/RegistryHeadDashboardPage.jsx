@@ -1,55 +1,63 @@
 import React, { useState } from 'react';
-import { FileText, Inbox, CheckCircle2, Clock, PlusCircle } from 'lucide-react';
+import { Inbox, ShieldCheck, Send, Gavel, PlusCircle } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import HeroBanner from '../../components/dashboard/HeroBanner';
 import QuickTrackerBlob from '../../components/dashboard/QuickTrackerBlob';
+import ActionQueueList from '../../components/dashboard/ActionQueueList';
 import Button from '../../components/ui/Button';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import MakeComplaintModal from '../../components/complaints/MakeComplaintModal';
 import VoiceReportModal from '../../components/complaints/VoiceReportModal';
 import ReportChoiceModal from '../../components/complaints/ReportChoiceModal';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
-import { SUB_STATUS, getSubStatusMeta } from '../../constants/complaintStatus';
+import {
+  needsHeadAction,
+  needsNumberAssignment,
+  needsAdmissibilityAssignment,
+  needsAdmissibilityConfirmation,
+  needsDepartmentAssignment,
+  needsSendToCouncil,
+  headActionReason,
+} from './registryHeadQueue';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 
-const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
-
 export default function RegistryHeadDashboardPage() {
+  const { user } = useAuth();
   const { complaints } = useComplaints();
   const [showReportChoice, setShowReportChoice] = useState(false);
   const [showMakeComplaint, setShowMakeComplaint] = useState(false);
   const [showVoiceReport, setShowVoiceReport] = useState(false);
 
-  const newCount = complaints.filter((c) => c.subStatus === SUB_STATUS.NEW).length;
-  const resolvedCount = complaints.filter((c) => c.subStatus === SUB_STATUS.CLOSED).length;
-  const pendingCount = complaints.filter((c) => !INACTIVE_STATUSES.includes(c.subStatus)).length;
+  const pendingNumbering = complaints.filter(needsNumberAssignment);
+  const pendingAdmissibility = complaints.filter((c) => needsAdmissibilityAssignment(c) || needsAdmissibilityConfirmation(c));
+  const pendingDepartment = complaints.filter(needsDepartmentAssignment);
+  const pendingCouncil = complaints.filter(needsSendToCouncil);
+  const needsAction = complaints.filter(needsHeadAction);
   const recentComplaints = [...complaints]
     .sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled))
     .slice(0, 10);
 
-  const latest = recentComplaints[0];
   const situationMessages = [
     {
-      text: `You've got ${complaints.length} complaint${complaints.length === 1 ? '' : 's'} on file at the moment, ${pendingCount} still working their way through the pipeline, and ${resolvedCount} already resolved.`,
+      text: needsAction.length > 0
+        ? `${needsAction.length} complaint${needsAction.length === 1 ? '' : 's'} across the registry ${needsAction.length === 1 ? 'is' : 'are'} waiting on you right now.`
+        : 'The registry is all caught up, nothing is waiting on you right now.',
     },
     {
-      text: latest
-        ? `The most recent one, "${latest.subject}", is currently sitting at ${getSubStatusMeta(latest.subStatus).label}.`
-        : 'Nothing filed yet, new complaints will show up here as soon as they come in.',
+      text: `${pendingNumbering.length} need${pendingNumbering.length === 1 ? 's' : ''} an officer assigned, ${pendingAdmissibility.length} need${pendingAdmissibility.length === 1 ? 's' : ''} an admissibility step.`,
     },
     {
-      text: pendingCount > 0
-        ? `Whenever you have a moment, ${pendingCount} complaint${pendingCount === 1 ? ' could use' : 's could use'} a look in the Complaints tab.`
-        : 'You are all caught up, nothing is waiting on you right now.',
+      text: `${complaints.length} complaint${complaints.length === 1 ? '' : 's'} on file across the entire registry.`,
     },
   ];
 
   return (
     <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
       <PageHeader
-        title="Dashboard"
-        subtitle={`Welcome back, ${registryHeadUser.name.split(' ')[0]}. Here's what's happening across the registry.`}
+        title="Complaint Registry Head Dashboard"
+        subtitle={`Welcome back, ${user?.name?.split(' ')[0] || registryHeadUser.name.split(' ')[0]}. Here's what's happening across the registry.`}
         notificationCount={2}
         actions={
           <Button variant="primary" icon={PlusCircle} onClick={() => setShowReportChoice(true)}>
@@ -59,20 +67,29 @@ export default function RegistryHeadDashboardPage() {
       />
 
       <HeroBanner
-        greetingName="Bem"
+        greetingName={user?.name?.split(' ')[0] || registryHeadUser.name.split(' ')[0]}
+        badge="Complaint Registry Head"
         situationMessages={situationMessages}
         rightSlot={<QuickTrackerBlob />}
         stats={[
-          { icon: FileText, value: complaints.length, label: 'Total Complaints' },
-          { icon: Inbox, value: newCount, label: 'New' },
-          { icon: CheckCircle2, value: resolvedCount, label: 'Resolved' },
-          { icon: Clock, value: pendingCount, label: 'Pending' },
+          { icon: Inbox, value: pendingNumbering.length, label: 'Needs Officer' },
+          { icon: ShieldCheck, value: pendingAdmissibility.length, label: 'Needs Admissibility' },
+          { icon: Send, value: pendingDepartment.length, label: 'Needs Department' },
+          { icon: Gavel, value: pendingCouncil.length, label: 'Ready For Council' },
         ]}
+      />
+
+      <ActionQueueList
+        title="Needs Your Action"
+        items={needsAction}
+        getHref={(c) => `/registry-head/complaints/${c.id}`}
+        getReason={headActionReason}
+        viewAllHref="/registry-head/complaints/needs-action"
       />
 
       <div className="recent-complaints-card">
         <div className="section-header-flex">
-          <h2>Complaints</h2>
+          <h2>Recent Complaints</h2>
           <Button variant="secondary" to="/registry-head/complaints">View All Complaints</Button>
         </div>
         <ComplaintsTable

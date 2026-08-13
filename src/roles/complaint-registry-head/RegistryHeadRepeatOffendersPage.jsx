@@ -1,38 +1,60 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import RepeatOffendersTable from '../../components/ui/RepeatOffendersTable';
 import SearchBar from '../../components/ui/SearchBar';
-import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
+import Select from '../../components/ui/Select';
+import Pagination from '../../components/ui/Pagination';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
+import { usePagination } from '../../hooks/usePagination';
+import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
+import { ROLE_NAV_ITEMS } from '../roleNavMap';
 
 export default function RegistryHeadRepeatOffendersPage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const { getRepeatOffenders } = useComplaints();
-  const [historyComplaintId, setHistoryComplaintId] = useState(null);
   const [search, setSearch] = useState('');
-  const offenders = getRepeatOffenders().filter((o) => !search || o.name.toLowerCase().includes(search.toLowerCase()));
+  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const offenders = getRepeatOffenders()
+    .filter((o) => !search || o.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((o) => categoryFilter === 'all' || o.categories.includes(categoryFilter));
+  const pagination = usePagination(offenders, 10, `${search}|${categoryFilter}`);
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser}>
       <PageHeader
-        title="Repeat Offenders"
+        title="Repeat Violators"
         subtitle="Alleged violators named in two or more complaints, across every stage of the pipeline."
       />
 
       <div className="filter-toolbar">
         <SearchBar value={search} onChange={setSearch} placeholder="Search by alleged violator name..." />
+        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <option value="all">All Offense Categories</option>
+          {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </Select>
       </div>
 
       <RepeatOffendersTable
-        offenders={offenders}
-        onViewHistory={(offender) => setHistoryComplaintId(offender.anchorComplaintId)}
+        offenders={pagination.pageItems}
+        onViewHistory={(offender) => navigate(`/registry-head/repeat-offenders/${encodeURIComponent(offender.id)}`)}
       />
 
-      <OffenderCaseHistoryDrawer
-        open={!!historyComplaintId}
-        onClose={() => setHistoryComplaintId(null)}
-        complaintId={historyComplaintId}
+      <Pagination
+        page={pagination.page}
+        pageCount={pagination.pageCount}
+        pageSize={pagination.pageSize}
+        totalItems={pagination.totalItems}
+        onPageChange={pagination.setPage}
+        onPageSizeChange={pagination.setPageSize}
       />
     </AppShell>
   );

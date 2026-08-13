@@ -4,19 +4,22 @@ import Button from '../../../components/ui/Button';
 import FormField from '../../../components/ui/FormField';
 import Select from '../../../components/ui/Select';
 import TextArea from '../../../components/ui/TextArea';
+import AttachDocumentsField from '../../../components/complaints/AttachDocumentsField';
 
 export default function ConfirmAdmissibilityCheckModal({ open, onClose, complaint, onSubmit }) {
   const [agree, setAgree] = useState('yes');
   const [remark, setRemark] = useState('');
+  const [files, setFiles] = useState([]);
 
   if (!complaint) return null;
   const { admissibility } = complaint;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ agree: agree === 'yes', remark });
+    onSubmit({ agree: agree === 'yes', remark, files });
     setRemark('');
     setAgree('yes');
+    setFiles([]);
   };
 
   return (
@@ -47,6 +50,8 @@ export default function ConfirmAdmissibilityCheckModal({ open, onClose, complain
         <FormField label="Further Remarks" required>
           <TextArea value={remark} onChange={(e) => setRemark(e.target.value)} required />
         </FormField>
+
+        <AttachDocumentsField files={files} onChange={setFiles} />
 
         <div className="modal-actions">
           <Button type="submit" variant="submit">Submit</Button>

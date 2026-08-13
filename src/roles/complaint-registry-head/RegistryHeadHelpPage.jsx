@@ -1,8 +1,12 @@
 import React from 'react';
-import { Mail, Phone, FileText, ShieldCheck, Users, Send } from 'lucide-react';
+import { Mail, Phone, FileText, ShieldCheck, Users, Send, LifeBuoy, HelpCircle, Clock } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
+import { useAuth } from '../../context/AuthContext';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
+import { ROLE_NAV_ITEMS } from '../roleNavMap';
+
+const STEP_COLORS = ['info', 'violet', 'warning', 'accent'];
 
 const PIPELINE_STEPS = [
   { icon: FileText, title: 'Assign a Complaint Number', text: 'New complaints need a Registry Officer assigned to give them a tracking number.' },
@@ -18,28 +22,44 @@ const FAQS = [
 ];
 
 export default function RegistryHeadHelpPage() {
+  const { user } = useAuth();
+  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser}>
       <PageHeader title="Help" subtitle="How the registry pipeline works, and how to reach support." />
+
+      <div className="help-intro-banner">
+        <div className="help-intro-icon"><LifeBuoy size={22} /></div>
+        <div>
+          <h2>Need a hand with the registry?</h2>
+          <p>Walk through how a complaint moves end-to-end below, check the FAQ, or reach out to support directly.</p>
+        </div>
+      </div>
 
       <div className="categories-card">
         <h2>The Complaint Pipeline</h2>
         <div className="help-steps-grid">
-          {PIPELINE_STEPS.map((step, i) => (
-            <div className="help-step" key={step.title}>
-              <div className="help-step-icon"><step.icon size={18} /></div>
-              <div>
-                <h3>{i + 1}. {step.title}</h3>
-                <p>{step.text}</p>
+          {PIPELINE_STEPS.map((step, i) => {
+            const color = STEP_COLORS[i % STEP_COLORS.length];
+            return (
+              <div className={`help-step accent-${color}`} key={step.title}>
+                <div className="help-step-icon">
+                  <step.icon size={18} />
+                  <span className="help-step-number">{i + 1}</span>
+                </div>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       <div className="dashboard-grid">
         <div className="categories-card">
-          <h2>Frequently Asked Questions</h2>
+          <h2><HelpCircle size={15} style={{ verticalAlign: -2, marginRight: 5 }} /> Frequently Asked Questions</h2>
           {FAQS.map((item) => (
             <div className="help-faq-item" key={item.q}>
               <h3>{item.q}</h3>
@@ -50,15 +70,18 @@ export default function RegistryHeadHelpPage() {
 
         <div className="categories-card">
           <h2>Contact Support</h2>
-          <div className="help-contact-row">
-            <Mail size={16} />
+          <a href="mailto:support@nhrc.gov.ng" className="help-contact-row">
+            <span className="help-contact-icon accent-info"><Mail size={16} /></span>
             <span>support@nhrc.gov.ng</span>
-          </div>
-          <div className="help-contact-row">
-            <Phone size={16} />
+          </a>
+          <a href="tel:+2348000000000" className="help-contact-row">
+            <span className="help-contact-icon accent-accent"><Phone size={16} /></span>
             <span>+234 800 000 0000</span>
+          </a>
+          <div className="help-contact-row help-contact-hours">
+            <span className="help-contact-icon accent-violet"><Clock size={16} /></span>
+            <span>Available weekdays, 9am – 5pm WAT.</span>
           </div>
-          <p className="help-contact-note">Available weekdays, 9am – 5pm WAT.</p>
         </div>
       </div>
     </AppShell>

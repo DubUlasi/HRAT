@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Settings, LogOut, Moon, Sun, MoreVertical, ChevronLeft, X } from 'lucide-react';
 import SidebarNavItem from './SidebarNavItem';
 import { useTheme } from '../../hooks/useTheme';
+import { useAuth } from '../../context/AuthContext';
 
 // Items sharing a `section` collapse into one labeled group; items without one (Dashboard,
 // Help, Settings) stay flat top/bottom-level links, same as before this grouping existed.
@@ -34,7 +35,15 @@ function groupNavItems(navItems) {
  */
 export default function Sidebar({ navItems, user, collapsed = false, onToggleCollapsed, logoHref = '/', logoSrc = '/hrat_nhrc_logo.png', mobileOpen = false, onCloseMobile }) {
   const { isDark, toggleTheme } = useTheme();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const handleSignOut = () => {
+    logout();
+    onCloseMobile?.();
+    navigate('/login');
+  };
   const settingsHref = navItems.find((item) => item.label === 'Settings')?.to || '/settings';
   const navBlocks = groupNavItems(navItems);
 
@@ -99,10 +108,10 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
             {isDark ? 'Light Theme' : 'Dark Theme'}
           </div>
           <div className="sidebar-divider" style={{ margin: '4px 0' }}></div>
-          <Link to="/login" className="profile-menu-item" style={{ color: '#EF4444' }} onClick={onCloseMobile}>
+          <button type="button" className="profile-menu-item" style={{ color: '#EF4444' }} onClick={handleSignOut}>
             <LogOut size={16} />
             Sign Out
-          </Link>
+          </button>
         </div>
 
         <div className="profile-card-block">

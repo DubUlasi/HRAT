@@ -412,11 +412,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
   padding: 6px 8px;
+  border: none;
   border-radius: 6px;
+  background: none;
+  font-family: inherit;
   font-size: 11px;
   color: var(--text-secondary);
   text-decoration: none;
+  text-align: left;
   cursor: pointer;
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
@@ -511,6 +516,29 @@
   font-weight: 800;
   color: var(--text-primary);
 }
+
+/* Colored icon chip, opt-in via a .stat-card.accent-* modifier (Business Intelligence's KPI
+   cards) — .stat-card itself stays plain everywhere else that reuses the class. */
+.stat-card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.stat-card.accent-info .stat-card-icon { background-color: var(--info-light); color: var(--info-color); }
+.stat-card.accent-info .value { color: var(--info-color); }
+.stat-card.accent-warning .stat-card-icon { background-color: var(--warning-light); color: var(--warning-color); }
+.stat-card.accent-warning .value { color: var(--warning-color); }
+.stat-card.accent-violet .stat-card-icon { background-color: var(--violet-light); color: var(--violet-color); }
+.stat-card.accent-violet .value { color: var(--violet-color); }
+.stat-card.accent-accent .stat-card-icon { background-color: var(--accent-light); color: var(--accent-color); }
+.stat-card.accent-accent .value { color: var(--accent-color); }
+.stat-card.accent-danger .stat-card-icon { background-color: var(--danger-light); color: var(--danger-color); }
+.stat-card.accent-danger .value { color: var(--danger-color); }
 
 /* Repeat Offenders teaser card (Business Intelligence page) */
 .repeat-offenders-teaser {
@@ -638,3 +666,4 @@ th {
     padding: 15px;
   }
 }
+

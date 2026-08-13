@@ -8,11 +8,12 @@ function getGreeting() {
   return 'Good evening';
 }
 
-// The dashboard's hero: greeting + a rotating typewriter status line, an optional rightSlot
-// (whatever quick-entry widget the role wants — a quick complaint tracker, a voice button, etc.),
-// and a stats matrix strip along the bottom.
+// The dashboard's hero: greeting + optional role/scope badge, a rotating typewriter status
+// line, an optional rightSlot (whatever quick-entry widget the role wants — a quick complaint
+// tracker, a voice button, etc.), and a stats matrix strip along the bottom.
 export default function HeroBanner({
   greetingName,
+  badge,
   situationMessages,
   stats,
   rightSlot,
@@ -23,7 +24,10 @@ export default function HeroBanner({
     <div className="hero-banner-card">
       <div className="hero-banner-main">
         <div className="hero-banner-content">
-          <h2 className="hero-banner-title">{getGreeting()}, {greetingName}.</h2>
+          <h2 className="hero-banner-title">
+            {getGreeting()}, {greetingName}
+            {badge && <span className="hero-banner-badge">{badge}</span>}
+          </h2>
           <p className="hero-banner-subtitle">
             {text}
             <span className="typewriter-cursor">|</span>

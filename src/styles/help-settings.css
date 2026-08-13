@@ -1,4 +1,39 @@
 /* Help page */
+.help-intro-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--violet-light) 0%, var(--info-light) 100%);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+
+.help-intro-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background-color: var(--card-bg);
+  color: var(--violet-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.help-intro-banner h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.help-intro-banner p {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 .help-steps-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -7,36 +42,61 @@
 
 .help-step {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--card-border);
 }
 
 .help-step-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background-color: var(--accent-light);
-  color: var(--accent-color);
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
+.help-step-number {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--card-bg);
+  border: 1.5px solid currentColor;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-step.accent-info .help-step-icon { background-color: var(--info-light); color: var(--info-color); }
+.help-step.accent-violet .help-step-icon { background-color: var(--violet-light); color: var(--violet-color); }
+.help-step.accent-warning .help-step-icon { background-color: var(--warning-light); color: var(--warning-color); }
+.help-step.accent-accent .help-step-icon { background-color: var(--accent-light); color: var(--accent-color); }
+
 .help-step h3 {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
 .help-step p {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   line-height: 1.5;
 }
 
 .help-faq-item {
-  padding: 11px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--card-border);
 }
 
@@ -46,13 +106,14 @@
 }
 
 .help-faq-item h3 {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
+  color: var(--text-primary);
 }
 
 .help-faq-item p {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-muted);
   line-height: 1.5;
 }
@@ -60,35 +121,118 @@
 .help-contact-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  padding: 8px 0;
-}
-
-.help-contact-note {
+  gap: 11px;
   font-size: 12.5px;
-  color: var(--text-muted);
-  margin-top: 4px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 9px 6px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background-color var(--transition-speed);
 }
 
-/* Settings page */
-.settings-profile-row {
+a.help-contact-row:hover {
+  background-color: var(--active-bg);
+}
+
+.help-contact-hours {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.help-contact-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.help-contact-icon.accent-info { background-color: var(--info-light); color: var(--info-color); }
+.help-contact-icon.accent-accent { background-color: var(--accent-light); color: var(--accent-color); }
+.help-contact-icon.accent-violet { background-color: var(--violet-light); color: var(--violet-color); }
+
+/* Settings page */
+.settings-profile-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--info-light) 100%);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 14px;
+}
+
+.settings-profile-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .settings-profile-name {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   color: var(--text-primary);
 }
 
-.settings-profile-email {
-  font-size: 12.5px;
+/* Icon-led key/value row, grouped into cards (Contact Details / Role & Department) so a
+   person's profile info reads as organized sections instead of one flat undifferentiated list. */
+.settings-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.settings-detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-detail-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-detail-icon.accent-info { background-color: var(--info-light); color: var(--info-color); }
+.settings-detail-icon.accent-accent { background-color: var(--accent-light); color: var(--accent-color); }
+.settings-detail-icon.accent-violet { background-color: var(--violet-light); color: var(--violet-color); }
+.settings-detail-icon.accent-warning { background-color: var(--warning-light); color: var(--warning-color); }
+
+.settings-detail-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-detail-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
-  margin-bottom: 7px;
+  font-weight: 700;
+}
+
+.settings-detail-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.settings-caseload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
 }
 
 .settings-row {

@@ -1,0 +1,96 @@
+// Mock staff directory used for login until a real auth backend exists — one demo account per
+// role, all sharing the same demo password for simplicity. `officerId` links each account into
+// the matching roster in mockOfficers.js (registryOfficers/departmentDirectors/etc.) so a
+// logged-in user's own dashboard can filter `complaints` down to "assigned to me". The Director/
+// Supervisor/Investigator demo accounts are deliberately all scoped to the same department
+// ('civil-political') so a single complaint can be walked through the whole chain end-to-end.
+
+export const DEMO_PASSWORD = 'password123';
+
+export const mockUsers = [
+  {
+    id: 'user-registry-head',
+    email: 'sampete@example.com',
+    password: DEMO_PASSWORD,
+    role: 'registry-head',
+    name: 'Sam Peter',
+    avatarSrc: '/alicia.png',
+    officerId: 'off-sam',
+    phone: '+234 803 123 4567',
+    address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
+    joinedDate: '2019-03-11',
+  },
+  {
+    id: 'user-desk-officer',
+    email: 'mike@example.com',
+    password: DEMO_PASSWORD,
+    role: 'desk-officer',
+    name: 'Mike Peter',
+    avatarSrc: '/alicia.png',
+    officerId: 'off-mike',
+    phone: '+234 802 234 5678',
+    address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
+    joinedDate: '2020-06-02',
+  },
+  {
+    id: 'user-department-director',
+    email: 'matthew@example.com',
+    password: DEMO_PASSWORD,
+    role: 'department-director',
+    name: 'Matthew Peter',
+    avatarSrc: '/alicia.png',
+    officerId: 'dir-matthew',
+    departmentId: 'civil-political',
+    phone: '+234 805 345 6789',
+    address: '14 Adeola Odeku Street, Victoria Island, Lagos',
+    joinedDate: '2017-01-20',
+  },
+  {
+    id: 'user-department-supervisor',
+    email: 'will@example.com',
+    password: DEMO_PASSWORD,
+    role: 'department-supervisor',
+    name: 'Williams Peter',
+    avatarSrc: '/alicia.png',
+    officerId: 'sup-williams',
+    departmentId: 'civil-political',
+    phone: '+234 806 456 7890',
+    address: '22 Ahmadu Bello Way, Kaduna',
+    joinedDate: '2018-09-14',
+  },
+  {
+    id: 'user-department-investigator',
+    email: 'henry@example.com',
+    password: DEMO_PASSWORD,
+    role: 'department-investigator',
+    name: 'Henry Peter',
+    avatarSrc: '/alicia.png',
+    officerId: 'inv-henry',
+    departmentId: 'civil-political',
+    phone: '+234 807 567 8901',
+    address: '5 Aba Road, Port Harcourt, Rivers',
+    joinedDate: '2021-02-08',
+  },
+  {
+    id: 'user-executive-secretary',
+    email: 'grace.nnadi@example.com',
+    password: DEMO_PASSWORD,
+    role: 'executive-secretary',
+    name: 'Grace Nnadi',
+    avatarSrc: '/alicia.png',
+    officerId: 'es-grace',
+    phone: '+234 809 678 9012',
+    address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
+    joinedDate: '2016-11-30',
+  },
+];
+
+// Where each role lands after login — single source of truth for LoginPage + App.jsx routes.
+export const ROLE_HOME = {
+  'registry-head': '/registry-head',
+  'desk-officer': '/desk-officer',
+  'department-director': '/department-director',
+  'department-supervisor': '/department-supervisor',
+  'department-investigator': '/department-investigator',
+  'executive-secretary': '/executive-secretary',
+};

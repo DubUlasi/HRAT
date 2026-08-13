@@ -2,6 +2,7 @@
   "common": {
     "back": "Back",
     "continue": "Continue",
+    "ok": "OK",
     "cancel": "Cancel",
     "chooseFile": "Choose File",
     "noFileChosen": "No file chosen",
@@ -106,12 +107,20 @@
       "keyPopulation": "Key Population",
       "keyPopulationSheetTitle": "Which group do they belong to?",
       "keyPopulationConfidentialityNote": "This helps us track vulnerability patterns. Your answer is confidential.",
-      "confirmSelection": "Confirm Selection"
+      "confirmSelection": "Confirm Selection",
+      "primaryVictim": "Victim 1",
+      "victimNumber": "Victim {{number}}",
+      "addAnotherVictim": "+ Add Another Victim",
+      "removeVictim": "Remove"
     },
     "violator": {
       "title": "Who is responsible?",
       "subtitle": "Provide details of the individual, organization, or officer responsible, if known.",
-      "optionalNote": "All fields below are optional except the name, share whatever you know."
+      "optionalNote": "All fields below are optional except the name, share whatever you know.",
+      "primaryViolator": "Violator 1",
+      "violatorNumber": "Violator {{number}}",
+      "addAnotherViolator": "+ Add Another Violator",
+      "removeViolator": "Remove"
     },
     "review": {
       "title": "Review & Submit",
@@ -122,8 +131,14 @@
       "sectionVictim": "Victim",
       "sectionViolator": "Alleged Violator",
       "officeLabel": "Preferred Handling Office",
+      "recommendedTag": "Recommended",
+      "officeHeadOfficeWarning": "Headquarters handles a much higher volume of complaints and may take longer. Your complaint may still end up referred to your state office regardless, choosing that office directly is usually faster.",
       "submitButton": "Submit Complaint",
       "submitting": "Submitting...",
+      "submitSuccessTitle": "Complaint Submitted",
+      "submitSuccessMessage": "Your complaint has been submitted successfully. Our team will review it shortly.",
+      "submitErrorTitle": "Submission Failed",
+      "submitErrorMessage": "Something went wrong while submitting your complaint. Please try again.",
       "offices": {
         "abuja": "Headquarters - Abuja",
         "lagos": "Lagos State Office",
@@ -150,34 +165,12 @@
       "subtitle": "Structuring the incident description from your recording."
     },
     "review": {
-      "introTranscribed": "Your recording has been transcribed into Incident Details, check it over for accuracy. ",
-      "introNotTranscribed": "We couldn't transcribe your recording, so Incident Details is blank, please type it in below. ",
+      "headerSubtitle": "Confirm the details captured from your recording, then complete the rest of the form.",
+      "introTranscribed": "Your recording has been transcribed into the incident description below, check it over for accuracy. ",
+      "introNotTranscribed": "We couldn't transcribe your recording, so the incident description is blank, please type it in below. ",
       "audioSaved": "The original audio has been saved and will be attached to this complaint for future reference.",
-      "audioNotSaved": "The audio recording itself couldn't be saved on this browser/device.",
-      "reviewInstruction": " Review and complete every tab below."
+      "audioNotSaved": "The audio recording itself couldn't be saved on this browser/device."
     },
-    "tabs": {
-      "incident": "Incident Details",
-      "victim": "Victim Info",
-      "violator": "Alleged Violator",
-      "category": "Rights Category"
-    },
-    "incidentTab": {
-      "subjectLabel": "Subject",
-      "subjectPlaceholder": "Brief title of the incident",
-      "descriptionLabel": "Detailed Description",
-      "officeLabel": "Preferred Handling Office"
-    },
-    "categoryTab": {
-      "label": "Complaint Category",
-      "suggestedHintMatch": "Auto-suggested from your recording, based on keywords it picked up, change it if it doesn't fit.",
-      "suggestedHintChanged": "We initially suggested \"{{category}}\" based on your recording."
-    },
-    "actions": {
-      "cancel": "Cancel",
-      "submit": "Submit Complaint"
-    },
-    "successMessage": "Your voice complaint has been submitted successfully.",
     "errors": {
       "speech": {
         "unsupported": "This browser doesn't support live speech-to-text. Recording will still be saved, just type the description below.",

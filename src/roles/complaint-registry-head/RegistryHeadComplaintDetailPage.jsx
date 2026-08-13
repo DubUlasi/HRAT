@@ -1,30 +1,41 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Building2, Briefcase, Mic, Activity, FileText, Hash, Tag, Paperclip } from 'lucide-react';
+import { ArrowLeft, Calendar, Building2, Briefcase, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import StageTracker from '../../components/ui/StageTracker';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import SuccessModal from '../../components/ui/SuccessModal';
-import ComplaintProfileCard from '../../components/complaints/ComplaintProfileCard';
+import HeroPersonCard from '../../components/complaints/HeroPersonCard';
 import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
 import RelatedComplaintsPanel from '../../components/complaints/RelatedComplaintsPanel';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import { useComplaints } from '../../context/ComplaintsContext';
-import { SUB_STATUS, stageProgressPercent } from '../../constants/complaintStatus';
+import { SUB_STATUS, stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import AssignRegistryOfficerModal from './modals/AssignRegistryOfficerModal';
 import ConfirmAdmissibilityCheckModal from './modals/ConfirmAdmissibilityCheckModal';
 import AssignDepartmentModal from './modals/AssignDepartmentModal';
+import ReassignStateOfficeModal from './modals/ReassignStateOfficeModal';
 
 const CONFIRM_COPY = {
   number: { description: 'You are assigning a complaint to a officer to input the complaint number' },
   admissibility: { description: 'You are assigning a complaint to a officer to determine its admissibility' },
   confirmAdmissibility: { description: 'Your response is permanent' },
   department: { description: 'You are assigning a complaint to a department' },
+  reassignState: { description: 'The complaint moves out of the head-office queue until the state office sends it back.' },
+  sendToCouncil: { description: 'This is a one-way action, once sent to the Executive Secretary for council review, it cannot be sent back to the department.' },
+};
+
+const STAGE_LABEL = {
+  number: 'Complaint Number Assignment',
+  admissibility: 'Admissibility Officer Assignment',
+  confirmAdmissibility: 'Admissibility Confirmation',
+  department: 'Department Assignment',
+  reassignState: 'State Office Reassignment',
 };
 
 const SUCCESS_COPY = {
@@ -32,16 +43,22 @@ const SUCCESS_COPY = {
   admissibility: 'Assigned officer to check admissibility of complaint successfully!',
   confirmAdmissibility: 'Response recorded successfully',
   department: 'Complaint assigned to department successfully',
+  reassignState: 'Reassigned to state office successfully!',
+  sendToCouncil: 'Sent to the Executive Secretary for council review!',
 };
 
 export default function RegistryHeadComplaintDetailPage() {
   const { complaintId } = useParams();
   const {
     getComplaintById,
+    findRelatedComplaints,
+    attachDocuments,
     assignComplaintNumberOfficer,
     assignAdmissibilityOfficer,
     confirmAdmissibilityCheck,
     assignToDepartment,
+    reassignToStateOffice,
+    sendToCouncil,
   } = useComplaints();
 
   const complaint = getComplaintById(complaintId);
@@ -81,6 +98,13 @@ export default function RegistryHeadComplaintDetailPage() {
         department: payload.departmentId,
         remark: payload.remark,
       });
+    } else if (type === 'reassignState') {
+      reassignToStateOffice(complaint.id, { officeId: payload.officeId, remark: payload.remark });
+    } else if (type === 'sendToCouncil') {
+      sendToCouncil(complaint.id);
+    }
+    if (payload?.files?.length) {
+      attachDocuments(complaint.id, payload.files, STAGE_LABEL[type] || null);
     }
     setFlow((f) => ({ ...f, step: 'success' }));
   };
@@ -91,16 +115,38 @@ export default function RegistryHeadComplaintDetailPage() {
   const renderActionButton = () => {
     switch (complaint.subStatus) {
       case SUB_STATUS.NEW:
-        return <Button variant="primary" onClick={() => startFlow('number')}>Assign For Complaint Number</Button>;
+        return (
+          <>
+            <Button variant="primary" onClick={() => startFlow('number')}>Assign For Complaint Number</Button>
+            <Button variant="secondary" onClick={() => startFlow('reassignState')}>Reassign To State Office</Button>
+          </>
+        );
+      case SUB_STATUS.SENT_TO_STATE_OFFICE:
+        return <span className="status-waiting-note">Awaiting return from the state office</span>;
       case SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT:
-        return <Button variant="primary" onClick={() => startFlow('admissibility')}>Assign For Admissibility Check</Button>;
+        if (complaint.complaintNumber) {
+          return <Button variant="primary" onClick={() => startFlow('admissibility')}>Assign For Admissibility Check</Button>;
+        }
+        return <span className="status-waiting-note">Awaiting Desk Officer to process the complaint number</span>;
       case SUB_STATUS.ADMISSIBILITY_CHECK:
-        return <Button variant="primary" onClick={() => startFlow('confirmAdmissibility')}>Confirm Admissibility Check</Button>;
+        if (complaint.admissibility.decision) {
+          return <Button variant="primary" onClick={() => startFlow('confirmAdmissibility')}>Confirm Admissibility Check</Button>;
+        }
+        return <span className="status-waiting-note">Awaiting Desk Officer's admissibility decision</span>;
       case SUB_STATUS.PRELIMINARY_INVESTIGATION:
+      case SUB_STATUS.DEPT_DIRECTOR_REVIEW:
         if (!complaint.department) {
           return <Button variant="primary" onClick={() => startFlow('department')}>Assign To Department</Button>;
         }
         return null;
+      case SUB_STATUS.DEPT_REJECTED:
+        return <Button variant="primary" onClick={() => startFlow('department')}>Re-assign To Department</Button>;
+      case SUB_STATUS.DEPT_COMPLETE:
+        return (
+          <Button variant="primary" onClick={() => setFlow({ type: 'sendToCouncil', step: 'confirm', payload: null })}>
+            Send To Council
+          </Button>
+        );
       default:
         return null;
     }
@@ -110,6 +156,7 @@ export default function RegistryHeadComplaintDetailPage() {
   const progressPct = stageProgressPercent(complaint.stageIndex);
   const actionButton = renderActionButton();
   const categoryColor = CATEGORY_COLOR[complaint.category] || 'info';
+  const isRepeatViolator = findRelatedComplaints(complaint.id).length > 0;
 
   return (
     <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
@@ -119,40 +166,60 @@ export default function RegistryHeadComplaintDetailPage() {
         </Link>
       </div>
 
-      <div className="case-detail-hero" style={{ borderTopColor: `var(--${categoryColor}-color)` }}>
-        <div className="hero-left-content">
-          <div className="hero-tags-row">
-            {complaint.complaintNumber && <span className="detail-tracking-code">{complaint.complaintNumber}</span>}
-            <span className={`category-pill pill-${categoryColor}`}>{CATEGORY_LABELS[complaint.category]}</span>
-            {complaint.admissibility.decision && (
-              <span className={`urgency-pill ${complaint.admissibility.decision === 'ADMISSIBLE' ? 'positive' : 'negative'}`}>
-                {complaint.admissibility.decision}
-              </span>
-            )}
-          </div>
+      <div className="case-detail-hero" style={{ '--category-color': `var(--${categoryColor}-color)`, '--category-tint': `var(--${categoryColor}-light)` }}>
+        <div className="hero-top-row">
+          <div className="hero-left-content">
+            <div className="hero-tags-row">
+              {complaint.complaintNumber && <span className="detail-tracking-code">{complaint.complaintNumber}</span>}
+              <span className={`category-pill pill-${categoryColor}`}>{CATEGORY_LABELS[complaint.category]}</span>
+              {isRepeatViolator && (
+                <span className="urgency-pill negative repeat-violator-pill">
+                  <AlertOctagon size={11} /> Repeat Violator
+                </span>
+              )}
+              {complaint.admissibility.decision && (
+                <span className={`urgency-pill ${complaint.admissibility.decision === 'ADMISSIBLE' ? 'positive' : 'negative'}`}>
+                  {complaint.admissibility.decision}
+                </span>
+              )}
+            </div>
 
-          <h1 className="hero-case-title">{complaint.subject}</h1>
-          <p className="hero-case-description">{complaint.description}</p>
+            <h1 className="hero-case-title">{complaint.subject}</h1>
+            <p className="hero-case-description">{complaint.description}</p>
 
-          <div className="hero-meta-row">
-            <span><Calendar size={13} /> Filed {new Date(complaint.dateFiled).toDateString()}</span>
-            {officeName && <span><Building2 size={13} /> {officeName}</span>}
-            {departmentName && <span><Briefcase size={13} /> {departmentName}</span>}
-          </div>
-        </div>
-
-        <div className="status-hero-card">
-          <span className="status-card-label">Current Status</span>
-          <StatusBadge status={complaint.subStatus} />
-
-          <div className="status-progress-ring" style={{ '--pct': progressPct }}>
-            <div className="status-progress-ring-inner">
-              <span className="status-progress-value">{progressPct}%</span>
-              <span className="status-progress-caption">Complete</span>
+            <div className="hero-meta-row">
+              <span><Calendar size={13} /> Filed {new Date(complaint.dateFiled).toDateString()}</span>
+              {officeName && <span><Building2 size={13} /> {officeName}</span>}
+              {departmentName && <span><Briefcase size={13} /> {departmentName}</span>}
             </div>
           </div>
 
-          {actionButton && <div className="status-card-action">{actionButton}</div>}
+          <div className="status-hero-card">
+            <span className="status-card-label">Current Status</span>
+            <StatusBadge status={complaint.subStatus} />
+            <div className="status-progress-ring" style={{ '--pct': progressPct }}>
+              <div className="status-progress-ring-inner">
+                <span className="status-progress-value">{progressPct}%</span>
+                <span className="status-progress-caption">Complete</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {actionButton && <div className="hero-actions-row">{actionButton}</div>}
+
+        <div className="hero-people-section">
+          <span className="hero-people-label"><Users size={12} /> People Involved</span>
+          <div className="hero-people-grid">
+            <HeroPersonCard roleLabel="Victim" person={complaint.victim} tagVariant="victim" />
+            {complaint.additionalVictims?.map((person, idx) => (
+              <HeroPersonCard key={`victim-${idx}`} roleLabel={`Victim ${idx + 2}`} person={person} tagVariant="victim" />
+            ))}
+            <HeroPersonCard roleLabel="Alleged Violator" person={complaint.allegedViolator} tagVariant="violator" />
+            {complaint.additionalViolators?.map((person, idx) => (
+              <HeroPersonCard key={`violator-${idx}`} roleLabel={`Alleged Violator ${idx + 2}`} person={person} tagVariant="violator" />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -166,17 +233,23 @@ export default function RegistryHeadComplaintDetailPage() {
               <button type="button" className="btn-link" onClick={() => setShowActivityLog(true)}>View Full Log</button>
             </div>
             <div className="activity-vertical-timeline">
-              {sortedActivity.slice(0, 5).map((entry, idx) => (
-                <div key={entry.id} className={`activity-timeline-item ${idx === 0 ? 'current' : ''}`}>
-                  <span className="activity-node-icon">
-                    {idx === 0 ? <span className="current-ring-inner" /> : <span className="locked-circle" />}
-                  </span>
-                  <div className="activity-item-content">
-                    <div className="activity-item-header">{entry.message}</div>
-                    <div className="activity-item-date">{new Date(entry.timestamp).toLocaleString()}, {entry.actor}</div>
+              {buildActivityTimeline(sortedActivity).map((entry, idx) => {
+                const bounceBack = isBounceBackActivity(entry.message);
+                return (
+                  <div key={entry.id} className={`activity-timeline-item ${idx === 0 ? 'current' : ''} ${bounceBack ? 'bounce-back' : ''}`}>
+                    <span className="activity-node-icon">
+                      {bounceBack ? <RotateCcw size={10} /> : idx === 0 ? <span className="current-ring-inner" /> : <span className="locked-circle" />}
+                    </span>
+                    <div className="activity-item-content">
+                      <div className="activity-item-header">
+                        {entry.message}
+                        {bounceBack && <span className="bounce-back-tag">Sent Back</span>}
+                      </div>
+                      <div className="activity-item-date">{new Date(entry.timestamp).toLocaleString()}, {entry.actor}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -216,22 +289,36 @@ export default function RegistryHeadComplaintDetailPage() {
             </div>
           )}
 
-          {complaint.evidence?.length > 0 && (
+          {(complaint.evidence?.length > 0 || complaint.documents?.length > 0) && (
             <div className="detail-section-card">
-              <h3 className="section-card-title"><Paperclip size={15} /> Evidence ({complaint.evidence.length})</h3>
+              <h3 className="section-card-title">
+                <Paperclip size={15} /> Documents &amp; Resources ({(complaint.evidence?.length || 0) + (complaint.documents?.length || 0)})
+              </h3>
               <div className="evidence-file-list">
-                {complaint.evidence.map((file, idx) => (
-                  <a key={`${file.name}-${idx}`} href={file.url} target="_blank" rel="noreferrer" className="evidence-file-row">
+                {complaint.evidence?.map((file, idx) => (
+                  <a key={`ev-${file.name}-${idx}`} href={file.url} target="_blank" rel="noreferrer" className="evidence-file-row">
                     <FileText size={14} />
-                    <span className="evidence-file-name">{file.name}</span>
+                    <div className="evidence-file-info">
+                      <span className="evidence-file-name">{file.name}</span>
+                      <span className="evidence-file-meta">Filed with complaint</span>
+                    </div>
+                  </a>
+                ))}
+                {complaint.documents?.map((doc) => (
+                  <a key={doc.id} href={doc.url} target="_blank" rel="noreferrer" className="evidence-file-row">
+                    <FileText size={14} />
+                    <div className="evidence-file-info">
+                      <span className="evidence-file-name">{doc.name}</span>
+                      <span className="evidence-file-meta">
+                        {doc.stage ? `${doc.stage} · ` : ''}{doc.uploadedBy}, {new Date(doc.uploadedAt).toLocaleDateString()}
+                      </span>
+                    </div>
                   </a>
                 ))}
               </div>
             </div>
           )}
 
-          <ComplaintProfileCard roleLabel="Victim" person={complaint.victim} tagVariant="victim" />
-          <ComplaintProfileCard roleLabel="Alleged Violator" person={complaint.allegedViolator} tagVariant="violator" />
           <RelatedComplaintsPanel
             complaintId={complaint.id}
             onViewFullHistory={() => setShowOffenderHistory(true)}
@@ -267,10 +354,16 @@ export default function RegistryHeadComplaintDetailPage() {
         onClose={closeFlow}
         onSubmit={handleInputSubmit}
       />
+      <ReassignStateOfficeModal
+        key={`reassign-state-${complaint.id}`}
+        open={flow.type === 'reassignState' && flow.step === 'input'}
+        onClose={closeFlow}
+        onSubmit={handleInputSubmit}
+      />
 
       <ConfirmActionModal
         open={flow.step === 'confirm'}
-        description={flow.type ? CONFIRM_COPY[flow.type].description : ''}
+        description={CONFIRM_COPY[flow.type]?.description || ''}
         onCancel={closeFlow}
         onConfirm={handleConfirm}
       />
@@ -285,6 +378,7 @@ export default function RegistryHeadComplaintDetailPage() {
         open={showActivityLog}
         onClose={() => setShowActivityLog(false)}
         activityLog={complaint.activityLog}
+        documents={complaint.documents}
       />
 
       <OffenderCaseHistoryDrawer

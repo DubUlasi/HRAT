@@ -5,21 +5,26 @@ import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
 import Select from '../../components/ui/Select';
+import Input from '../../components/ui/Input';
 import EmptyState from '../../components/ui/EmptyState';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
+import Pagination from '../../components/ui/Pagination';
 import BreakdownList from '../../components/dashboard/BreakdownList';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { SUB_STATUS, getSubStatusMeta } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { offices } from '../../data/mockOfficers';
 import { PERIOD_OPTIONS, withinPeriod } from '../../constants/reportPeriods';
+import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
+import { ROLE_NAV_ITEMS } from '../roleNavMap';
 
-const DEFAULT_FILTERS = { period: 'all', category: 'all', status: 'all', office: 'all' };
+const DEFAULT_FILTERS = { period: 'all', category: 'all', status: 'all', office: 'all', customStart: '', customEnd: '' };
 
 function applyFilters(complaints, filters) {
   return complaints.filter((c) => {
-    if (!withinPeriod(c.dateFiled, filters.period)) return false;
+    if (!withinPeriod(c.dateFiled, filters.period, { start: filters.customStart, end: filters.customEnd })) return false;
     if (filters.category !== 'all' && c.category !== filters.category) return false;
     if (filters.status !== 'all' && c.subStatus !== filters.status) return false;
     if (filters.office !== 'all' && c.office !== filters.office) return false;
@@ -61,7 +66,8 @@ function downloadCsv(rows, filters) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `hrat-report-${filters.period}-${filters.category}-${filters.status}-${filters.office}.csv`;
+  const periodSlug = filters.period === 'custom' ? `${filters.customStart || 'any'}_to_${filters.customEnd || 'any'}` : filters.period;
+  link.download = `hrat-report-${periodSlug}-${filters.category}-${filters.status}-${filters.office}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -72,6 +78,8 @@ function downloadCsv(rows, filters) {
 // preview (so the results don't shift under you while you're still adjusting filters),
 // then Download to export that exact snapshot as CSV.
 export default function RegistryHeadReportsPage() {
+  const { user } = useAuth();
+  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const { complaints } = useComplaints();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [report, setReport] = useState(null);
@@ -79,17 +87,19 @@ export default function RegistryHeadReportsPage() {
   const patchFilter = (key, value) => setFilters((prev) => ({ ...prev, [key]: value }));
 
   const handleGenerate = () => {
-    setReport({ rows: applyFilters(complaints, filters), filters: { ...filters } });
+    setReport({ rows: applyFilters(complaints, filters), filters: { ...filters }, generatedAt: Date.now() });
   };
 
+  const pagination = usePagination(report?.rows || [], 10, report?.generatedAt);
+
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser}>
       <PageHeader
         title="Reports"
         subtitle="Build a custom report from whatever combination of filters you need, then download it."
       />
 
-      <div className="filter-toolbar">
+      <div className="filter-toolbar filter-toolbar-fill">
         <FormField label="Period">
           <Select value={filters.period} onChange={(e) => patchFilter('period', e.target.value)}>
             {PERIOD_OPTIONS.map((opt) => (
@@ -97,6 +107,16 @@ export default function RegistryHeadReportsPage() {
             ))}
           </Select>
         </FormField>
+        {filters.period === 'custom' && (
+          <>
+            <FormField label="From">
+              <Input type="date" value={filters.customStart} onChange={(e) => patchFilter('customStart', e.target.value)} />
+            </FormField>
+            <FormField label="To">
+              <Input type="date" value={filters.customEnd} onChange={(e) => patchFilter('customEnd', e.target.value)} />
+            </FormField>
+          </>
+        )}
         <FormField label="Category">
           <Select value={filters.category} onChange={(e) => patchFilter('category', e.target.value)}>
             <option value="all">All Categories</option>
@@ -155,8 +175,17 @@ export default function RegistryHeadReportsPage() {
               </div>
 
               <ComplaintsTable
-                complaints={report.rows}
+                complaints={pagination.pageItems}
                 getActionHref={(c) => `/registry-head/complaints/${c.id}`}
+              />
+
+              <Pagination
+                page={pagination.page}
+                pageCount={pagination.pageCount}
+                pageSize={pagination.pageSize}
+                totalItems={pagination.totalItems}
+                onPageChange={pagination.setPage}
+                onPageSizeChange={pagination.setPageSize}
               />
             </>
           )}

@@ -1,9 +1,10 @@
 import React from 'react';
-import { ChevronDown, Pencil, MapPin, Calendar, Paperclip } from 'lucide-react';
+import { ChevronDown, Pencil, MapPin, Calendar, Paperclip, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../../constants/complaintCategories';
 import { getSubCategories } from '../../../constants/complaintSubCategories';
 import { getKeyPopulation } from '../../../constants/keyPopulations';
+import { suggestOfficeFromLocation } from '../../../constants/officeRecommendation';
 
 // Step 5 of 5 — "Review & Submit". Summarizes steps 1-4 (all state lives in the parent, so
 // nothing is lost navigating back via the Edit links), plus the Preferred Handling Office
@@ -12,8 +13,8 @@ export default function StepReview({
   category,
   subCategory,
   incident,
-  victim,
-  violator,
+  victims,
+  violators,
   office,
   onOfficeChange,
   onEditStep,
@@ -25,7 +26,7 @@ export default function StepReview({
   const { t } = useTranslation();
   const subCategoryLabel = getSubCategories(category).find((o) => o.value === subCategory)?.label;
   const categoryColor = CATEGORY_COLOR[category] || 'info';
-  const selectedPopulation = getKeyPopulation(victim.keyPopulationGroup);
+  const recommendedOffice = suggestOfficeFromLocation(incident.location);
 
   return (
     <div className="su-step active">
@@ -71,30 +72,45 @@ export default function StepReview({
 
         <div className="review-summary-card">
           <div className="review-summary-header">
-            <span className="review-summary-title">{t('wizard.review.sectionVictim')}</span>
+            <span className="review-summary-title">
+              {t('wizard.review.sectionVictim')}{victims.length > 1 ? ` (${victims.length})` : ''}
+            </span>
             <button type="button" className="review-edit-link" onClick={() => onEditStep(3)}>
               <Pencil size={12} /> {t('wizard.review.edit')}
             </button>
           </div>
           <div className="review-summary-body">
-            <p className="review-summary-line strong">{victim.firstName} {victim.lastName}</p>
-            <p className="review-summary-meta">{victim.phone}</p>
-            {victim.address && <p className="review-summary-meta"><MapPin size={12} /> {victim.address}</p>}
-            {selectedPopulation && <p className="review-summary-meta">{selectedPopulation.label}</p>}
+            {victims.map((victim, index) => {
+              const victimPopulation = getKeyPopulation(victim.keyPopulationGroup);
+              return (
+                <div className="review-summary-person-block" key={index}>
+                  <p className="review-summary-line strong">{victim.firstName} {victim.lastName}</p>
+                  <p className="review-summary-meta">{victim.phone}</p>
+                  {victim.address && <p className="review-summary-meta"><MapPin size={12} /> {victim.address}</p>}
+                  {victimPopulation && <p className="review-summary-meta">{victimPopulation.label}</p>}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <div className="review-summary-card">
           <div className="review-summary-header">
-            <span className="review-summary-title">{t('wizard.review.sectionViolator')}</span>
+            <span className="review-summary-title">
+              {t('wizard.review.sectionViolator')}{violators.length > 1 ? ` (${violators.length})` : ''}
+            </span>
             <button type="button" className="review-edit-link" onClick={() => onEditStep(4)}>
               <Pencil size={12} /> {t('wizard.review.edit')}
             </button>
           </div>
           <div className="review-summary-body">
-            <p className="review-summary-line strong">{violator.firstName} {violator.lastName}</p>
-            {violator.phone && <p className="review-summary-meta">{violator.phone}</p>}
-            {violator.address && <p className="review-summary-meta"><MapPin size={12} /> {violator.address}</p>}
+            {violators.map((violator, index) => (
+              <div className="review-summary-person-block" key={index}>
+                <p className="review-summary-line strong">{violator.firstName} {violator.lastName}</p>
+                {violator.phone && <p className="review-summary-meta">{violator.phone}</p>}
+                {violator.address && <p className="review-summary-meta"><MapPin size={12} /> {violator.address}</p>}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -103,6 +119,7 @@ export default function StepReview({
           <div className="su-select-wrap">
             <select
               className="su-input-white su-select"
+              style={office && office === recommendedOffice ? { paddingRight: 118 } : undefined}
               value={office}
               onChange={(e) => onOfficeChange(e.target.value)}
             >
@@ -113,8 +130,16 @@ export default function StepReview({
               <option value="enugu">{t('wizard.review.offices.enugu')}</option>
               <option value="rivers">{t('wizard.review.offices.rivers')}</option>
             </select>
+            {office && office === recommendedOffice && (
+              <span className="recommended-tag recommended-tag-inline">{t('wizard.review.recommendedTag')}</span>
+            )}
             <ChevronDown className="su-select-chevron" size={16} />
           </div>
+          {office === 'abuja' && (
+            <p className="office-head-office-warning">
+              <AlertTriangle size={13} /> {t('wizard.review.officeHeadOfficeWarning')}
+            </p>
+          )}
         </div>
 
         <div className="su-step-nav">

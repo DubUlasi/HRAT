@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { useTranslation } from '../../context/I18nContext';
+import { suggestOfficeFromLocation } from '../../constants/officeRecommendation';
+import { splitName } from '../../constants/voiceExtraction';
+import SuccessModal from '../ui/SuccessModal';
 import StepPhoneGate from './wizard-steps/StepPhoneGate';
 import StepCategory from './wizard-steps/StepCategory';
 import StepIncidentDetails from './wizard-steps/StepIncidentDetails';
@@ -45,63 +48,134 @@ function emptyVictim(initialPhone) {
   };
 }
 
-const EMPTY_VIOLATOR = { firstName: '', lastName: '', phone: '', email: '', gender: '', address: '' };
+function emptyViolator() {
+  return { firstName: '', lastName: '', phone: '', email: '', gender: '', address: '' };
+}
 
-export default function ComplaintWizardForm({ onComplete, initialVictimPhone, skipPhoneGate = false }) {
+// Every field a victim/violator step collects, minus the wizard-only bookkeeping fields
+// (relationship/populationType/keyPopulationGroup are victim-only), reshaped into the flat
+// {name, gender, phone, email, address, ...} record ComplaintsContext.createComplaint expects.
+function toVictimRecord(v) {
+  return {
+    name: `${v.firstName} ${v.lastName}`.trim(),
+    gender: v.gender,
+    phone: v.phone,
+    email: v.email || null,
+    address: v.address || null,
+    populationType: v.populationType,
+    keyPopulationGroup: v.keyPopulationGroup,
+  };
+}
+
+function toViolatorRecord(v) {
+  return {
+    name: `${v.firstName} ${v.lastName}`.trim(),
+    gender: v.gender || null,
+    phone: v.phone || null,
+    email: v.email || null,
+    address: v.address || null,
+  };
+}
+
+export default function ComplaintWizardForm({
+  onComplete,
+  initialVictimPhone,
+  skipPhoneGate = false,
+  initialCategory = '',
+  initialSubCategory = '',
+  initialSubject = '',
+  initialDescription = '',
+  initialLocation = '',
+  initialVictimName = '',
+  initialViolatorName = '',
+  voiceRecordingUrl = null,
+}) {
   const { createComplaint } = useComplaints();
   const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(skipPhoneGate ? 1 : 0);
   const [phoneGateValue, setPhoneGateValue] = useState(initialVictimPhone || '');
 
-  const [category, setCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
-  const [incident, setIncident] = useState(EMPTY_INCIDENT);
-  const [victim, setVictim] = useState(() => emptyVictim(initialVictimPhone));
-  const [violator, setViolator] = useState(EMPTY_VIOLATOR);
+  const [category, setCategory] = useState(initialCategory);
+  const [subCategory, setSubCategory] = useState(initialSubCategory);
+  const [incident, setIncident] = useState(() => ({
+    ...EMPTY_INCIDENT,
+    subject: initialSubject,
+    description: initialDescription,
+    location: initialLocation,
+  }));
+  // Arrays, always at least one entry — a group complaint is just more than one victim and/or
+  // violator, so the single-person case (the vast majority) is simply the array-of-one case.
+  const [victims, setVictims] = useState(() => {
+    const { firstName, lastName } = splitName(initialVictimName);
+    return [{ ...emptyVictim(initialVictimPhone), firstName, lastName }];
+  });
+  const [violators, setViolators] = useState(() => {
+    const { firstName, lastName } = splitName(initialViolatorName);
+    return [{ ...emptyViolator(), firstName, lastName }];
+  });
   const [office, setOffice] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null); // null | 'success' | 'error'
 
   const patchIncident = (patch) => setIncident((prev) => ({ ...prev, ...patch }));
-  const patchVictim = (patch) => setVictim((prev) => ({ ...prev, ...patch }));
-  const patchViolator = (patch) => setViolator((prev) => ({ ...prev, ...patch }));
+
+  const patchVictim = (index, patch) => setVictims((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  const addVictim = () => setVictims((prev) => [...prev, emptyVictim()]);
+  const removeVictim = (index) => setVictims((prev) => prev.filter((_, i) => i !== index));
+
+  const patchViolator = (index, patch) => setViolators((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  const addViolator = () => setViolators((prev) => [...prev, emptyViolator()]);
+  const removeViolator = (index) => setViolators((prev) => prev.filter((_, i) => i !== index));
 
   const handlePhoneGateContinue = () => {
-    // "Myself" is the default relationship, so the gate's phone number doubles as the
+    // "Myself" is the default relationship, so the gate's phone number doubles as the primary
     // victim's phone unless the complainant has already typed something different in.
-    setVictim((prev) => ({ ...prev, phone: prev.phone || phoneGateValue }));
+    setVictims((prev) => prev.map((v, i) => (i === 0 ? { ...v, phone: v.phone || phoneGateValue } : v)));
     setCurrentStep(1);
   };
+
+  // Recommends a handling office from where the incident happened, once known — only ever
+  // defaults it, never overrides a choice the user already made themselves.
+  useEffect(() => {
+    if (!office && incident.location) {
+      const suggested = suggestOfficeFromLocation(incident.location);
+      if (suggested) setOffice(suggested);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incident.location]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitting(true);
     setTimeout(() => {
-      createComplaint({
-        subject: incident.subject,
-        category,
-        description: incident.description,
-        office: OFFICE_ID_MAP[office] || office || null,
-        evidenceFiles: incident.evidenceFiles,
-        victim: {
-          name: `${victim.firstName} ${victim.lastName}`.trim(),
-          gender: victim.gender,
-          phone: victim.phone,
-          email: victim.email || null,
-          address: victim.address || null,
-          populationType: victim.populationType,
-          keyPopulationGroup: victim.keyPopulationGroup,
-        },
-        allegedViolator: {
-          name: `${violator.firstName} ${violator.lastName}`.trim(),
-          gender: violator.gender || null,
-          phone: violator.phone || null,
-          email: violator.email || null,
-          address: violator.address || null,
-        },
-      });
-      onComplete();
+      try {
+        createComplaint({
+          subject: incident.subject,
+          category,
+          description: incident.description,
+          office: OFFICE_ID_MAP[office] || office || null,
+          evidenceFiles: incident.evidenceFiles,
+          victim: toVictimRecord(victims[0]),
+          allegedViolator: toViolatorRecord(violators[0]),
+          additionalVictims: victims.slice(1).map(toVictimRecord),
+          additionalViolators: violators.slice(1).map(toViolatorRecord),
+          voiceRecordingUrl,
+        });
+        setSubmitResult('success');
+      } catch (err) {
+        setSubmitResult('error');
+      }
+      setSubmitting(false);
     }, 600);
+  };
+
+  // Success only leaves the wizard once the user has acknowledged the modal; on failure they
+  // stay on the Review step so they can just hit Submit again.
+  const handleFeedbackClose = () => {
+    const wasSuccess = submitResult === 'success';
+    setSubmitResult(null);
+    if (wasSuccess) onComplete();
   };
 
   const stepLabel = (n) => t('wizard.stepLabel', { current: n, total: WIZARD_STEPS.length });
@@ -168,8 +242,10 @@ export default function ComplaintWizardForm({ onComplete, initialVictimPhone, sk
 
           {currentStep === 3 && (
             <StepVictimDetails
-              value={victim}
+              victims={victims}
               onChange={patchVictim}
+              onAdd={addVictim}
+              onRemove={removeVictim}
               onBack={() => setCurrentStep(2)}
               onContinue={() => setCurrentStep(4)}
               stepLabel={stepLabel(3)}
@@ -178,8 +254,10 @@ export default function ComplaintWizardForm({ onComplete, initialVictimPhone, sk
 
           {currentStep === 4 && (
             <StepViolatorDetails
-              value={violator}
+              violators={violators}
               onChange={patchViolator}
+              onAdd={addViolator}
+              onRemove={removeViolator}
               onBack={() => setCurrentStep(3)}
               onContinue={() => setCurrentStep(5)}
               stepLabel={stepLabel(4)}
@@ -191,8 +269,8 @@ export default function ComplaintWizardForm({ onComplete, initialVictimPhone, sk
               category={category}
               subCategory={subCategory}
               incident={incident}
-              victim={victim}
-              violator={violator}
+              victims={victims}
+              violators={violators}
               office={office}
               onOfficeChange={setOffice}
               onEditStep={setCurrentStep}
@@ -204,6 +282,22 @@ export default function ComplaintWizardForm({ onComplete, initialVictimPhone, sk
           )}
         </div>
       </main>
+
+      <SuccessModal
+        open={submitResult === 'success'}
+        title={t('wizard.review.submitSuccessTitle')}
+        message={t('wizard.review.submitSuccessMessage')}
+        okLabel={t('common.ok')}
+        onClose={handleFeedbackClose}
+      />
+      <SuccessModal
+        open={submitResult === 'error'}
+        variant="error"
+        title={t('wizard.review.submitErrorTitle')}
+        message={t('wizard.review.submitErrorMessage')}
+        okLabel={t('common.ok')}
+        onClose={handleFeedbackClose}
+      />
     </>
   );
 }

@@ -5,8 +5,9 @@ import ActionIconButton from './ActionIconButton';
 import EmptyState from './EmptyState';
 import Avatar from './Avatar';
 import { stageProgressPercent } from '../../constants/complaintStatus';
+import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 
-export default function ComplaintsTable({ complaints, getActionHref }) {
+export default function ComplaintsTable({ complaints, getActionHref, getReason }) {
   if (!complaints.length) {
     return <EmptyState />;
   }
@@ -30,19 +31,25 @@ export default function ComplaintsTable({ complaints, getActionHref }) {
               <td>
                 <div className="complaint-subject-cell">
                   <span className="complaint-subject">{c.subject}</span>
-                  <span className="complaint-date">{c.dateFiled}</span>
+                  <div className="complaint-subject-meta-row">
+                    <span className="complaint-date">{c.dateFiled}</span>
+                    <span className={`category-pill pill-${CATEGORY_COLOR[c.category] || 'info'}`}>{CATEGORY_LABELS[c.category]}</span>
+                  </div>
+                  {getReason && getReason(c) && <span className="complaint-subject-reason">{getReason(c)}</span>}
                 </div>
               </td>
               <td>
                 <div className="person-cell">
                   <Avatar name={c.victim.name} size={28} />
                   <span>{c.victim.name}</span>
+                  {c.additionalVictims?.length > 0 && <span className="person-cell-more">+{c.additionalVictims.length}</span>}
                 </div>
               </td>
               <td>
                 <div className="person-cell">
                   <Avatar name={c.allegedViolator.name} size={28} />
                   <span>{c.allegedViolator.name}</span>
+                  {c.additionalViolators?.length > 0 && <span className="person-cell-more">+{c.additionalViolators.length}</span>}
                 </div>
               </td>
               <td><StatusBadge status={c.subStatus} /></td>
