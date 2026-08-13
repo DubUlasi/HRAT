@@ -1382,6 +1382,13 @@
   transform: translateX(2px);
 }
 
+/* A related complaint outside the current role's own scope (e.g. filed against another
+   department) — still worth surfacing so the pattern is visible, just not clickable. */
+.related-complaint-row-locked {
+  opacity: 0.65;
+  cursor: default;
+}
+
 .related-complaint-main {
   display: flex;
   flex-direction: column;

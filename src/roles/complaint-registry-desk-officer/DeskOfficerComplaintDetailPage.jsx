@@ -17,6 +17,7 @@ import { SUB_STATUS, stageProgressPercent, isBounceBackActivity, buildActivityTi
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
 import { deskOfficerNavItems } from './navConfig';
+import { userCanViewComplaint } from '../scopeComplaints';
 import SubmitAdmissibilityDecisionModal from './modals/SubmitAdmissibilityDecisionModal';
 
 const CONFIRM_COPY = {
@@ -51,7 +52,7 @@ export default function DeskOfficerComplaintDetailPage() {
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [showOffenderHistory, setShowOffenderHistory] = useState(false);
 
-  if (!complaint) {
+  if (!complaint || !userCanViewComplaint(complaint, user)) {
     return (
       <AppShell navItems={deskOfficerNavItems} user={user}>
         <div className="detail-top-nav-bar">
@@ -60,7 +61,7 @@ export default function DeskOfficerComplaintDetailPage() {
           </Link>
         </div>
         <h1>Complaint not found</h1>
-        <p>This complaint may have been removed or the link is incorrect.</p>
+        <p>This complaint may have been removed, or you don't have access to it.</p>
       </AppShell>
     );
   }

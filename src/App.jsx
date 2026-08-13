@@ -42,6 +42,7 @@ import RegistryHeadReportsPage from './roles/complaint-registry-head/RegistryHea
 import RegistryHeadTrackPage from './roles/complaint-registry-head/RegistryHeadTrackPage';
 import RegistryHeadHelpPage from './roles/complaint-registry-head/RegistryHeadHelpPage';
 import RegistryHeadSettingsPage from './roles/complaint-registry-head/RegistryHeadSettingsPage';
+import { REPEAT_VIOLATOR_ROLES } from './roles/scopeComplaints';
 
 export default function App() {
   useEffect(() => {
@@ -95,8 +96,8 @@ export default function App() {
                     Secretary get the full list/detail pages. Supervisor/Investigator/Desk
                     Officer only ever see the repeat-violator flag inline on a complaint's own
                     detail page, no dedicated page of their own. */}
-                <Route path="/registry-head/repeat-offenders" element={<RequireRole role={['registry-head', 'department-director', 'executive-secretary']}><RegistryHeadRepeatOffendersPage /></RequireRole>} />
-                <Route path="/registry-head/repeat-offenders/:violatorId" element={<RequireRole role={['registry-head', 'department-director', 'executive-secretary']}><RegistryHeadViolatorDetailPage /></RequireRole>} />
+                <Route path="/registry-head/repeat-offenders" element={<RequireRole role={REPEAT_VIOLATOR_ROLES}><RegistryHeadRepeatOffendersPage /></RequireRole>} />
+                <Route path="/registry-head/repeat-offenders/:violatorId" element={<RequireRole role={REPEAT_VIOLATOR_ROLES}><RegistryHeadViolatorDetailPage /></RequireRole>} />
                 <Route path="/registry-head/call-center" element={<RequireRole role="registry-head"><RegistryHeadCallCenterPage /></RequireRole>} />
 
                 {/* Shared across every role's sidebar (Insights/Support sections) — any

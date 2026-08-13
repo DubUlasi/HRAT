@@ -16,3 +16,15 @@ export const ROLE_NAV_ITEMS = {
   'department-investigator': departmentInvestigatorNavItems,
   'executive-secretary': executiveSecretaryNavItems,
 };
+
+// Every role has its own complaint detail route at `/{base}/complaints/:id` — used by shared
+// pages like Track Complaint so a "View Complaint" link sends the visitor to THEIR OWN role's
+// detail route (which also enforces their scoping) instead of always hardcoding Registry Head's.
+export const ROLE_COMPLAINT_DETAIL_BASE = {
+  'registry-head': '/registry-head/complaints',
+  'desk-officer': '/desk-officer/complaints',
+  'department-director': '/department-director/complaints',
+  'department-supervisor': '/department-supervisor/complaints',
+  'department-investigator': '/department-investigator/complaints',
+  'executive-secretary': '/executive-secretary/complaints',
+};

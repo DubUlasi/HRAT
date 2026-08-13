@@ -6,8 +6,6 @@ import Button from '../../components/ui/Button';
 import ComplaintsCardGrid from '../../components/complaints/ComplaintsCardGrid';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import MakeComplaintModal from '../../components/complaints/MakeComplaintModal';
-import VoiceReportModal from '../../components/complaints/VoiceReportModal';
-import ReportChoiceModal from '../../components/complaints/ReportChoiceModal';
 import SearchBar from '../../components/ui/SearchBar';
 import ViewToggle from '../../components/ui/ViewToggle';
 import Pagination from '../../components/ui/Pagination';
@@ -46,9 +44,7 @@ function matchesSearch(complaint, search) {
 
 export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
   const { complaints } = useComplaints();
-  const [showReportChoice, setShowReportChoice] = useState(false);
   const [showMakeComplaint, setShowMakeComplaint] = useState(false);
-  const [showVoiceReport, setShowVoiceReport] = useState(false);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState('list');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -69,7 +65,7 @@ export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
         title={copy.title}
         subtitle={copy.subtitle}
         actions={
-          <Button variant="primary" icon={PlusCircle} onClick={() => setShowReportChoice(true)}>
+          <Button variant="primary" icon={PlusCircle} onClick={() => setShowMakeComplaint(true)}>
             Make a Complaint
           </Button>
         }
@@ -113,14 +109,7 @@ export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
         onPageSizeChange={pagination.setPageSize}
       />
 
-      <ReportChoiceModal
-        open={showReportChoice}
-        onClose={() => setShowReportChoice(false)}
-        onSelectType={() => { setShowReportChoice(false); setShowMakeComplaint(true); }}
-        onSelectSpeak={() => { setShowReportChoice(false); setShowVoiceReport(true); }}
-      />
       <MakeComplaintModal open={showMakeComplaint} onClose={() => setShowMakeComplaint(false)} />
-      <VoiceReportModal open={showVoiceReport} onClose={() => setShowVoiceReport(false)} />
     </AppShell>
   );
 }

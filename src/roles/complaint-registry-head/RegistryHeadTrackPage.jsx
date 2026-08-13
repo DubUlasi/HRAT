@@ -19,7 +19,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
-import { ROLE_NAV_ITEMS } from '../roleNavMap';
+import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
+import { scopeComplaintsForUser } from '../scopeComplaints';
 
 function matchesSearch(complaint, search) {
   if (!search) return true;
@@ -34,7 +35,9 @@ function matchesSearch(complaint, search) {
 export default function RegistryHeadTrackPage() {
   const { user } = useAuth();
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
-  const { complaints } = useComplaints();
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
+  const { complaints: allComplaints } = useComplaints();
+  const complaints = useMemo(() => scopeComplaintsForUser(allComplaints, user), [allComplaints, user]);
   const [selectedId, setSelectedId] = useState('');
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [search, setSearch] = useState('');
@@ -139,7 +142,7 @@ export default function RegistryHeadTrackPage() {
               </div>
             </div>
             <div className="track-detail-header-actions">
-              <Button variant="secondary" to={`/registry-head/complaints/${complaint.id}`}>
+              <Button variant="secondary" to={`${detailBase}/${complaint.id}`}>
                 View Complaint
               </Button>
               <button type="button" className="track-clear-btn" onClick={() => { setSelectedId(''); setSearchCollapsed(false); }} aria-label="Clear selection">

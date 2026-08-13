@@ -4,17 +4,25 @@ import StatusBadge from '../ui/StatusBadge';
 import ActionIconButton from '../ui/ActionIconButton';
 import Avatar from '../ui/Avatar';
 import EmptyState from '../ui/EmptyState';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
+import { ROLE_COMPLAINT_DETAIL_BASE } from '../../roles/roleNavMap';
+import { scopeComplaintsForUser } from '../../roles/scopeComplaints';
 import '../../styles/quickComplaintTracker.css';
 
 const RESULT_LIMIT = 6;
 const RECENT_LIMIT = 5;
 
-// Search-by-name/complaint-number/phone widget shown inside QuickTrackerBlob's modal. Pure
-// client-side substring match over the complaints already in ComplaintsContext. With no query
-// typed yet, it shows the most recently filed complaints instead of an empty panel.
+// Search-by-name/complaint-number/phone widget shown inside QuickTrackerBlob's modal, on every
+// role's dashboard. Pure client-side substring match, scoped to whatever the current role can
+// otherwise see (scopeComplaintsForUser — Registry Head/ES get everything, everyone else only
+// their own assigned complaints), with results linking into that role's own detail route. With
+// no query typed yet, it shows the most recently filed complaints instead of an empty panel.
 export default function QuickComplaintTracker() {
-  const { complaints } = useComplaints();
+  const { user } = useAuth();
+  const { complaints: allComplaints } = useComplaints();
+  const complaints = useMemo(() => scopeComplaintsForUser(allComplaints, user), [allComplaints, user]);
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
   const [query, setQuery] = useState('');
   const searched = query.trim().length > 0;
 
@@ -67,7 +75,7 @@ export default function QuickComplaintTracker() {
               </div>
               <StatusBadge status={c.subStatus} />
               <ActionIconButton
-                to={`/registry-head/complaints/${c.id}`}
+                to={`${detailBase}/${c.id}`}
                 label={`View details for ${c.victim?.name || 'complaint'}`}
               />
             </div>

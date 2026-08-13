@@ -18,6 +18,7 @@ import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCatego
 import { offices, departments } from '../../data/mockOfficers';
 import { isMyActiveCase } from './investigatorQueue';
 import { departmentInvestigatorNavItems } from './navConfig';
+import { userCanViewComplaint } from '../scopeComplaints';
 import LogActivityModal from './modals/LogActivityModal';
 import UpdateFindingsModal from './modals/UpdateFindingsModal';
 
@@ -43,7 +44,7 @@ export default function InvestigatorComplaintDetailPage() {
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [showOffenderHistory, setShowOffenderHistory] = useState(false);
 
-  if (!complaint) {
+  if (!complaint || !userCanViewComplaint(complaint, user)) {
     return (
       <AppShell navItems={departmentInvestigatorNavItems} user={user}>
         <div className="detail-top-nav-bar">
@@ -52,7 +53,7 @@ export default function InvestigatorComplaintDetailPage() {
           </Link>
         </div>
         <h1>Complaint not found</h1>
-        <p>This complaint may have been removed or the link is incorrect.</p>
+        <p>This complaint may have been removed, or you don't have access to it.</p>
       </AppShell>
     );
   }

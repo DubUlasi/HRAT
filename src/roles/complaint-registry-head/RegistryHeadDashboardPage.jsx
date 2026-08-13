@@ -8,8 +8,6 @@ import ActionQueueList from '../../components/dashboard/ActionQueueList';
 import Button from '../../components/ui/Button';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import MakeComplaintModal from '../../components/complaints/MakeComplaintModal';
-import VoiceReportModal from '../../components/complaints/VoiceReportModal';
-import ReportChoiceModal from '../../components/complaints/ReportChoiceModal';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import {
@@ -26,9 +24,7 @@ import { registryHeadNavItems, registryHeadUser } from './navConfig';
 export default function RegistryHeadDashboardPage() {
   const { user } = useAuth();
   const { complaints } = useComplaints();
-  const [showReportChoice, setShowReportChoice] = useState(false);
   const [showMakeComplaint, setShowMakeComplaint] = useState(false);
-  const [showVoiceReport, setShowVoiceReport] = useState(false);
 
   const pendingNumbering = complaints.filter(needsNumberAssignment);
   const pendingAdmissibility = complaints.filter((c) => needsAdmissibilityAssignment(c) || needsAdmissibilityConfirmation(c));
@@ -60,7 +56,7 @@ export default function RegistryHeadDashboardPage() {
         subtitle={`Welcome back, ${user?.name?.split(' ')[0] || registryHeadUser.name.split(' ')[0]}. Here's what's happening across the registry.`}
         notificationCount={2}
         actions={
-          <Button variant="primary" icon={PlusCircle} onClick={() => setShowReportChoice(true)}>
+          <Button variant="primary" icon={PlusCircle} onClick={() => setShowMakeComplaint(true)}>
             Make a Complaint
           </Button>
         }
@@ -98,14 +94,7 @@ export default function RegistryHeadDashboardPage() {
         />
       </div>
 
-      <ReportChoiceModal
-        open={showReportChoice}
-        onClose={() => setShowReportChoice(false)}
-        onSelectType={() => { setShowReportChoice(false); setShowMakeComplaint(true); }}
-        onSelectSpeak={() => { setShowReportChoice(false); setShowVoiceReport(true); }}
-      />
       <MakeComplaintModal open={showMakeComplaint} onClose={() => setShowMakeComplaint(false)} />
-      <VoiceReportModal open={showVoiceReport} onClose={() => setShowVoiceReport(false)} />
     </AppShell>
   );
 }
