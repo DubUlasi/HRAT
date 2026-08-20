@@ -1,12 +1,14 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-export default function SidebarNavItem({ to, icon: Icon, label, end = false, badge = null, iconSize = 20, collapsed = false, onNavigate }) {
+// `active` is resolved by the parent Sidebar (see resolveActiveNavPath in Sidebar.jsx) rather
+// than computed here via NavLink's own URL matching — a complaint's own detail page never
+// matches any nav item's URL, so that alone can't tell us which item should read as current.
+export default function SidebarNavItem({ to, icon: Icon, label, active = false, badge = null, iconSize = 20, collapsed = false, onNavigate }) {
   return (
-    <NavLink
+    <Link
       to={to}
-      end={end}
-      className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+      className={`nav-item${active ? ' active' : ''}`}
       title={collapsed ? label : undefined}
       onClick={onNavigate}
     >
@@ -15,6 +17,6 @@ export default function SidebarNavItem({ to, icon: Icon, label, end = false, bad
         {!collapsed && <span>{label}</span>}
       </div>
       {!collapsed && badge}
-    </NavLink>
+    </Link>
   );
 }

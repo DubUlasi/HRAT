@@ -1,9 +1,18 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { mockComplaints } from '../data/mockComplaints';
+import { departments } from '../data/mockOfficers';
 import { STAGE_ORDER, SUB_STATUS } from '../constants/complaintStatus';
 import { useAuth } from './AuthContext';
 
 const ComplaintsContext = createContext(null);
+
+// Only Supervisors and Directors can comment on an investigation activity log entry today — kept
+// local (not a general ROLE_LABELS export) since nothing else in the app needs a role label at
+// comment-creation time.
+const COMMENT_AUTHOR_ROLE_LABELS = {
+  'department-supervisor': 'Department Supervisor',
+  'department-director': 'Department Director',
+};
 
 function nowIso() {
   return new Date().toISOString();
@@ -68,13 +77,68 @@ function groupComplaintsByViolator(complaints) {
   return [...groups.values()];
 }
 
-function nextComplaintNumber(complaints) {
+export const DEFAULT_COMPLAINT_NUMBER_FORMAT = 'NHRC/{YY}/{SEQ}';
+const COMPLAINT_NUMBER_FORMAT_KEY = 'hrat-complaint-number-format';
+const COMPLAINT_NUMBER_SEQ_KEY = 'hrat-complaint-number-seq';
+const COMPLAINT_NUMBER_AUTO_KEY = 'hrat-complaint-number-auto';
+
+// Fills a Registry-Head-configured template with the running sequence number and today's year.
+// {YYYY}/{YY} = 4/2-digit year, {SEQ} = unpadded sequence, {SEQ2}/{SEQ3}/{SEQ4}/{SEQ5} = zero-padded.
+export function formatComplaintNumber(template, seq) {
+  const year = String(new Date().getFullYear());
+  const seqStr = String(seq);
+  return (template || DEFAULT_COMPLAINT_NUMBER_FORMAT)
+    .replaceAll('{YYYY}', year)
+    .replaceAll('{YY}', year.slice(-2))
+    .replaceAll('{SEQ5}', seqStr.padStart(5, '0'))
+    .replaceAll('{SEQ4}', seqStr.padStart(4, '0'))
+    .replaceAll('{SEQ3}', seqStr.padStart(3, '0'))
+    .replaceAll('{SEQ2}', seqStr.padStart(2, '0'))
+    .replaceAll('{SEQ}', seqStr);
+}
+
+function loadComplaintNumberFormat() {
+  try {
+    return localStorage.getItem(COMPLAINT_NUMBER_FORMAT_KEY) || DEFAULT_COMPLAINT_NUMBER_FORMAT;
+  } catch {
+    return DEFAULT_COMPLAINT_NUMBER_FORMAT;
+  }
+}
+
+// Seeds the persisted sequence counter the first time it's ever read, by scanning the highest
+// trailing digit-group among existing complaint numbers — after that, the counter is explicit
+// (read/written straight to localStorage) rather than re-derived, so the Head can also fast
+// forward/rewind it directly from Settings (mirrors a "next number" field, not an auto-scan).
+function seedComplaintNumberSeq(complaints) {
   const highest = complaints.reduce((max, c) => {
     const match = c.complaintNumber && c.complaintNumber.match(/(\d+)$/);
     const num = match ? parseInt(match[1], 10) : 0;
     return Math.max(max, num);
   }, 293);
-  return `NHRC/24/${highest + 1}`;
+  return highest + 1;
+}
+
+function loadComplaintNumberSeq(complaints) {
+  try {
+    const raw = localStorage.getItem(COMPLAINT_NUMBER_SEQ_KEY);
+    if (raw) return parseInt(raw, 10);
+  } catch {
+    // ignore storage failures (e.g. private browsing) — fall through to the scanned default
+  }
+  return seedComplaintNumberSeq(complaints);
+}
+
+// Defaults to ON — most registries want numbers assigned the moment a complaint is submitted,
+// with the manual "assign a Desk Officer to process the number" step as an opt-out for anyone
+// who still wants a person in the loop before a number is issued.
+function loadComplaintNumberAuto() {
+  try {
+    const raw = localStorage.getItem(COMPLAINT_NUMBER_AUTO_KEY);
+    if (raw !== null) return raw === 'true';
+  } catch {
+    // ignore storage failures (e.g. private browsing) — fall through to the default
+  }
+  return true;
 }
 
 function pushActivity(complaint, message, actor, extra) {
@@ -93,6 +157,38 @@ export function ComplaintsProvider({ children }) {
   const actorOfficerId = user?.officerId || null;
 
   const [complaints, setComplaints] = useState(mockComplaints);
+  const [complaintNumberFormat, setComplaintNumberFormat] = useState(loadComplaintNumberFormat);
+  const [complaintNumberSeq, setComplaintNumberSeq] = useState(() => loadComplaintNumberSeq(mockComplaints));
+  const [complaintNumberAuto, setComplaintNumberAuto] = useState(loadComplaintNumberAuto);
+
+  const updateComplaintNumberAuto = useCallback((on) => {
+    setComplaintNumberAuto(on);
+    try {
+      localStorage.setItem(COMPLAINT_NUMBER_AUTO_KEY, String(on));
+    } catch {
+      // ignore storage failures (e.g. private browsing) — the setting still applies for this session
+    }
+  }, []);
+
+  const updateComplaintNumberFormat = useCallback((format) => {
+    const next = format || DEFAULT_COMPLAINT_NUMBER_FORMAT;
+    setComplaintNumberFormat(next);
+    try {
+      localStorage.setItem(COMPLAINT_NUMBER_FORMAT_KEY, next);
+    } catch {
+      // ignore storage failures (e.g. private browsing) — the format still applies for this session
+    }
+  }, []);
+
+  const updateComplaintNumberSeq = useCallback((seq) => {
+    const next = Math.max(1, parseInt(seq, 10) || 1);
+    setComplaintNumberSeq(next);
+    try {
+      localStorage.setItem(COMPLAINT_NUMBER_SEQ_KEY, String(next));
+    } catch {
+      // ignore storage failures (e.g. private browsing) — the counter still applies for this session
+    }
+  }, []);
 
   const getComplaintById = useCallback(
     (id) => complaints.find((c) => c.id === id),
@@ -168,6 +264,49 @@ export function ComplaintsProvider({ children }) {
       next = pushActivity(next, `Attached ${files.length} ${fileWord}${stage ? ` at ${stage}` : ''}`, actorName, {
         documents: newDocs.map((doc) => ({ id: doc.id, name: doc.name, url: doc.url, size: doc.size })),
       });
+      return next;
+    });
+  }, [updateComplaint, actorName]);
+
+  // A lightweight "mark this for attention" utility, independent of the formal pipeline (unlike
+  // escalateToExecutiveSecretary, which routes to a specific role) — available to whoever already
+  // has access to the complaint, not gated further, since flagging one case you can already see
+  // doesn't reveal anything about any other case.
+  const toggleComplaintFlag = useCallback((id, { flagged, reason }) => {
+    updateComplaint(id, (c) => {
+      let next = {
+        ...c,
+        flagged,
+        flagReason: flagged ? (reason || null) : null,
+        flaggedBy: flagged ? actorName : null,
+        flaggedAt: flagged ? nowIso() : null,
+      };
+      next = pushActivity(next, flagged ? `Flagged for attention${reason ? `, "${reason}"` : ''}` : 'Flag removed', actorName);
+      return next;
+    });
+  }, [updateComplaint, actorName]);
+
+  // Fills in a violator that was filed as "Unidentified" once staff actually learn who they
+  // are — available to whoever already has access to the complaint, same spirit as flagging.
+  // Replaces the sentinel name/`unidentified` flag rather than adding a parallel field, so
+  // every downstream reader of `allegedViolator` (tables, cards, repeat-violator matching) picks
+  // up the real identity automatically with no special-casing needed on their part.
+  const identifyViolator = useCallback((id, { firstName, lastName, gender, phone, email, address }) => {
+    updateComplaint(id, (c) => {
+      const name = `${firstName} ${lastName}`.trim();
+      let next = {
+        ...c,
+        allegedViolator: {
+          ...c.allegedViolator,
+          name,
+          gender: gender || null,
+          phone: phone || null,
+          email: email || null,
+          address: address || null,
+          unidentified: false,
+        },
+      };
+      next = pushActivity(next, `Identified the alleged violator as "${name}"`, actorName);
       return next;
     });
   }, [updateComplaint, actorName]);
@@ -249,16 +388,15 @@ export function ComplaintsProvider({ children }) {
   // WHO should handle a step, the Desk Officer's own dashboard is where they actually process it) ──
 
   const processComplaintNumberAssignment = useCallback((id) => {
-    setComplaints((prev) => {
-      const complaintNumber = nextComplaintNumber(prev);
-      return prev.map((c) => {
-        if (c.id !== id) return c;
-        let next = { ...c, complaintNumber };
-        next = pushActivity(next, `Complaint number ${complaintNumber} assigned`, actorName);
-        return next;
-      });
-    });
-  }, [actorName]);
+    const complaintNumber = formatComplaintNumber(complaintNumberFormat, complaintNumberSeq);
+    setComplaints((prev) => prev.map((c) => {
+      if (c.id !== id) return c;
+      let next = { ...c, complaintNumber };
+      next = pushActivity(next, `Complaint number ${complaintNumber} assigned`, actorName);
+      return next;
+    }));
+    updateComplaintNumberSeq(complaintNumberSeq + 1);
+  }, [actorName, complaintNumberFormat, complaintNumberSeq, updateComplaintNumberSeq]);
 
   const submitAdmissibilityDecision = useCallback((id, { decision, explanation, remark }) => {
     updateComplaint(id, (c) => {
@@ -348,39 +486,154 @@ export function ComplaintsProvider({ children }) {
         subStatus: SUB_STATUS.ASSIGNED_TO_INVESTIGATOR,
         stageIndex: STAGE_ORDER.indexOf('under_investigation'),
       };
-      next = pushActivity(next, `Complaint assigned to an investigator${remark ? `, "${remark}"` : ''}`, actorName);
+      next = pushActivity(next, `Complaint assigned to an investigation officer${remark ? `, "${remark}"` : ''}`, actorName);
       return next;
     });
   }, [updateComplaint, actorName]);
 
   // ── Department Investigator ──
 
-  const logInvestigationActivity = useCallback((id, { type, withParty, summary }) => {
+  const logInvestigationActivity = useCallback((id, { type, withParty, happenedOn, summary, files }) => {
     updateComplaint(id, (c) => {
       const activities = c.investigation.activities || [];
-      const entry = { id: `${id}-act-${activities.length}-${Date.now()}`, type, withParty, summary, loggedAt: nowIso() };
+      // Any files attached alongside this call/meeting/note need to land in three places: the
+      // complaint's own `documents` (so they still show in Documents & Resources like every
+      // other attachment), the general activity log (via pushActivity's `documents` extra, same
+      // as attachDocuments), AND on this specific activity entry — that last one is what lets
+      // the Investigation Activities list show which file belongs to which logged activity,
+      // instead of the file only ever surfacing in the unrelated general documents list.
+      const newDocs = (files || []).map((file) => ({
+        id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: URL.createObjectURL(file),
+        stage: 'Investigation Activity Log',
+        uploadedBy: actorName,
+        uploadedAt: nowIso(),
+      }));
+      const docRefs = newDocs.map((doc) => ({ id: doc.id, name: doc.name, url: doc.url, size: doc.size }));
+      // `happenedOn` is when the call/meeting/note actually took place (investigator-supplied,
+      // date-only); `loggedAt` is when it was entered into the system — kept separate so writing
+      // something up a few days late doesn't misrepresent when it actually happened.
+      const entry = { id: `${id}-act-${activities.length}-${Date.now()}`, type, withParty, summary, happenedOn: happenedOn || null, loggedAt: nowIso(), documents: docRefs, comments: [] };
       let next = {
         ...c,
         subStatus: c.subStatus === SUB_STATUS.ASSIGNED_TO_INVESTIGATOR ? SUB_STATUS.INVESTIGATING : c.subStatus,
         stageIndex: STAGE_ORDER.indexOf('under_investigation'),
+        documents: [...(c.documents || []), ...newDocs],
         investigation: { ...c.investigation, activities: [...activities, entry] },
       };
-      next = pushActivity(next, `Logged a ${type} with ${withParty}: "${summary}"`, actorName);
+      next = pushActivity(next, `Logged a ${type} with ${withParty}: "${summary}"`, actorName, { documents: docRefs });
       return next;
     });
   }, [updateComplaint, actorName]);
 
-  const updateInvestigationFinding = useCallback((id, { finding, recommendation }) => {
+  // Lets an investigation officer correct a log entry they made — any newly attached files here
+  // are appended to the entry's existing documents rather than replacing them, since removing an
+  // already-committed attachment isn't something this action offers.
+  const updateInvestigationActivity = useCallback((id, activityId, { type, withParty, happenedOn, summary, files }) => {
     updateComplaint(id, (c) => {
+      const activities = c.investigation.activities || [];
+      const newDocs = (files || []).map((file) => ({
+        id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: URL.createObjectURL(file),
+        stage: 'Investigation Activity Log',
+        uploadedBy: actorName,
+        uploadedAt: nowIso(),
+      }));
+      const docRefs = newDocs.map((doc) => ({ id: doc.id, name: doc.name, url: doc.url, size: doc.size }));
+      const updatedActivities = activities.map((entry) => (
+        entry.id === activityId
+          ? { ...entry, type, withParty, summary, happenedOn: happenedOn || null, documents: [...(entry.documents || []), ...docRefs] }
+          : entry
+      ));
       let next = {
         ...c,
+        documents: [...(c.documents || []), ...newDocs],
+        investigation: { ...c.investigation, activities: updatedActivities },
+      };
+      next = pushActivity(next, `Edited a logged ${type} with ${withParty}`, actorName);
+      return next;
+    });
+  }, [updateComplaint, actorName]);
+
+  // Lets a Supervisor or Director (whoever the UI offers this to) leave feedback on a specific
+  // investigation activity entry without touching the entry itself — purely additive, the
+  // investigation officer sees it read-only alongside their own log. Role/department are
+  // resolved and stamped onto the comment at creation time (rather than looked up wherever it's
+  // displayed) so the comment always reflects who the commenter WAS at the time, even if their
+  // assignment changes later.
+  const addActivityComment = useCallback((id, activityId, text) => {
+    updateComplaint(id, (c) => {
+      const activities = c.investigation.activities || [];
+      const target = activities.find((entry) => entry.id === activityId);
+      const comment = {
+        id: `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        text,
+        authorName: actorName,
+        authorId: actorOfficerId,
+        authorRole: COMMENT_AUTHOR_ROLE_LABELS[user?.role] || null,
+        authorDepartment: departments.find((d) => d.id === user?.departmentId)?.name || null,
+        createdAt: nowIso(),
+      };
+      const updatedActivities = activities.map((entry) => (
+        entry.id === activityId ? { ...entry, comments: [...(entry.comments || []), comment] } : entry
+      ));
+      let next = { ...c, investigation: { ...c.investigation, activities: updatedActivities } };
+      next = pushActivity(next, `Commented on a logged ${target?.type || 'activity'} entry`, actorName);
+      return next;
+    });
+  }, [updateComplaint, actorName, actorOfficerId, user]);
+
+  // Editing (not adding) a comment is only offered while the case is still moving through the
+  // Investigation Officer/Supervisor loop — once the Supervisor forwards it to the Director, or
+  // the Director sends it back to the Registry, the comment is treated as part of the record
+  // that was actually reviewed at that point and can no longer be quietly changed.
+  const updateActivityComment = useCallback((id, activityId, commentId, text) => {
+    updateComplaint(id, (c) => {
+      const activities = c.investigation.activities || [];
+      const updatedActivities = activities.map((entry) => {
+        if (entry.id !== activityId) return entry;
+        const comments = (entry.comments || []).map((comment) => (
+          comment.id === commentId ? { ...comment, text, editedAt: nowIso() } : comment
+        ));
+        return { ...entry, comments };
+      });
+      return { ...c, investigation: { ...c.investigation, activities: updatedActivities } };
+    });
+  }, [updateComplaint]);
+
+  const updateInvestigationFinding = useCallback((id, { finding, recommendation, files }) => {
+    updateComplaint(id, (c) => {
+      // Same reasoning as logInvestigationActivity's file handling: a file attached here needs to
+      // land on the finding itself (so it shows in the Findings & Recommendation card, not just
+      // the unrelated general Documents & Resources list) as well as in that general list.
+      const newDocs = (files || []).map((file) => ({
+        id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: URL.createObjectURL(file),
+        stage: 'Investigation Findings',
+        uploadedBy: actorName,
+        uploadedAt: nowIso(),
+      }));
+      const docRefs = newDocs.map((doc) => ({ id: doc.id, name: doc.name, url: doc.url, size: doc.size }));
+      let next = {
+        ...c,
+        documents: [...(c.documents || []), ...newDocs],
         investigation: {
           ...c.investigation,
           finding: finding ?? c.investigation.finding,
           recommendation: recommendation ?? c.investigation.recommendation,
+          findingDocuments: [...(c.investigation.findingDocuments || []), ...docRefs],
         },
       };
-      next = pushActivity(next, 'Updated investigation findings', actorName);
+      next = pushActivity(next, 'Updated investigation findings', actorName, docRefs.length ? { documents: docRefs } : undefined);
       return next;
     });
   }, [updateComplaint, actorName]);
@@ -410,7 +663,7 @@ export function ComplaintsProvider({ children }) {
         next,
         satisfied
           ? `Supervisor approved and forwarded to Director${remark ? `, "${remark}"` : ''}`
-          : `Supervisor sent back to investigator${remark ? `, "${remark}"` : ''}`,
+          : `Supervisor sent back to investigation officer${remark ? `, "${remark}"` : ''}`,
         actorName
       );
       return next;
@@ -511,16 +764,26 @@ export function ComplaintsProvider({ children }) {
     });
   }, [updateComplaint, actorName, actorOfficerId]);
 
-  const createComplaint = useCallback(({ subject, category, description, victim, allegedViolator, additionalVictims, additionalViolators, office, voiceRecordingUrl, evidenceFiles }) => {
+  const createComplaint = useCallback(({ subject, category, description, victim, allegedViolator, additionalVictims, additionalViolators, filedBy, office, voiceRecordingUrl, evidenceFiles }) => {
     const id = `c-${Date.now()}`;
-    // A group complaint is simply one with more than one victim and/or violator attached.
+    // `scope` is about how many victims/violators are on the complaint; `filedBy` is a separate
+    // question of who is doing the filing (an individual vs. a group/committee) — a committee can
+    // file about a single victim, and one person can file about several, so these don't imply
+    // each other.
     const scope = (additionalVictims?.length || 0) > 0 || (additionalViolators?.length || 0) > 0 ? 'group' : 'single';
+    // When auto-assignment is on, the complaint number is stamped immediately and the pipeline
+    // skips straight past the manual "assign a Desk Officer to process the number" step — it
+    // lands exactly where a complaint sits right after that step completes today, so the Head's
+    // queue, the Desk Officer's queue, and the detail page all behave correctly with no changes.
+    const autoNumber = complaintNumberAuto;
+    const complaintNumber = autoNumber ? formatComplaintNumber(complaintNumberFormat, complaintNumberSeq) : null;
     let complaint = {
       id,
       subject,
-      complaintNumber: null,
+      complaintNumber,
       category,
       scope,
+      filedBy: filedBy || { type: 'individual' },
       description,
       dateFiled: nowIso().slice(0, 10),
       victim,
@@ -542,8 +805,8 @@ export function ComplaintsProvider({ children }) {
       // with the original complaint) — shown together with `evidence` on the detail page's
       // Documents & Resources section. See attachDocuments below for how entries get added.
       documents: [],
-      subStatus: SUB_STATUS.NEW,
-      stageIndex: -1,
+      subStatus: autoNumber ? SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT : SUB_STATUS.NEW,
+      stageIndex: autoNumber ? STAGE_ORDER.indexOf('case_created') : -1,
       registryOfficerId: null,
       admissibilityOfficerId: null,
       directorId: null,
@@ -558,12 +821,22 @@ export function ComplaintsProvider({ children }) {
       esEscalation: { escalated: false, note: null, escalatedBy: null, escalatedAt: null, resolved: false },
       stateOffice: { sentTo: null, sentAt: null, remark: null, returnedAt: null },
       council: { verdict: null, recommendation: null, decidedBy: null, decidedAt: null },
+      flagged: false,
+      flagReason: null,
+      flaggedBy: null,
+      flaggedAt: null,
       activityLog: [],
     };
     complaint = pushActivity(complaint, 'Complaint submitted', actorName);
+    if (autoNumber) {
+      complaint = pushActivity(complaint, `Complaint number ${complaintNumber} assigned automatically`, 'System');
+    }
     setComplaints((prev) => [complaint, ...prev]);
+    if (autoNumber) {
+      updateComplaintNumberSeq(complaintNumberSeq + 1);
+    }
     return id;
-  }, [actorName]);
+  }, [actorName, complaintNumberAuto, complaintNumberFormat, complaintNumberSeq, updateComplaintNumberSeq]);
 
   const value = useMemo(() => ({
     complaints,
@@ -572,6 +845,8 @@ export function ComplaintsProvider({ children }) {
     findRelatedComplaints,
     findCallerHistory,
     attachDocuments,
+    toggleComplaintFlag,
+    identifyViolator,
     assignComplaintNumberOfficer,
     assignAdmissibilityOfficer,
     confirmAdmissibilityCheck,
@@ -584,6 +859,9 @@ export function ComplaintsProvider({ children }) {
     assignSupervisor,
     assignInvestigator,
     logInvestigationActivity,
+    updateInvestigationActivity,
+    addActivityComment,
+    updateActivityComment,
     updateInvestigationFinding,
     submitInvestigationFindings,
     supervisorReview,
@@ -594,14 +872,23 @@ export function ComplaintsProvider({ children }) {
     recordCouncilVerdict,
     councilReopenOrClose,
     createComplaint,
+    complaintNumberFormat,
+    updateComplaintNumberFormat,
+    complaintNumberSeq,
+    updateComplaintNumberSeq,
+    complaintNumberAuto,
+    updateComplaintNumberAuto,
     currentUser: user || { name: 'Unknown', email: null },
   }), [
     complaints, getComplaintById, getRepeatOffenders, findRelatedComplaints, findCallerHistory, attachDocuments,
+    toggleComplaintFlag, identifyViolator,
     assignComplaintNumberOfficer, assignAdmissibilityOfficer, confirmAdmissibilityCheck, assignToDepartment,
     processComplaintNumberAssignment, submitAdmissibilityDecision, reassignToStateOffice, returnFromStateOffice,
-    directorReviewDepartment, assignSupervisor, assignInvestigator, logInvestigationActivity,
-    updateInvestigationFinding, submitInvestigationFindings, supervisorReview, directorFinalReview,
-    escalateToExecutiveSecretary, resolveEscalation, sendToCouncil, recordCouncilVerdict, councilReopenOrClose, createComplaint, user,
+    directorReviewDepartment, assignSupervisor, assignInvestigator, logInvestigationActivity, updateInvestigationActivity,
+    addActivityComment, updateActivityComment, updateInvestigationFinding, submitInvestigationFindings, supervisorReview, directorFinalReview,
+    escalateToExecutiveSecretary, resolveEscalation, sendToCouncil, recordCouncilVerdict, councilReopenOrClose, createComplaint,
+    complaintNumberFormat, updateComplaintNumberFormat, complaintNumberSeq, updateComplaintNumberSeq,
+    complaintNumberAuto, updateComplaintNumberAuto, user,
   ]);
 
   return <ComplaintsContext.Provider value={value}>{children}</ComplaintsContext.Provider>;

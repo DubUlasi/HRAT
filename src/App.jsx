@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ComplaintWizardPage from './pages/ComplaintWizardPage';
 import DeskOfficerDashboardPage from './roles/complaint-registry-desk-officer/DeskOfficerDashboardPage';
 import DeskOfficerQueuePage from './roles/complaint-registry-desk-officer/DeskOfficerQueuePage';
@@ -40,6 +41,7 @@ import RegistryHeadCallCenterPage from './roles/complaint-registry-head/Registry
 import RegistryHeadBusinessIntelligencePage from './roles/complaint-registry-head/RegistryHeadBusinessIntelligencePage';
 import RegistryHeadReportsPage from './roles/complaint-registry-head/RegistryHeadReportsPage';
 import RegistryHeadTrackPage from './roles/complaint-registry-head/RegistryHeadTrackPage';
+import RegistryHeadFlaggedComplaintsPage from './roles/complaint-registry-head/RegistryHeadFlaggedComplaintsPage';
 import RegistryHeadHelpPage from './roles/complaint-registry-head/RegistryHeadHelpPage';
 import RegistryHeadSettingsPage from './roles/complaint-registry-head/RegistryHeadSettingsPage';
 import { REPEAT_VIOLATOR_ROLES } from './roles/scopeComplaints';
@@ -60,6 +62,7 @@ export default function App() {
                 <Route path="/" element={<LoginPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/complaint" element={<ComplaintWizardPage />} />
 
                 <Route path="/desk-officer" element={<RequireRole role="desk-officer"><DeskOfficerDashboardPage /></RequireRole>} />
@@ -103,6 +106,7 @@ export default function App() {
                 {/* Shared across every role's sidebar (Insights/Support sections) — any
                     authenticated staff member can view these, not just the Registry Head. */}
                 <Route path="/registry-head/track" element={<RegistryHeadTrackPage />} />
+                <Route path="/registry-head/flagged" element={<RegistryHeadFlaggedComplaintsPage />} />
                 <Route path="/registry-head/business-intelligence" element={<RegistryHeadBusinessIntelligencePage />} />
                 <Route path="/registry-head/reports" element={<RegistryHeadReportsPage />} />
                 <Route path="/registry-head/help" element={<RegistryHeadHelpPage />} />

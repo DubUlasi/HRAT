@@ -13,9 +13,15 @@ import { needsInvestigatorAssignment, needsFindingsReview } from './supervisorQu
 import { departmentSupervisorNavItems } from './navConfig';
 
 function actionReason(c, officerId) {
-  if (needsInvestigatorAssignment(c, officerId)) return 'Needs an investigator assigned';
-  if (needsFindingsReview(c, officerId)) return "Needs your review of the investigator's findings";
+  if (needsInvestigatorAssignment(c, officerId)) return 'Needs an investigation officer assigned';
+  if (needsFindingsReview(c, officerId)) return "Needs your review of the investigation officer's findings";
   return null;
+}
+
+// To Assign and Review Findings are two separate nav pages — this queue merges rows from both,
+// so which one a given row "belongs to" (for sidebar highlighting) depends on its own status.
+function actionNavFrom(c, officerId) {
+  return needsInvestigatorAssignment(c, officerId) ? '/department-supervisor/to-assign' : '/department-supervisor/review';
 }
 
 export default function SupervisorDashboardPage() {
@@ -38,7 +44,7 @@ export default function SupervisorDashboardPage() {
         : 'Nothing waiting on you right now, new cases will show up here.',
     },
     {
-      text: `${toAssign.length} need${toAssign.length === 1 ? 's' : ''} an investigator assigned, ${toReview.length} need${toReview.length === 1 ? 's' : ''} your review.`,
+      text: `${toAssign.length} need${toAssign.length === 1 ? 's' : ''} an investigation officer assigned, ${toReview.length} need${toReview.length === 1 ? 's' : ''} your review.`,
     },
     {
       text: `You've supervised ${totalHandled} complaint${totalHandled === 1 ? '' : 's'} in total so far.`,
@@ -49,7 +55,7 @@ export default function SupervisorDashboardPage() {
     <AppShell navItems={departmentSupervisorNavItems} user={user}>
       <PageHeader
         title="Department Supervisor Dashboard"
-        subtitle={`Welcome back, ${user?.name?.split(' ')[0] || 'there'}. Assign investigators and review submitted findings.`}
+        subtitle={`Welcome back, ${user?.name?.split(' ')[0] || 'there'}. Assign investigation officers and review submitted findings.`}
       />
 
       <HeroBanner
@@ -58,7 +64,7 @@ export default function SupervisorDashboardPage() {
         situationMessages={situationMessages}
         rightSlot={<QuickTrackerBlob />}
         stats={[
-          { icon: UserPlus, value: toAssign.length, label: 'Needs Investigator' },
+          { icon: UserPlus, value: toAssign.length, label: 'Needs Investigation Officer' },
           { icon: CheckCircle2, value: toReview.length, label: 'Needs Review' },
           { icon: ClipboardList, value: totalHandled, label: 'Total Handled' },
         ]}
@@ -69,6 +75,7 @@ export default function SupervisorDashboardPage() {
         items={needsAction}
         getHref={(c) => `/department-supervisor/complaints/${c.id}`}
         getReason={(c) => actionReason(c, officerId)}
+        getNavFrom={(c) => actionNavFrom(c, officerId)}
       />
 
       <div className="recent-complaints-card">

@@ -4,7 +4,7 @@ import { useTranslation } from '../../../context/I18nContext';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '../../../constants/complaintCategories';
 import { getSubCategories } from '../../../constants/complaintSubCategories';
 
-// Step 1 of 5 — "What happened?" A 3-column icon+label tile grid drives the top-level
+// Step 1 of 6 — "What happened?" A 3-column icon+label tile grid drives the top-level
 // CATEGORY_LABELS (the single source of truth, not a separate hardcoded list), then reveals a
 // vertical pill list of sub-categories specific to whichever category was picked.
 export default function StepCategory({ category, subCategory, onCategoryChange, onSubCategoryChange, onBack, onContinue, stepLabel }) {

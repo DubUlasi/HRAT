@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Modal from '../../../components/ui/Modal';
 import Button from '../../../components/ui/Button';
 import FormField from '../../../components/ui/FormField';
-import Select from '../../../components/ui/Select';
+import SearchableSelect from '../../../components/ui/SearchableSelect';
 import TextArea from '../../../components/ui/TextArea';
 import AttachDocumentsField from '../../../components/complaints/AttachDocumentsField';
 import { offices } from '../../../data/mockOfficers';
@@ -34,12 +34,7 @@ export default function ReassignStateOfficeModal({ open, onClose, onSubmit }) {
         </p>
 
         <FormField label="State Office" required>
-          <Select value={officeId} onChange={(e) => setOfficeId(e.target.value)} required>
-            <option value="" disabled>-- Select State Office --</option>
-            {STATE_OFFICES.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </Select>
+          <SearchableSelect value={officeId} onChange={setOfficeId} options={STATE_OFFICES} placeholder="Search state offices…" />
         </FormField>
 
         <FormField label="Remarks" hint="Add a remark, if any.">

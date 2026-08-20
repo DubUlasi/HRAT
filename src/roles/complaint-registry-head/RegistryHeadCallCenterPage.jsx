@@ -8,6 +8,7 @@ import SearchBar from '../../components/ui/SearchBar';
 import Pagination from '../../components/ui/Pagination';
 import CallCenterModal from '../../components/complaints/CallCenterModal';
 import CallDetailDrawer from '../../components/complaints/CallDetailDrawer';
+import { useAuth } from '../../context/AuthContext';
 import { useCalls } from '../../context/CallsContext';
 import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
@@ -21,6 +22,7 @@ function matchesSearch(call, search) {
 }
 
 export default function RegistryHeadCallCenterPage() {
+  const { user } = useAuth();
   const { calls } = useCalls();
   const [showCallCenter, setShowCallCenter] = useState(false);
   const [selectedCall, setSelectedCall] = useState(null);
@@ -32,7 +34,7 @@ export default function RegistryHeadCallCenterPage() {
   const pagination = usePagination(sortedCalls, 10, search);
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={registryHeadNavItems} user={user || registryHeadUser}>
       <PageHeader
         title="Call Center"
         subtitle="Every logged call, caller lookups, complaint links, and outcomes."

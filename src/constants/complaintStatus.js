@@ -51,7 +51,7 @@ export const SUB_STATUS_META = {
   [SUB_STATUS.DEPT_DIRECTOR_REVIEW]: { label: 'Department Director Review', color: 'warning' },
   [SUB_STATUS.DEPT_REJECTED]: { label: 'Rejected By Department', color: 'danger' },
   [SUB_STATUS.ASSIGNED_TO_SUPERVISOR]: { label: 'Assigned To Supervisor', color: 'warning' },
-  [SUB_STATUS.ASSIGNED_TO_INVESTIGATOR]: { label: 'Assigned To Investigator', color: 'warning' },
+  [SUB_STATUS.ASSIGNED_TO_INVESTIGATOR]: { label: 'Assigned To Investigation Officer', color: 'warning' },
   [SUB_STATUS.INVESTIGATING]: { label: 'Investigating', color: 'warning' },
   [SUB_STATUS.SUPERVISOR_REVIEW]: { label: 'Supervisor Review', color: 'warning' },
   [SUB_STATUS.DIRECTOR_FINAL_REVIEW]: { label: 'Director Final Review', color: 'warning' },
@@ -98,21 +98,15 @@ export function isBounceBackActivity(message) {
   return BOUNCE_BACK_PATTERN.test(message || '');
 }
 
-// The compact "Activity Timeline" widget on each role's complaint detail page only previews the
-// most recent `limit` entries — but a bounce-back entry on its own doesn't say what got sent
-// back, so whenever one falls inside the preview window, its immediate predecessor (the
-// submission that triggered it) is pulled in too, even if that predecessor would otherwise fall
-// outside the window. `sortedActivity` must already be sorted newest-first.
-export function buildActivityTimeline(sortedActivity, limit = 5) {
-  const base = sortedActivity.slice(0, limit);
-  const included = new Map(base.map((entry) => [entry.id, entry]));
-  base.forEach((entry) => {
-    if (!isBounceBackActivity(entry.message)) return;
-    const fullIndex = sortedActivity.findIndex((e) => e.id === entry.id);
-    const predecessor = sortedActivity[fullIndex + 1];
-    if (predecessor && !included.has(predecessor.id)) included.set(predecessor.id, predecessor);
-  });
-  return [...included.values()].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+// The compact "Recent Activity" widget on each role's complaint detail page — a small, honest
+// glance at what just happened, not an attempt to also be complete (that's what "View Full Log"
+// / ActivityLogDrawer is for). Deliberately just the most recent `limit` entries, with no
+// stitching in of bounce-back context or the case's origin: mixing "recent" and "complete" is
+// what previously produced confusing gaps (a preview that jumped straight from the newest entry
+// to "Complaint submitted" with ten entries silently missing in between). Keeping this purely
+// recent, and the drawer purely complete, avoids that blur instead of patching around it.
+export function buildActivityTimeline(sortedActivity, limit = 7) {
+  return sortedActivity.slice(0, limit);
 }
 
 const ATTACHMENT_PATTERN = /^Attached \d+ files?/i;
@@ -126,4 +120,35 @@ export function getActivityDocuments(entry, complaint) {
   if (entry.documents) return entry.documents;
   if (!ATTACHMENT_PATTERN.test(entry.message || '')) return [];
   return (complaint?.documents || []).filter((doc) => doc.uploadedAt === entry.timestamp);
+}
+
+// Who can add or edit a comment on an investigation activity log entry is a function of where
+// the case currently sits in the Investigation Officer → Supervisor → Director → Registry chain,
+// not just who's looking at it — each role's window closes once they've handed the case off to
+// the next one, and reopens if it bounces back to them.
+//
+// A Supervisor's window closes the moment they forward the case to the Director
+// (DIRECTOR_FINAL_REVIEW) — sending it back to the investigator (ASSIGNED_TO_INVESTIGATOR) or a
+// second review pass (SUPERVISOR_REVIEW) reopens it since it's still with the department.
+const SUPERVISOR_COMMENT_STATUSES = [
+  SUB_STATUS.ASSIGNED_TO_SUPERVISOR,
+  SUB_STATUS.ASSIGNED_TO_INVESTIGATOR,
+  SUB_STATUS.INVESTIGATING,
+  SUB_STATUS.SUPERVISOR_REVIEW,
+];
+
+// A Director's window stays open through everything the Supervisor's does, plus their own final
+// review, and only closes once they forward the case back to the Registry (DEPT_COMPLETE or
+// later) — escalating to the ES doesn't change subStatus, so that stays open too.
+const DIRECTOR_COMMENT_STATUSES = [
+  ...SUPERVISOR_COMMENT_STATUSES,
+  SUB_STATUS.DIRECTOR_FINAL_REVIEW,
+];
+
+export function canSupervisorCommentOnActivities(subStatus) {
+  return SUPERVISOR_COMMENT_STATUSES.includes(subStatus);
+}
+
+export function canDirectorCommentOnActivities(subStatus) {
+  return DIRECTOR_COMMENT_STATUSES.includes(subStatus);
 }

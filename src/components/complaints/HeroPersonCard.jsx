@@ -12,21 +12,27 @@ export default function HeroPersonCard({ roleLabel, person, tagVariant = 'defaul
         <Avatar name={person.name} size={44} />
         <div className="hero-person-identity">
           <span className="hero-person-name">{person.name}</span>
-          {(person.gender || person.ageAtIncident) && (
-            <span className="hero-person-subline">
-              {[person.gender, person.ageAtIncident ? `Age ${person.ageAtIncident}` : null].filter(Boolean).join(' · ')}
-            </span>
+          {person.unidentified ? (
+            <span className="hero-person-subline hero-person-unidentified-note">Not yet identified</span>
+          ) : (
+            (person.gender || person.ageAtIncident) && (
+              <span className="hero-person-subline">
+                {[person.gender, person.ageAtIncident ? `Age ${person.ageAtIncident}` : null].filter(Boolean).join(' · ')}
+              </span>
+            )
           )}
         </div>
         <span className={`hero-person-tag tag-${tagVariant}`}>{roleLabel}</span>
       </div>
 
-      <div className="hero-person-contact">
-        <span><Phone size={12} /> {person.phone || '—'}</span>
-        <span><Mail size={12} /> {person.email || '—'}</span>
-        <span><Cake size={12} /> {person.dob || '—'}</span>
-        <span className="hero-person-contact-wide"><MapPin size={12} /> {person.address || '—'}</span>
-      </div>
+      {!person.unidentified && (
+        <div className="hero-person-contact">
+          <span><Phone size={12} /> {person.phone || '—'}</span>
+          <span><Mail size={12} /> {person.email || '—'}</span>
+          <span><Cake size={12} /> {person.dob || '—'}</span>
+          <span className="hero-person-contact-wide"><MapPin size={12} /> {person.address || '—'}</span>
+        </div>
+      )}
     </div>
   );
 }

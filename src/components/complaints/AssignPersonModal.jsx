@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
-import Select from '../ui/Select';
+import SearchableSelect from '../ui/SearchableSelect';
 import TextArea from '../ui/TextArea';
 import AttachDocumentsField from './AttachDocumentsField';
 
@@ -32,12 +32,12 @@ export default function AssignPersonModal({ open, onClose, title, description, p
         {description && <p className="modal-description">{description}</p>}
 
         <FormField label={personLabel} required>
-          <Select value={personId} onChange={(e) => setPersonId(e.target.value)} required>
-            <option value="" disabled>{`-- Select ${personLabel} --`}</option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </Select>
+          <SearchableSelect
+            value={personId}
+            onChange={setPersonId}
+            options={people}
+            placeholder={`Search ${personLabel.toLowerCase()}s…`}
+          />
         </FormField>
 
         <FormField label="Remarks" hint="Add a remark, if any.">

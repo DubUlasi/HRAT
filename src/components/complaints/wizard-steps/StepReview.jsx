@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ChevronDown, Pencil, MapPin, Calendar, Paperclip, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../../constants/complaintCategories';
 import { getSubCategories } from '../../../constants/complaintSubCategories';
 import { getKeyPopulation } from '../../../constants/keyPopulations';
-import { suggestOfficeFromLocation } from '../../../constants/officeRecommendation';
+import { relevantOfficesForComplaint, recommendedOfficeForComplaint } from '../../../constants/officeRecommendation';
 
-// Step 5 of 5 — "Review & Submit". Summarizes steps 1-4 (all state lives in the parent, so
+// Step 6 of 6 — "Review & Submit". Summarizes steps 1-5 (all state lives in the parent, so
 // nothing is lost navigating back via the Edit links), plus the Preferred Handling Office
 // select relocated here from the old final step, and the Submit button.
 export default function StepReview({
@@ -15,6 +15,7 @@ export default function StepReview({
   incident,
   victims,
   violators,
+  filedBy,
   office,
   onOfficeChange,
   onEditStep,
@@ -26,7 +27,18 @@ export default function StepReview({
   const { t } = useTranslation();
   const subCategoryLabel = getSubCategories(category).find((o) => o.value === subCategory)?.label;
   const categoryColor = CATEGORY_COLOR[category] || 'info';
-  const recommendedOffice = suggestOfficeFromLocation(incident.location);
+  const relevantOffices = relevantOfficesForComplaint(incident.location, victims, violators);
+  const recommendedOffice = recommendedOfficeForComplaint(incident.location, victims, violators);
+
+  // If a previously-picked office falls out of the relevant set (e.g. the complainant went
+  // back and changed a victim/violator address), clear it rather than silently submitting a
+  // now-irrelevant office that's no longer even shown as an option.
+  useEffect(() => {
+    if (office && !relevantOffices.includes(office)) {
+      onOfficeChange('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relevantOffices.join('|')]);
 
   return (
     <div className="su-step active">
@@ -47,6 +59,26 @@ export default function StepReview({
           <div className="review-summary-body">
             <span className={`category-pill pill-${categoryColor}`}>{CATEGORY_LABELS[category]}</span>
             {subCategoryLabel && <p className="review-summary-line">{subCategoryLabel}</p>}
+          </div>
+        </div>
+
+        <div className="review-summary-card">
+          <div className="review-summary-header">
+            <span className="review-summary-title">{t('wizard.review.sectionFiledBy')}</span>
+            <button type="button" className="review-edit-link" onClick={() => onEditStep(3)}>
+              <Pencil size={12} /> {t('wizard.review.edit')}
+            </button>
+          </div>
+          <div className="review-summary-body">
+            {filedBy.type === 'group' ? (
+              <>
+                <p className="review-summary-line strong">{filedBy.groupName}</p>
+                <p className="review-summary-meta">{t('wizard.review.filedByGroupRepresentedBy', { name: filedBy.representativeName })}</p>
+                {filedBy.representativePhone && <p className="review-summary-meta">{filedBy.representativePhone}</p>}
+              </>
+            ) : (
+              <p className="review-summary-line">{t('wizard.review.filedByIndividual')}</p>
+            )}
           </div>
         </div>
 
@@ -106,9 +138,15 @@ export default function StepReview({
           <div className="review-summary-body">
             {violators.map((violator, index) => (
               <div className="review-summary-person-block" key={index}>
-                <p className="review-summary-line strong">{violator.firstName} {violator.lastName}</p>
-                {violator.phone && <p className="review-summary-meta">{violator.phone}</p>}
-                {violator.address && <p className="review-summary-meta"><MapPin size={12} /> {violator.address}</p>}
+                {violator.unidentified ? (
+                  <p className="review-summary-line strong">{t('wizard.review.unidentifiedViolator')}</p>
+                ) : (
+                  <>
+                    <p className="review-summary-line strong">{violator.firstName} {violator.lastName}</p>
+                    {violator.phone && <p className="review-summary-meta">{violator.phone}</p>}
+                    {violator.address && <p className="review-summary-meta"><MapPin size={12} /> {violator.address}</p>}
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -124,11 +162,9 @@ export default function StepReview({
               onChange={(e) => onOfficeChange(e.target.value)}
             >
               <option value="">{t('common.selectOffice')}</option>
-              <option value="abuja">{t('wizard.review.offices.abuja')}</option>
-              <option value="lagos">{t('wizard.review.offices.lagos')}</option>
-              <option value="kano">{t('wizard.review.offices.kano')}</option>
-              <option value="enugu">{t('wizard.review.offices.enugu')}</option>
-              <option value="rivers">{t('wizard.review.offices.rivers')}</option>
+              {relevantOffices.map((officeId) => (
+                <option key={officeId} value={officeId}>{t(`wizard.review.offices.${officeId}`)}</option>
+              ))}
             </select>
             {office && office === recommendedOffice && (
               <span className="recommended-tag recommended-tag-inline">{t('wizard.review.recommendedTag')}</span>

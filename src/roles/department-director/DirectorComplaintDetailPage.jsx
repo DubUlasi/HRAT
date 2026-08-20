@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Building2, Briefcase, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Calendar, Building2, Briefcase, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw, Flag, UsersRound, Phone, Mail } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import Button from '../../components/ui/Button';
+import BackButton from '../../components/ui/BackButton';
+import DownloadCsvButton from '../../components/ui/DownloadCsvButton';
 import StatusBadge from '../../components/ui/StatusBadge';
 import StageTracker from '../../components/ui/StageTracker';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
@@ -12,35 +14,38 @@ import HeroPersonCard from '../../components/complaints/HeroPersonCard';
 import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
 import RelatedComplaintsPanel from '../../components/complaints/RelatedComplaintsPanel';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
+import FlagComplaintModal from '../../components/complaints/FlagComplaintModal';
+import InvestigationActivitiesCard from '../../components/complaints/InvestigationActivitiesCard';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
-import { stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
+import { downloadComplaintReport } from '../../utils/exportUtils';
+import { stageProgressPercent, isBounceBackActivity, buildActivityTimeline, canDirectorCommentOnActivities } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices, departments, departmentSupervisors, investigationOfficers } from '../../data/mockOfficers';
 import { needsDeptReview, needsAssignment, needsFinalReview } from './directorQueue';
 import { departmentDirectorNavItems } from './navConfig';
-import { userCanViewComplaint } from '../scopeComplaints';
+import { userCanViewComplaint, scopeComplaintsForUser } from '../scopeComplaints';
 import DepartmentReviewModal from './modals/DepartmentReviewModal';
 import DirectorFinalReviewModal from './modals/DirectorFinalReviewModal';
 
 const CONFIRM_COPY = {
   reviewDept: { description: 'This decision goes back to the Registry Head if rejected.' },
   assignSupervisor: { description: 'You are assigning this complaint to a supervisor in your department.' },
-  assignInvestigator: { description: 'You are assigning this complaint directly to an investigator.' },
+  assignInvestigator: { description: 'You are assigning this complaint directly to an investigation officer.' },
   finalReview: { description: 'Your response is permanent.' },
 };
 
 const STAGE_LABEL = {
   reviewDept: 'Department Review',
   assignSupervisor: 'Supervisor Assignment',
-  assignInvestigator: 'Investigator Assignment',
+  assignInvestigator: 'Investigation Officer Assignment',
   finalReview: 'Director Final Review',
 };
 
 const SUCCESS_COPY = {
   reviewDept: 'Department review recorded successfully!',
   assignSupervisor: 'Assigned to supervisor successfully!',
-  assignInvestigator: 'Assigned to investigator successfully!',
+  assignInvestigator: 'Assigned to investigation officer successfully!',
   finalReview: 'Final review recorded successfully!',
 };
 
@@ -51,25 +56,28 @@ export default function DirectorComplaintDetailPage() {
     getComplaintById,
     findRelatedComplaints,
     attachDocuments,
+    toggleComplaintFlag,
     directorReviewDepartment,
     assignSupervisor,
     assignInvestigator,
     directorFinalReview,
     escalateToExecutiveSecretary,
+    addActivityComment,
+    updateActivityComment,
   } = useComplaints();
 
   const complaint = getComplaintById(complaintId);
   const [flow, setFlow] = useState({ type: null, step: null, payload: null });
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [showOffenderHistory, setShowOffenderHistory] = useState(false);
+  const [showFlagModal, setShowFlagModal] = useState(false);
+  const [flagSuccessMessage, setFlagSuccessMessage] = useState(null);
 
   if (!complaint || !userCanViewComplaint(complaint, user)) {
     return (
       <AppShell navItems={departmentDirectorNavItems} user={user}>
         <div className="detail-top-nav-bar">
-          <Link to="/department-director/new" className="back-to-cases-btn">
-            <ArrowLeft size={16} /> Back to New Assignments
-          </Link>
+          <BackButton navItems={departmentDirectorNavItems} fallbackTo="/department-director/new" />
         </div>
         <h1>Complaint not found</h1>
         <p>This complaint may have been removed, or you don't have access to it.</p>
@@ -102,6 +110,12 @@ export default function DirectorComplaintDetailPage() {
     setFlow((f) => ({ ...f, step: 'success' }));
   };
 
+  const handleToggleFlag = ({ flagged, reason }) => {
+    toggleComplaintFlag(complaint.id, { flagged, reason });
+    setShowFlagModal(false);
+    setFlagSuccessMessage(flagged ? 'Complaint flagged successfully!' : 'Flag removed successfully!');
+  };
+
   const officeName = offices.find((o) => o.id === complaint.office)?.name;
   const departmentName = departments.find((d) => d.id === complaint.department)?.name;
   const deptSupervisors = departmentSupervisors.filter((s) => s.departmentId === departmentId);
@@ -115,7 +129,7 @@ export default function DirectorComplaintDetailPage() {
       return (
         <>
           <Button variant="primary" onClick={() => startFlow('assignSupervisor')}>Assign Supervisor</Button>
-          <Button variant="secondary" onClick={() => startFlow('assignInvestigator')}>Assign Investigator Directly</Button>
+          <Button variant="secondary" onClick={() => startFlow('assignInvestigator')}>Assign Investigation Officer Directly</Button>
         </>
       );
     }
@@ -125,18 +139,23 @@ export default function DirectorComplaintDetailPage() {
     return null;
   };
 
+  // Sorted by when the activity actually happened, not when it was typed into the system —
+  // older entries predating the happenedOn field fall back to their loggedAt.
+  const activities = [...(complaint.investigation.activities || [])].sort(
+    (a, b) => new Date(b.happenedOn || b.loggedAt) - new Date(a.happenedOn || a.loggedAt)
+  );
+
   const sortedActivity = [...complaint.activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const progressPct = stageProgressPercent(complaint.stageIndex);
   const actionButton = renderActionButton();
   const categoryColor = CATEGORY_COLOR[complaint.category] || 'info';
-  const isRepeatViolator = findRelatedComplaints(complaint.id).length > 0;
+  const isRepeatViolator = scopeComplaintsForUser(findRelatedComplaints(complaint.id), user).length > 0;
 
   return (
     <AppShell navItems={departmentDirectorNavItems} user={user}>
       <div className="detail-top-nav-bar">
-        <Link to="/department-director/new" className="back-to-cases-btn">
-          <ArrowLeft size={16} /> Back to New Assignments
-        </Link>
+        <BackButton navItems={departmentDirectorNavItems} fallbackTo="/department-director/new" />
+        <DownloadCsvButton onDownload={() => downloadComplaintReport(complaint)} label="Download Report" />
       </div>
 
       <div className="case-detail-hero" style={{ '--category-color': `var(--${categoryColor}-color)`, '--category-tint': `var(--${categoryColor}-light)` }}>
@@ -145,9 +164,19 @@ export default function DirectorComplaintDetailPage() {
             <div className="hero-tags-row">
               {complaint.complaintNumber && <span className="detail-tracking-code">{complaint.complaintNumber}</span>}
               <span className={`category-pill pill-${categoryColor}`}>{CATEGORY_LABELS[complaint.category]}</span>
+              {complaint.filedBy?.type === 'group' && (
+                <span className="urgency-pill info group-complaint-pill">
+                  <UsersRound size={11} /> Group Complaint
+                </span>
+              )}
               {isRepeatViolator && (
                 <span className="urgency-pill negative repeat-violator-pill">
                   <AlertOctagon size={11} /> Repeat Violator
+                </span>
+              )}
+              {complaint.flagged && (
+                <span className="urgency-pill warning flagged-pill">
+                  <Flag size={11} /> Flagged
                 </span>
               )}
               {complaint.esEscalation?.escalated && !complaint.esEscalation.resolved && (
@@ -177,7 +206,12 @@ export default function DirectorComplaintDetailPage() {
           </div>
         </div>
 
-        {actionButton && <div className="hero-actions-row">{actionButton}</div>}
+        <div className="hero-actions-row">
+          {actionButton}
+          <Button variant="secondary" icon={Flag} onClick={() => setShowFlagModal(true)}>
+            {complaint.flagged ? 'Remove Flag' : 'Flag Complaint'}
+          </Button>
+        </div>
 
         <div className="hero-people-section">
           <span className="hero-people-label"><Users size={12} /> People Involved</span>
@@ -194,7 +228,7 @@ export default function DirectorComplaintDetailPage() {
         <div className="detail-column-left">
           <div className="detail-section-card">
             <div className="section-header-flex">
-              <h3 className="section-card-title"><Activity size={14} /> Activity Timeline</h3>
+              <h3 className="section-card-title"><Activity size={14} /> Recent Activity</h3>
               <button type="button" className="btn-link" onClick={() => setShowActivityLog(true)}>View Full Log</button>
             </div>
             <div className="activity-vertical-timeline">
@@ -203,7 +237,7 @@ export default function DirectorComplaintDetailPage() {
                 return (
                   <div key={entry.id} className={`activity-timeline-item ${idx === 0 ? 'current' : ''} ${bounceBack ? 'bounce-back' : ''}`}>
                     <span className="activity-node-icon">
-                      {bounceBack ? <RotateCcw size={10} /> : idx === 0 ? <span className="current-ring-inner" /> : <span className="locked-circle" />}
+                      {bounceBack ? <RotateCcw size={10} /> : <span className={`activity-node-dot ${idx === 0 ? 'latest' : ''}`} />}
                     </span>
                     <div className="activity-item-content">
                       <div className="activity-item-header">
@@ -218,7 +252,7 @@ export default function DirectorComplaintDetailPage() {
             </div>
           </div>
 
-          {(complaint.investigation.finding || complaint.investigation.recommendation) && (
+          {(complaint.investigation.finding || complaint.investigation.recommendation || complaint.investigation.findingDocuments?.length > 0) && (
             <div className="detail-section-card">
               <h3 className="section-card-title"><FileText size={14} /> Investigation Findings</h3>
               {complaint.investigation.finding && <p className="review-summary-line">{complaint.investigation.finding}</p>}
@@ -227,8 +261,27 @@ export default function DirectorComplaintDetailPage() {
                   <strong>Recommendation:</strong> {complaint.investigation.recommendation}
                 </p>
               )}
+              {complaint.investigation.findingDocuments?.length > 0 && (
+                <div className="activity-attachment-list" style={{ marginTop: 10 }}>
+                  {complaint.investigation.findingDocuments.map((doc) => (
+                    <a key={doc.id} href={doc.url} download={doc.name} target="_blank" rel="noreferrer" className="activity-attachment-row">
+                      <Paperclip size={12} />
+                      <span>{doc.name}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           )}
+
+          <InvestigationActivitiesCard
+            activities={activities}
+            canComment={canDirectorCommentOnActivities(complaint.subStatus)}
+            onAddComment={(entry, text) => addActivityComment(complaint.id, entry.id, text)}
+            canEditComments={canDirectorCommentOnActivities(complaint.subStatus)}
+            currentUserId={user?.officerId}
+            onEditComment={(entry, comment, text) => updateActivityComment(complaint.id, entry.id, comment.id, text)}
+          />
         </div>
 
         <div className="detail-column-right">
@@ -239,6 +292,32 @@ export default function DirectorComplaintDetailPage() {
                 <span className="spec-label"><Hash size={12} /> Complaint No.</span>
                 <span className="spec-value mono">{complaint.complaintNumber || '—'}</span>
               </div>
+              <div className="spec-item">
+                <span className="spec-label"><Users size={12} /> Filed By</span>
+                <span className="spec-value">{complaint.filedBy?.type === 'group' ? 'Group / Committee' : 'Individual'}</span>
+              </div>
+              {complaint.filedBy?.type === 'group' && (
+                <>
+                  <div className="spec-item">
+                    <span className="spec-label"><UsersRound size={12} /> Group Name</span>
+                    <span className="spec-value">{complaint.filedBy.groupName || '—'}</span>
+                  </div>
+                  <div className="spec-item">
+                    <span className="spec-label"><Users size={12} /> Representative</span>
+                    <span className="spec-value">{complaint.filedBy.representativeName || '—'}</span>
+                  </div>
+                  <div className="spec-item">
+                    <span className="spec-label"><Phone size={12} /> Rep. Phone</span>
+                    <span className="spec-value">{complaint.filedBy.representativePhone || '—'}</span>
+                  </div>
+                  {complaint.filedBy.representativeEmail && (
+                    <div className="spec-item">
+                      <span className="spec-label"><Mail size={12} /> Rep. Email</span>
+                      <span className="spec-value">{complaint.filedBy.representativeEmail}</span>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="spec-item">
                 <span className="spec-label"><Tag size={12} /> Category</span>
                 <span className="spec-value">{CATEGORY_LABELS[complaint.category]}</span>
@@ -322,8 +401,8 @@ export default function DirectorComplaintDetailPage() {
       <AssignPersonModal
         key={`assign-investigator-${complaint.id}`}
         open={flow.type === 'assignInvestigator' && flow.step === 'input'}
-        title="Assign Investigator"
-        personLabel="Investigator"
+        title="Assign Investigation Officer"
+        personLabel="Investigation Officer"
         people={deptInvestigators}
         onClose={closeFlow}
         onSubmit={handleInputSubmit}
@@ -359,6 +438,19 @@ export default function DirectorComplaintDetailPage() {
         open={showOffenderHistory}
         onClose={() => setShowOffenderHistory(false)}
         complaintId={complaint.id}
+      />
+
+      <FlagComplaintModal
+        open={showFlagModal}
+        onClose={() => setShowFlagModal(false)}
+        flagged={complaint.flagged}
+        onSubmit={handleToggleFlag}
+      />
+
+      <SuccessModal
+        open={!!flagSuccessMessage}
+        message={flagSuccessMessage || ''}
+        onClose={() => setFlagSuccessMessage(null)}
       />
     </AppShell>
   );

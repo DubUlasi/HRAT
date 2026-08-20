@@ -12,10 +12,15 @@ export const registryOfficers = [
 export const departmentSupervisors = [
   { id: 'sup-williams', name: 'Williams Peter', email: 'will@example.com', departmentId: 'civil-political' },
   { id: 'sup-mark', name: 'Mark Peter', email: 'mark@example.com', departmentId: 'vulnerable-groups' },
+  { id: 'sup-patricia', name: 'Patricia Peter', email: 'patricia@example.com', departmentId: 'eco-soc' },
+  { id: 'sup-daniel', name: 'Daniel Peter', email: 'daniel@example.com', departmentId: 'women-children' },
 ];
 
 export const investigationOfficers = [
   { id: 'inv-henry', name: 'Henry Peter', email: 'henry@example.com', departmentId: 'civil-political' },
+  { id: 'inv-victoria', name: 'Victoria Peter', email: 'victoria@example.com', departmentId: 'vulnerable-groups' },
+  { id: 'inv-samuel', name: 'Samuel Peter', email: 'samuel@example.com', departmentId: 'eco-soc' },
+  { id: 'inv-blessing', name: 'Blessing Peter', email: 'blessing@example.com', departmentId: 'women-children' },
 ];
 
 export const departmentDirectors = [

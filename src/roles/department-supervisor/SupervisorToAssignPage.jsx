@@ -1,25 +1,71 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
+import DownloadCsvButton from '../../components/ui/DownloadCsvButton';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
+import SearchBar from '../../components/ui/SearchBar';
 import Pagination from '../../components/ui/Pagination';
+import ComplaintListFilters, {
+  matchesStatusFilter,
+  matchesCategoryFilter,
+  matchesPopulationFilter,
+} from '../../components/complaints/ComplaintListFilters';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { usePagination } from '../../hooks/usePagination';
+import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { needsInvestigatorAssignment } from './supervisorQueue';
 import { departmentSupervisorNavItems } from './navConfig';
+
+function matchesSearch(complaint, search) {
+  if (!search) return true;
+  const term = search.toLowerCase();
+  return [complaint.subject, complaint.complaintNumber, complaint.victim?.name, complaint.allegedViolator?.name]
+    .filter(Boolean)
+    .some((field) => field.toLowerCase().includes(term));
+}
 
 export default function SupervisorToAssignPage() {
   const { user } = useAuth();
   const { complaints } = useComplaints();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [populationFilter, setPopulationFilter] = useState('all');
+  const [keyGroupFilter, setKeyGroupFilter] = useState('all');
   const officerId = user?.officerId;
 
-  const rows = complaints.filter((c) => needsInvestigatorAssignment(c, officerId));
-  const pagination = usePagination(rows, 10);
+  const rows = complaints
+    .filter((c) => needsInvestigatorAssignment(c, officerId))
+    .filter((c) => matchesSearch(c, search))
+    .filter((c) => matchesStatusFilter(c, statusFilter))
+    .filter((c) => matchesCategoryFilter(c, categoryFilter))
+    .filter((c) => matchesPopulationFilter(c, populationFilter, keyGroupFilter));
+  const pagination = usePagination(rows, 10, `${search}|${statusFilter}|${categoryFilter}|${populationFilter}|${keyGroupFilter}`);
 
   return (
     <AppShell navItems={departmentSupervisorNavItems} user={user}>
-      <PageHeader title="To Assign" subtitle="Complaints assigned to you that still need an investigator." />
+      <PageHeader title="To Assign" subtitle="Complaints assigned to you that still need an investigation officer."
+        actions={<DownloadCsvButton onDownload={() => downloadComplaintsExcel(rows, 'To Assign')} disabled={!rows.length} />}
+      />
+
+      <div className="filter-toolbar">
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by subject, complaint number, victim, or alleged violator..."
+        />
+        <ComplaintListFilters
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          populationFilter={populationFilter}
+          onPopulationChange={setPopulationFilter}
+          keyGroupFilter={keyGroupFilter}
+          onKeyGroupChange={setKeyGroupFilter}
+        />
+      </div>
 
       <ComplaintsTable
         complaints={pagination.pageItems}

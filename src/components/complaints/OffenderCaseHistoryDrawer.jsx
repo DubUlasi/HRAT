@@ -61,7 +61,7 @@ export default function OffenderCaseHistoryDrawer({ open, onClose, complaintId }
                 <Link to={`${detailBase}/${c.id}`} className="offender-case-subject">{c.subject}</Link>
                 <StatusBadge status={c.subStatus} />
               </div>
-              <div className="offender-case-date">Filed {new Date(c.dateFiled).toDateString()}</div>
+              <div className="offender-case-date">{c.complaintNumber ? `${c.complaintNumber} · ` : ''}Filed {new Date(c.dateFiled).toDateString()}</div>
               <p className="offender-case-outcome">{getComplaintOutcomeSummary(c)}</p>
             </div>
           ))}

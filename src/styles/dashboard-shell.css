@@ -337,13 +337,6 @@
   margin-bottom: 10px;
 }
 
-/* The dashboard's action-queue card gets a warm top accent so it visually reads as "needs you"
-   and stands apart from the plain Recent Complaints card below it, even though both reuse the
-   same base card styling. (.main-content's own flex gap handles spacing between them.) */
-.action-queue-card {
-  border-top: 3px solid var(--warning-color);
-}
-
 .action-queue-card .count-badge {
   background-color: var(--warning-light);
   color: var(--warning-color);

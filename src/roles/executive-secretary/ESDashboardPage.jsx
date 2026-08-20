@@ -20,6 +20,14 @@ function actionReason(c) {
   return null;
 }
 
+// Ready For Council/Inadmissible Review are tabs on one page; Escalated To Me is a separate
+// nav page — this queue merges rows from both, so which one a row "belongs to" (for sidebar
+// highlighting) depends on its own status, not on the fact that they're all in one widget here.
+function actionNavFrom(c) {
+  if (c.esEscalation?.escalated && !c.esEscalation.resolved) return '/executive-secretary/escalated';
+  return '/executive-secretary/council';
+}
+
 export default function ESDashboardPage() {
   const { user } = useAuth();
   const { complaints } = useComplaints();
@@ -89,6 +97,7 @@ export default function ESDashboardPage() {
         items={needsAction}
         getHref={(c) => `/executive-secretary/complaints/${c.id}`}
         getReason={actionReason}
+        getNavFrom={actionNavFrom}
       />
 
       <div className="recent-complaints-card">

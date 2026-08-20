@@ -1,16 +1,20 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, FileWarning, ChevronRight } from 'lucide-react';
+import { Phone, Mail, FileWarning, ChevronRight } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import Avatar from '../../components/ui/Avatar';
+import BackButton from '../../components/ui/BackButton';
 import StatusBadge from '../../components/ui/StatusBadge';
 import EmptyState from '../../components/ui/EmptyState';
+import DownloadCsvButton from '../../components/ui/DownloadCsvButton';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { getComplaintOutcomeSummary } from '../../constants/complaintStatus';
+import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
-import { ROLE_NAV_ITEMS } from '../roleNavMap';
+import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
+import { scopeRepeatOffendersForUser } from '../scopeComplaints';
 
 // Full case history for one repeat violator — everything OffenderCaseHistoryDrawer shows in its
 // compact slide-in, at full page width/detail, reached by clicking a row on the Repeat Violators
@@ -21,17 +25,16 @@ export default function RegistryHeadViolatorDetailPage() {
   const { violatorId } = useParams();
   const { user } = useAuth();
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
   const { getRepeatOffenders } = useComplaints();
 
-  const violator = getRepeatOffenders().find((o) => o.id === decodeURIComponent(violatorId));
+  const violator = scopeRepeatOffendersForUser(getRepeatOffenders(), user).find((o) => o.id === decodeURIComponent(violatorId));
 
   if (!violator) {
     return (
       <AppShell navItems={navItems} user={user || registryHeadUser}>
         <div className="detail-top-nav-bar">
-          <Link to="/registry-head/repeat-offenders" className="back-to-cases-btn">
-            <ArrowLeft size={16} /> Back to Repeat Violators
-          </Link>
+          <BackButton navItems={navItems} fallbackTo="/registry-head/repeat-offenders" />
         </div>
         <h1>Violator not found</h1>
         <p>This violator may no longer meet the repeat-violator threshold, or the link is incorrect.</p>
@@ -42,9 +45,11 @@ export default function RegistryHeadViolatorDetailPage() {
   return (
     <AppShell navItems={navItems} user={user || registryHeadUser}>
       <div className="detail-top-nav-bar">
-        <Link to="/registry-head/repeat-offenders" className="back-to-cases-btn">
-          <ArrowLeft size={16} /> Back to Repeat Violators
-        </Link>
+        <BackButton navItems={navItems} fallbackTo="/registry-head/repeat-offenders" />
+        <DownloadCsvButton
+          onDownload={() => downloadComplaintsExcel(violator.complaints, `${violator.name} - Case History`)}
+          disabled={!violator.complaints.length}
+        />
       </div>
 
       <div className="violator-detail-hero">
@@ -81,7 +86,7 @@ export default function RegistryHeadViolatorDetailPage() {
         ) : (
           <div className="related-complaints-list" style={{ marginTop: 10 }}>
             {violator.complaints.map((c) => (
-              <Link key={c.id} to={`/registry-head/complaints/${c.id}`} className="related-complaint-row">
+              <Link key={c.id} to={`${detailBase}/${c.id}`} className="related-complaint-row">
                 <div className="related-complaint-main">
                   <span className="related-complaint-subject">{c.subject}</span>
                   <span className="related-complaint-date">

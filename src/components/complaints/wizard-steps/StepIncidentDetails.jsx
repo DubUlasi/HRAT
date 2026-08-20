@@ -1,7 +1,10 @@
-import React from 'react';
-import { ArrowRight, Upload, FileImage, FileVideo, FileText, X } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { ArrowRight, Upload, FileImage, FileVideo, FileText, X, Mic, Square } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
+import { useSpeechRecognition, SPEECH_LOCALE_MAP } from '../../../hooks/useSpeechRecognition';
 import LocationAutocomplete from '../../ui/LocationAutocomplete';
+
+const SPEECH_SUPPORTED = typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
 function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -15,12 +18,37 @@ function fileIconFor(file) {
   return FileText;
 }
 
-// Step 2 of 5 — "Tell us more". Description + location + optional date, plus evidence upload
+// Step 2 of 6 — "Tell us more". Description + location + optional date, plus evidence upload
 // folded in here (not shown in the mobile reference design, but kept since it's existing
 // functionality) — now supporting multiple files with removable chips, instead of the old
-// single-file input.
+// single-file input. StepEvidence (step 5) offers the exact same upload again as its own
+// unmissable step, since this one's easy to skim past while focused on writing the description.
 export default function StepIncidentDetails({ value, onChange, onBack, onContinue, stepLabel }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const speech = useSpeechRecognition();
+  // Snapshot of whatever was already typed when the mic was clicked, so speaking appends to
+  // it instead of replacing it — useSpeechRecognition's own `transcript` resets to '' on start.
+  const descriptionBaseRef = useRef('');
+
+  useEffect(() => {
+    if (!speech.isListening) return;
+    const base = descriptionBaseRef.current;
+    onChange({ description: base ? `${base} ${speech.transcript}`.trim() : speech.transcript });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [speech.transcript, speech.isListening]);
+
+  // Release the mic if the user navigates away (Back/Continue) mid-recording instead of
+  // leaving recognition running silently in the background.
+  useEffect(() => () => speech.stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleMic = () => {
+    if (speech.isListening) {
+      speech.stop();
+    } else {
+      descriptionBaseRef.current = value.description;
+      speech.start(SPEECH_LOCALE_MAP[language] || 'en-US');
+    }
+  };
 
   const handleFilesAdded = (e) => {
     const newFiles = Array.from(e.target.files || []);
@@ -56,9 +84,23 @@ export default function StepIncidentDetails({ value, onChange, onBack, onContinu
         </div>
 
         <div className="su-field-group full-width">
-          <label className="su-label-dark">
-            {t('wizard.incident.descriptionLabel')} <span className="su-req-red">*</span>
-          </label>
+          <div className="su-label-row">
+            <label className="su-label-dark">
+              {t('wizard.incident.descriptionLabel')} <span className="su-req-red">*</span>
+            </label>
+            {SPEECH_SUPPORTED && (
+              <button
+                type="button"
+                className={`mic-toggle-btn ${speech.isListening ? 'listening' : ''}`}
+                onClick={toggleMic}
+                aria-label={speech.isListening ? t('wizard.incident.micStop') : t('wizard.incident.micStart')}
+                title={speech.isListening ? t('wizard.incident.micStop') : t('wizard.incident.micStart')}
+              >
+                {speech.isListening ? <Square size={13} /> : <Mic size={15} />}
+                {speech.isListening && <span className="mic-listening-label">{t('wizard.incident.micListening')}</span>}
+              </button>
+            )}
+          </div>
           <textarea
             className="su-textarea-white"
             rows="6"

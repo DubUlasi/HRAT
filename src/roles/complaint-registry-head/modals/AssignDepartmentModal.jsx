@@ -2,24 +2,20 @@ import React, { useState } from 'react';
 import Modal from '../../../components/ui/Modal';
 import Button from '../../../components/ui/Button';
 import FormField from '../../../components/ui/FormField';
-import Select from '../../../components/ui/Select';
+import SearchableSelect from '../../../components/ui/SearchableSelect';
 import TextArea from '../../../components/ui/TextArea';
-import Input from '../../../components/ui/Input';
 import AttachDocumentsField from '../../../components/complaints/AttachDocumentsField';
 import { offices, departments } from '../../../data/mockOfficers';
 
-// Two-step per the manual: pick the handling office, then pick the department + a remark.
+// Office + department + remark, all in one step — picking the office no longer needs its own
+// separate screen since SearchableSelect makes both fields quick to fill either way.
 export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
-  const [step, setStep] = useState(1);
   const [officeId, setOfficeId] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [remark, setRemark] = useState('');
   const [files, setFiles] = useState([]);
 
-  const office = offices.find((o) => o.id === officeId);
-
   const resetAndClose = () => {
-    setStep(1);
     setOfficeId('');
     setDepartmentId('');
     setRemark('');
@@ -27,15 +23,10 @@ export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
     onClose();
   };
 
-  const handleOfficeSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!officeId) return;
-    setStep(2);
-  };
-
-  const handleDepartmentSubmit = (e) => {
-    e.preventDefault();
-    if (!departmentId) return;
+    if (!officeId || !departmentId) return;
+    const office = offices.find((o) => o.id === officeId);
     const department = departments.find((d) => d.id === departmentId);
     onSubmit({ officeId, officeName: office?.name, departmentId, departmentName: department?.name, remark, files });
     // Don't reset/close here — the parent flips `open` off once it moves to its confirm step,
@@ -44,44 +35,21 @@ export default function AssignDepartmentModal({ open, onClose, onSubmit }) {
 
   return (
     <Modal open={open} onClose={resetAndClose} title="Assign To Department" width="480px">
-      {step === 1 && (
-        <form onSubmit={handleOfficeSubmit}>
-          <FormField label="Select the Handling Office" required>
-            <Select value={officeId} onChange={(e) => setOfficeId(e.target.value)} required>
-              <option value="" disabled>-- Select Office --</option>
-              {offices.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}</option>
-              ))}
-            </Select>
-          </FormField>
-          <div className="modal-actions">
-            <Button type="submit" variant="submit">Submit</Button>
-          </div>
-        </form>
-      )}
-
-      {step === 2 && (
-        <form onSubmit={handleDepartmentSubmit}>
-          <FormField label="Selected Handling Office">
-            <Input value={office?.name || ''} disabled readOnly />
-          </FormField>
-          <FormField label="Select the Handling Department" required>
-            <Select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} required>
-              <option value="" disabled>-- Select Department --</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Remarks" required>
-            <TextArea value={remark} onChange={(e) => setRemark(e.target.value)} required />
-          </FormField>
-          <AttachDocumentsField files={files} onChange={setFiles} />
-          <div className="modal-actions">
-            <Button type="submit" variant="submit">Submit</Button>
-          </div>
-        </form>
-      )}
+      <form onSubmit={handleSubmit}>
+        <FormField label="Select the Handling Office" required>
+          <SearchableSelect value={officeId} onChange={setOfficeId} options={offices} placeholder="Search offices…" />
+        </FormField>
+        <FormField label="Select the Handling Department" required>
+          <SearchableSelect value={departmentId} onChange={setDepartmentId} options={departments} placeholder="Search departments…" />
+        </FormField>
+        <FormField label="Remarks" required>
+          <TextArea value={remark} onChange={(e) => setRemark(e.target.value)} required />
+        </FormField>
+        <AttachDocumentsField files={files} onChange={setFiles} />
+        <div className="modal-actions">
+          <Button type="submit" variant="submit">Submit</Button>
+        </div>
+      </form>
     </Modal>
   );
 }

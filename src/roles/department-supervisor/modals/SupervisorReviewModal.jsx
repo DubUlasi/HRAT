@@ -44,7 +44,7 @@ export default function SupervisorReviewModal({ open, onClose, complaint, onSubm
           <Select value={satisfied} onChange={(e) => setSatisfied(e.target.value)} required>
             <option value="" disabled>-- Select --</option>
             <option value="yes">Yes, forward to Director</option>
-            <option value="no">No, send back to investigator</option>
+            <option value="no">No, send back to investigation officer</option>
           </Select>
         </FormField>
 

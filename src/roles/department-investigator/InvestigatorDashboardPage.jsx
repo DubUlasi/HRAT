@@ -47,13 +47,13 @@ export default function InvestigatorDashboardPage() {
   return (
     <AppShell navItems={departmentInvestigatorNavItems} user={user}>
       <PageHeader
-        title="Department Investigator Dashboard"
+        title="Department Investigation Officer Dashboard"
         subtitle={`Welcome back, ${user?.name?.split(' ')[0] || 'there'}. Log activity and record findings on your active cases.`}
       />
 
       <HeroBanner
         greetingName={user?.name?.split(' ')[0] || 'there'}
-        badge={`Department Investigator${departmentName ? ` - ${departmentName}` : ''}`}
+        badge={`Department Investigation Officer${departmentName ? ` - ${departmentName}` : ''}`}
         situationMessages={situationMessages}
         rightSlot={<QuickTrackerBlob />}
         stats={[
@@ -68,6 +68,7 @@ export default function InvestigatorDashboardPage() {
         items={activeCases}
         getHref={(c) => `/department-investigator/complaints/${c.id}`}
         getReason={actionReason}
+        getNavFrom={() => '/department-investigator/cases'}
         emptyMessage="No active cases right now, new assignments will show up here."
       />
 

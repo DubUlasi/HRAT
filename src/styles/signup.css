@@ -452,6 +452,71 @@
   color: #EF4444;
 }
 
+/* Inline "speak instead of typing" toggle — sits next to a field's own label rather than
+   replacing the field, so speaking just appends into the same textarea typing would. */
+.su-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.su-label-row .su-label-dark {
+  margin-bottom: 0;
+}
+
+.mic-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid #D1FAE5;
+  background-color: #ECFDF5;
+  color: #079455;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.mic-toggle-btn:hover {
+  background-color: #D1FAE5;
+}
+
+.mic-toggle-btn.listening {
+  background-color: #FEF2F2;
+  border-color: #FECACA;
+  color: #EF4444;
+  animation: micListeningPulse 1.4s infinite;
+}
+
+.mic-listening-label {
+  white-space: nowrap;
+}
+
+@keyframes micListeningPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.25); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12); }
+}
+
+[data-theme="dark"] .mic-toggle-btn {
+  background-color: rgba(7, 148, 85, 0.15);
+  border-color: rgba(7, 148, 85, 0.35);
+  color: #34D399;
+}
+
+[data-theme="dark"] .mic-toggle-btn:hover {
+  background-color: rgba(7, 148, 85, 0.25);
+}
+
+[data-theme="dark"] .mic-toggle-btn.listening {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #F87171;
+}
+
 .recommended-tag {
   display: inline-flex;
   align-items: center;
@@ -508,6 +573,24 @@
   background-color: transparent;
   border-color: #079455;
   box-shadow: none !important;
+}
+
+/* Chrome/Safari paint their own opaque autofill background (a pale yellow/blue) that a plain
+   `background-color: transparent` can't override — hits exactly the fields browsers autofill
+   most (name, email). The inset-shadow trick fakes transparency by matching the shadow to the
+   page's actual background instead, since a real transparent fill isn't possible on autofill. */
+.su-input-white:-webkit-autofill,
+.su-input-blue:-webkit-autofill,
+.su-input-white:-webkit-autofill:hover,
+.su-input-blue:-webkit-autofill:hover,
+.su-input-white:-webkit-autofill:focus,
+.su-input-blue:-webkit-autofill:focus,
+.su-input-white:-webkit-autofill:active,
+.su-input-blue:-webkit-autofill:active {
+  -webkit-text-fill-color: #0F172A;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset;
+  box-shadow: 0 0 0 1000px #FFFFFF inset;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .su-select-wrap {
@@ -782,6 +865,50 @@
   background-color: #0B0F19;
 }
 
+/* Not-yet-reached step circles default to a pale, near-white fill (#F1F5F9) — fine on the
+   wizard's always-light page, but a solid light disc against the dark stepper bar. Transparent
+   here so an unreached step just shows its border until you get to it (.reached/.current above
+   already give it a solid green fill, untouched). */
+[data-theme="dark"] .wizard-step-circle {
+  background-color: transparent;
+  border-color: #334155;
+  color: #64748B;
+}
+
+[data-theme="dark"] .wizard-step-connector {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .wizard-step-label {
+  color: #64748B;
+}
+
+[data-theme="dark"] .wizard-step-node.reached .wizard-step-label {
+  color: #F8FAFC;
+}
+
+/* The divider above Back/Continue was a light grey line meant for a white page. */
+[data-theme="dark"] .su-step-nav {
+  border-top-color: #1E293B;
+}
+
+/* "Choose Files" (evidence upload) — dark slate text/border meant for a white page, nearly
+   invisible against the dark background. The Upload icon has no color of its own (inherits
+   `color` via currentColor), so fixing text color here fixes the icon too. */
+[data-theme="dark"] .su-file-btn {
+  color: #F8FAFC;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .su-file-btn:hover {
+  background-color: #1E293B;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .su-file-name {
+  color: #94A3B8;
+}
+
 [data-theme="dark"] .su-heading h1,
 [data-theme="dark"] .su-title-dark {
   color: #F8FAFC;
@@ -833,6 +960,19 @@
   background-color: transparent;
   border-color: #334155;
   color: #F8FAFC;
+}
+
+[data-theme="dark"] .su-input-white:-webkit-autofill,
+[data-theme="dark"] .su-input-blue:-webkit-autofill,
+[data-theme="dark"] .su-input-white:-webkit-autofill:hover,
+[data-theme="dark"] .su-input-blue:-webkit-autofill:hover,
+[data-theme="dark"] .su-input-white:-webkit-autofill:focus,
+[data-theme="dark"] .su-input-blue:-webkit-autofill:focus,
+[data-theme="dark"] .su-input-white:-webkit-autofill:active,
+[data-theme="dark"] .su-input-blue:-webkit-autofill:active {
+  -webkit-text-fill-color: #F8FAFC;
+  -webkit-box-shadow: 0 0 0 1000px #0B0F19 inset;
+  box-shadow: 0 0 0 1000px #0B0F19 inset;
 }
 
 [data-theme="dark"] .su-category-item {

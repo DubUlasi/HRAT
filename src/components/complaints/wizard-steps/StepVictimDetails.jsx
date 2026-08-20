@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, UserCircle, Users, Pencil, Check, Trash2, UserPlus } from 'lucide-react';
+import { ArrowRight, UserCircle, Users, UsersRound, Pencil, Check, Trash2, UserPlus } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { getKeyPopulation } from '../../../constants/keyPopulations';
 import KeyPopulationSheet from './KeyPopulationSheet';
@@ -7,11 +7,11 @@ import LocationAutocomplete from '../../ui/LocationAutocomplete';
 
 const GENDER_OPTIONS = ['female', 'male', 'rather_not_say'];
 
-// Step 3 of 5 — "Who was affected?" One card per victim, so a group complaint is just more
+// Step 3 of 6 — "Who was affected?" One card per victim, so a group complaint is just more
 // cards. The self/someone-else toggle only makes sense for the first victim (every victim added
 // after that is implicitly someone else); numbering/remove controls only appear once there's
 // more than one victim, so the common single-victim case looks exactly like before.
-export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, onBack, onContinue, stepLabel }) {
+export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, filedBy, onFiledByChange, onBack, onContinue, stepLabel }) {
   const { t } = useTranslation();
   const [keyPopIndex, setKeyPopIndex] = useState(null);
   const [pendingSelection, setPendingSelection] = useState(null);
@@ -48,6 +48,85 @@ export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, 
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); onContinue(); }}>
+        <div className="multi-person-card">
+          <div className="su-section-label">{t('wizard.victim.filedByQuestion')}</div>
+          <div className="toggle-card-row">
+            <button
+              type="button"
+              className={`toggle-card ${filedBy.type === 'individual' ? 'selected' : ''}`}
+              onClick={() => onFiledByChange({ type: 'individual' })}
+            >
+              {filedBy.type === 'individual' && <span className="toggle-card-check"><Check size={11} /></span>}
+              <span className="toggle-card-icon"><UserCircle size={20} /></span>
+              <span className="toggle-card-label">{t('wizard.victim.filedByIndividual')}</span>
+            </button>
+            <button
+              type="button"
+              className={`toggle-card ${filedBy.type === 'group' ? 'selected' : ''}`}
+              onClick={() => onFiledByChange({ type: 'group' })}
+            >
+              {filedBy.type === 'group' && <span className="toggle-card-check"><Check size={11} /></span>}
+              <span className="toggle-card-icon"><UsersRound size={20} /></span>
+              <span className="toggle-card-label">{t('wizard.victim.filedByGroup')}</span>
+            </button>
+          </div>
+
+          {filedBy.type === 'group' && (
+            <div className="victim-form-grid">
+              <div className="su-field-group full-width">
+                <label className="su-label-dark">
+                  {t('wizard.victim.groupName')} <span className="su-req-red">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="su-input-blue"
+                  value={filedBy.groupName}
+                  onChange={(e) => onFiledByChange({ groupName: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="su-field-group full-width" style={{ marginTop: 4 }}>
+                <div className="su-section-label" style={{ marginBottom: 8 }}>{t('wizard.victim.representativeSectionLabel')}</div>
+              </div>
+
+              <div className="su-field-group">
+                <label className="su-label-dark">
+                  {t('wizard.victim.representativeName')} <span className="su-req-red">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="su-input-blue"
+                  value={filedBy.representativeName}
+                  onChange={(e) => onFiledByChange({ representativeName: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="su-field-group">
+                <label className="su-label-dark">
+                  {t('common.phone')} <span className="su-req-red">*</span>
+                </label>
+                <input
+                  type="tel"
+                  className="su-input-blue"
+                  value={filedBy.representativePhone}
+                  onChange={(e) => onFiledByChange({ representativePhone: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="su-field-group full-width">
+                <label className="su-label-dark">{t('common.email')} ({t('wizard.optional')})</label>
+                <input
+                  type="email"
+                  className="su-input-white"
+                  value={filedBy.representativeEmail}
+                  onChange={(e) => onFiledByChange({ representativeEmail: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
         {victims.map((victim, index) => {
           const selectedPopulation = getKeyPopulation(victim.keyPopulationGroup);
           return (

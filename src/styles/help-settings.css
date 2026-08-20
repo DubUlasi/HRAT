@@ -165,10 +165,31 @@ a.help-contact-row:hover {
   margin-bottom: 14px;
 }
 
+/* In light mode, the default .btn.secondary treatment (a pale grey fill) nearly disappears
+   against this banner's own pale gradient — an opaque white pill keeps it reading as a
+   distinct, clickable control. Dark mode's secondary button already has enough contrast
+   against the (darker) gradient, so this is scoped to light mode only. */
+[data-theme="light"] .settings-edit-profile-btn {
+  background-color: #FFFFFF;
+  border-color: rgba(15, 23, 42, 0.08);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .settings-edit-profile-btn:hover {
+  background-color: #F8FAFC;
+}
+
 .settings-profile-banner-info {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* Without this, the role badge stretches to the column flex container's full width (matching
+   the name above it) instead of hugging its own text — the padding stays symmetric either way,
+   but the extra stretched width made it look off-center. */
+.settings-profile-banner-info .status-badge {
+  align-self: flex-start;
 }
 
 .settings-profile-name {
@@ -246,6 +267,12 @@ a.help-contact-row:hover {
 .settings-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.settings-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .settings-row-label {

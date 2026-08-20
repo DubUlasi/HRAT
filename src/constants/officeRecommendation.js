@@ -58,3 +58,33 @@ export function suggestOfficeFromLocation(location) {
   const state = location.split(',').pop().trim();
   return STATE_TO_OFFICE[state] || null;
 }
+
+export const OFFICE_ORDER = ['abuja', 'lagos', 'kano', 'enugu', 'rivers'];
+
+// Which offices are actually worth offering for a given complaint: head office (a safe,
+// universal fallback/escalation point) plus whichever state offices cover where the incident
+// happened, where the victim(s) are, or where the alleged violator(s) are — a case can easily
+// span more than one of these (victim in one state, incident or violator in another), so this
+// is a union across all three sources, not just the incident's own location.
+export function relevantOfficesForComplaint(incidentLocation, victims = [], violators = []) {
+  const relevant = new Set(['abuja']);
+  const consider = (location) => {
+    const office = suggestOfficeFromLocation(location);
+    if (office) relevant.add(office);
+  };
+  consider(incidentLocation);
+  victims.forEach((v) => consider(v.address));
+  violators.forEach((v) => consider(v.address));
+  return OFFICE_ORDER.filter((id) => relevant.has(id));
+}
+
+// The single best-guess office to pre-select — incident location first (the strongest signal
+// of where intervention is physically needed), falling back to a victim's or violator's own
+// address when the incident location wasn't given.
+export function recommendedOfficeForComplaint(incidentLocation, victims = [], violators = []) {
+  const fromIncident = suggestOfficeFromLocation(incidentLocation);
+  if (fromIncident) return fromIncident;
+  const fromVictim = victims.map((v) => suggestOfficeFromLocation(v.address)).find(Boolean);
+  if (fromVictim) return fromVictim;
+  return violators.map((v) => suggestOfficeFromLocation(v.address)).find(Boolean) || null;
+}

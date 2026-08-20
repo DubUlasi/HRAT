@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import Avatar from '../ui/Avatar';
 import StatusBadge from '../ui/StatusBadge';
@@ -13,9 +13,10 @@ export default function ComplaintCard({ complaint }) {
   const { stageIndex } = complaint;
   const currentStageLabel = stageIndex >= 0 ? STAGE_LABELS[STAGE_ORDER[stageIndex]] : 'Not yet started';
   const fillPercent = stageProgressPercent(stageIndex);
+  const location = useLocation();
 
   return (
-    <Link to={`/registry-head/complaints/${complaint.id}`} className="complaint-card">
+    <Link to={`/registry-head/complaints/${complaint.id}`} state={{ from: location.pathname }} className="complaint-card">
       <div className="complaint-card-top">
         <span className="category-pill">{CATEGORY_LABELS[complaint.category]}</span>
         {complaint.complaintNumber && <span className="detail-tracking-code">{complaint.complaintNumber}</span>}
@@ -27,11 +28,11 @@ export default function ComplaintCard({ complaint }) {
       <div className="complaint-card-people">
         <div className="person-cell">
           <Avatar name={complaint.victim.name} size={21} />
-          <span>{complaint.victim.name}</span>
+          <span className="person-cell-name">{complaint.victim.name}</span>
         </div>
         <div className="person-cell">
           <Avatar name={complaint.allegedViolator.name} size={21} />
-          <span>{complaint.allegedViolator.name}</span>
+          <span className="person-cell-name">{complaint.allegedViolator.name}</span>
         </div>
       </div>
 

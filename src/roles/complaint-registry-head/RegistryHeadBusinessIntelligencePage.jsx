@@ -20,6 +20,7 @@ import { PERIOD_OPTIONS, withinPeriod } from '../../constants/reportPeriods';
 import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS } from '../roleNavMap';
+import { scopeComplaintsForUser, scopeRepeatOffendersForUser, REPEAT_VIOLATOR_ROLES } from '../scopeComplaints';
 
 const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -191,13 +192,18 @@ function exportCsv(complaints, period, customRange) {
 export default function RegistryHeadBusinessIntelligencePage() {
   const { user } = useAuth();
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
-  const { complaints, getRepeatOffenders } = useComplaints();
+  const { complaints: allComplaints, getRepeatOffenders } = useComplaints();
+  const complaints = useMemo(() => scopeComplaintsForUser(allComplaints, user), [allComplaints, user]);
   const [period, setPeriod] = useState('all');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [historyComplaintId, setHistoryComplaintId] = useState(null);
 
-  const repeatOffenders = useMemo(() => getRepeatOffenders(), [getRepeatOffenders]);
+  const canSeeRepeatViolators = REPEAT_VIOLATOR_ROLES.includes(user?.role);
+  const repeatOffenders = useMemo(
+    () => (canSeeRepeatViolators ? scopeRepeatOffendersForUser(getRepeatOffenders(), user) : []),
+    [getRepeatOffenders, user, canSeeRepeatViolators]
+  );
   const topRepeatOffenders = repeatOffenders.slice(0, 3);
 
   const filtered = useMemo(
@@ -312,31 +318,33 @@ export default function RegistryHeadBusinessIntelligencePage() {
         </div>
       </div>
 
-      <div className="stat-card accent-danger repeat-offenders-teaser">
-        <div className="repeat-offenders-teaser-header">
-          <div>
-            <h3><AlertOctagon size={13} /> Repeat Violators Flagged</h3>
-            <div className="value">{repeatOffenders.length}</div>
+      {canSeeRepeatViolators && (
+        <div className="stat-card accent-danger repeat-offenders-teaser">
+          <div className="repeat-offenders-teaser-header">
+            <div>
+              <h3><AlertOctagon size={13} /> Repeat Violators Flagged</h3>
+              <div className="value">{repeatOffenders.length}</div>
+            </div>
+            <Button variant="secondary" to="/registry-head/repeat-offenders">View All</Button>
           </div>
-          <Button variant="secondary" to="/registry-head/repeat-offenders">View All</Button>
+          {topRepeatOffenders.length > 0 && (
+            <ul className="repeat-offenders-preview-list">
+              {topRepeatOffenders.map((offender) => (
+                <li key={offender.id}>
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={() => setHistoryComplaintId(offender.anchorComplaintId)}
+                  >
+                    {offender.name}
+                  </button>
+                  <span>{offender.complaintCount} complaints</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        {topRepeatOffenders.length > 0 && (
-          <ul className="repeat-offenders-preview-list">
-            {topRepeatOffenders.map((offender) => (
-              <li key={offender.id}>
-                <button
-                  type="button"
-                  className="btn-link"
-                  onClick={() => setHistoryComplaintId(offender.anchorComplaintId)}
-                >
-                  {offender.name}
-                </button>
-                <span>{offender.complaintCount} complaints</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      )}
 
       <TrendComparisonCard
         title="Complaints Filed, Year-over-Year Trend"

@@ -91,3 +91,36 @@
     padding: 20px 18px 26px;
   }
 }
+
+/* The "explicit white regardless of theme" note above stopped being true once the wizard's own
+   content (signup.css's [data-theme="dark"] .su-main rule) started going dark — that left the
+   header/chrome stuck white above a now-dark body, the mismatch this fixes. Matches .su-main's
+   own dark background so the header and body read as one continuous panel again. */
+[data-theme="dark"] .wizard-modal-container {
+  background-color: #0B0F19;
+}
+
+[data-theme="dark"] .wizard-modal-header {
+  border-bottom-color: #1E293B;
+}
+
+[data-theme="dark"] .wizard-modal-header-text h3 {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .wizard-modal-header-text p {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .wizard-modal-close {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .wizard-modal-close:hover {
+  background-color: #1E293B;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .wizard-modal-body .su-main {
+  background-color: transparent;
+}

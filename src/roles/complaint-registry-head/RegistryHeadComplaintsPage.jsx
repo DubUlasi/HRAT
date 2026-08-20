@@ -3,6 +3,7 @@ import { PlusCircle } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
+import DownloadCsvButton from '../../components/ui/DownloadCsvButton';
 import ComplaintsCardGrid from '../../components/complaints/ComplaintsCardGrid';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import MakeComplaintModal from '../../components/complaints/MakeComplaintModal';
@@ -14,9 +15,11 @@ import ComplaintListFilters, {
   matchesCategoryFilter,
   matchesPopulationFilter,
 } from '../../components/complaints/ComplaintListFilters';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { SUB_STATUS } from '../../constants/complaintStatus';
 import { usePagination } from '../../hooks/usePagination';
+import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { needsHeadAction, headActionReason } from './registryHeadQueue';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 
@@ -43,6 +46,7 @@ function matchesSearch(complaint, search) {
 }
 
 export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
+  const { user } = useAuth();
   const { complaints } = useComplaints();
   const [showMakeComplaint, setShowMakeComplaint] = useState(false);
   const [search, setSearch] = useState('');
@@ -60,14 +64,17 @@ export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
   const pagination = usePagination(filteredComplaints, 10, `${filter}|${search}|${statusFilter}|${categoryFilter}|${populationFilter}|${keyGroupFilter}`);
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={registryHeadNavItems} user={user || registryHeadUser}>
       <PageHeader
         title={copy.title}
         subtitle={copy.subtitle}
         actions={
-          <Button variant="primary" icon={PlusCircle} onClick={() => setShowMakeComplaint(true)}>
-            Make a Complaint
-          </Button>
+          <>
+            <DownloadCsvButton onDownload={() => downloadComplaintsExcel(filteredComplaints, copy.title)} disabled={!filteredComplaints.length} />
+            <Button variant="primary" icon={PlusCircle} onClick={() => setShowMakeComplaint(true)}>
+              Make a Complaint
+            </Button>
+          </>
         }
       />
 

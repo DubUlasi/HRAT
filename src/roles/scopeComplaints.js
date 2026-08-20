@@ -35,3 +35,23 @@ export function userCanViewComplaint(complaint, user) {
 // per the explicit scoping decision (mirrored by the /registry-head/repeat-offenders routes in
 // App.jsx and the "View Full History" button in RelatedComplaintsPanel).
 export const REPEAT_VIOLATOR_ROLES = ['registry-head', 'department-director', 'executive-secretary'];
+
+// getRepeatOffenders() (ComplaintsContext) groups across every complaint in the system —
+// re-scopes that down to what the current role can actually see, dropping a violator entirely
+// if fewer than 2 of their complaints are in scope (a Director shouldn't learn a violator has
+// "3 complaints" when 2 of them are in another department and invisible to them).
+export function scopeRepeatOffendersForUser(offenders, user) {
+  return offenders
+    .map((offender) => {
+      const complaints = scopeComplaintsForUser(offender.complaints, user);
+      return {
+        ...offender,
+        complaints,
+        complaintCount: complaints.length,
+        categories: [...new Set(complaints.map((c) => c.category))],
+        mostRecentDate: complaints[0]?.dateFiled ?? offender.mostRecentDate,
+        anchorComplaintId: complaints[0]?.id ?? offender.anchorComplaintId,
+      };
+    })
+    .filter((offender) => offender.complaintCount >= 2);
+}

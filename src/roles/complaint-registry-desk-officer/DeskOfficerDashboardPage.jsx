@@ -8,20 +8,8 @@ import ActionQueueList from '../../components/dashboard/ActionQueueList';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
-import { SUB_STATUS } from '../../constants/complaintStatus';
 import { deskOfficerNavItems } from './navConfig';
-
-function needsNumber(c, officerId) {
-  return c.registryOfficerId === officerId && c.subStatus === SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT && !c.complaintNumber;
-}
-
-function needsAdmissibilityDecision(c, officerId) {
-  return (
-    c.admissibilityOfficerId === officerId &&
-    c.subStatus === SUB_STATUS.ADMISSIBILITY_CHECK &&
-    (!c.admissibility.decision || (c.admissibility.headConfirmed && c.admissibility.headAgree === false))
-  );
-}
+import { needsNumber, needsAdmissibilityDecision } from './deskOfficerQueue';
 
 function actionReason(c, officerId) {
   if (needsNumber(c, officerId)) return 'Needs a complaint number processed';
@@ -79,6 +67,7 @@ export default function DeskOfficerDashboardPage() {
         items={needsAction}
         getHref={(c) => `/desk-officer/complaints/${c.id}`}
         getReason={(c) => actionReason(c, officerId)}
+        getNavFrom={() => '/desk-officer/queue'}
       />
 
       <div className="recent-complaints-card">

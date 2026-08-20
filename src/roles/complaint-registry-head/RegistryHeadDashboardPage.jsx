@@ -50,7 +50,7 @@ export default function RegistryHeadDashboardPage() {
   ];
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={registryHeadUser}>
+    <AppShell navItems={registryHeadNavItems} user={user || registryHeadUser}>
       <PageHeader
         title="Complaint Registry Head Dashboard"
         subtitle={`Welcome back, ${user?.name?.split(' ')[0] || registryHeadUser.name.split(' ')[0]}. Here's what's happening across the registry.`}
@@ -80,6 +80,7 @@ export default function RegistryHeadDashboardPage() {
         items={needsAction}
         getHref={(c) => `/registry-head/complaints/${c.id}`}
         getReason={headActionReason}
+        getNavFrom={() => '/registry-head/complaints/needs-action'}
         viewAllHref="/registry-head/complaints/needs-action"
       />
 

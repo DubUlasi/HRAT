@@ -2,13 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
-export default function ActionIconButton({ to, onClick, label = 'View' }) {
+export default function ActionIconButton({ to, state, onClick, label = 'View' }) {
   const className = 'action-icon-btn';
   const content = <ArrowRight size={16} />;
 
   if (to) {
     return (
-      <Link to={to} className={className} aria-label={label}>
+      <Link to={to} state={state} className={className} aria-label={label}>
         {content}
       </Link>
     );

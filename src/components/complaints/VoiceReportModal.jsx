@@ -5,7 +5,7 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import ComplaintWizardForm from './ComplaintWizardForm';
-import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
+import { useSpeechRecognition, SPEECH_LOCALE_MAP } from '../../hooks/useSpeechRecognition';
 import { useAudioRecorder } from '../../hooks/useAudioRecorder';
 import { useTranslation } from '../../context/I18nContext';
 import { suggestCategoryFromText } from '../../constants/complaintCategories';
@@ -17,10 +17,6 @@ import {
   extractViolatorNameFromText,
 } from '../../constants/voiceExtraction';
 import '../../styles/makeComplaintModal.css';
-
-// Web Speech API locale codes — Pidgin has no dedicated speech-recognition locale, so it
-// falls back to en-US.
-const SPEECH_LOCALE_MAP = { en: 'en-US', ha: 'ha-NG', yo: 'yo-NG', ig: 'ig-NG', pcm: 'en-US' };
 
 const SPEECH_ERROR_KEYS = ['unsupported', 'not-allowed', 'no-speech', 'audio-capture', 'network', 'aborted'];
 const AUDIO_ERROR_KEYS = ['unsupported', 'not-allowed', 'unavailable'];

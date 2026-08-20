@@ -10,14 +10,15 @@ import StepCategory from './wizard-steps/StepCategory';
 import StepIncidentDetails from './wizard-steps/StepIncidentDetails';
 import StepVictimDetails from './wizard-steps/StepVictimDetails';
 import StepViolatorDetails from './wizard-steps/StepViolatorDetails';
+import StepEvidence from './wizard-steps/StepEvidence';
 import StepReview from './wizard-steps/StepReview';
 import '../../styles/signup.css';
 
-// The complaint wizard — a simplified, mobile-app-style 5-step flow (What happened? / Tell us
-// more / Who was affected? / Who is responsible? / Review & Submit), each step its own
-// component under wizard-steps/ so this file and MakeComplaintModal.jsx compose the exact same
-// steps instead of maintaining two forms. All step state is lifted here so Back/Continue/the
-// Review step's Edit links never lose anything already entered.
+// The complaint wizard — a simplified, mobile-app-style 6-step flow (What happened? / Tell us
+// more / Who was affected? / Who is responsible? / Evidence / Review & Submit), each step its
+// own component under wizard-steps/ so this file and MakeComplaintModal.jsx compose the exact
+// same steps instead of maintaining two forms. All step state is lifted here so Back/Continue/
+// the Review step's Edit links never lose anything already entered.
 //
 // Complainants (this file rendered via ComplaintWizardPage, unauthenticated) see an extra
 // phone-number gate before step 1, used to identify/track the complaint. Staff filing on a
@@ -29,7 +30,8 @@ const WIZARD_STEPS = [
   { num: 2, labelKey: 'wizard.stepper.incident' },
   { num: 3, labelKey: 'wizard.stepper.victim' },
   { num: 4, labelKey: 'wizard.stepper.violator' },
-  { num: 5, labelKey: 'wizard.stepper.review' },
+  { num: 5, labelKey: 'wizard.stepper.evidence' },
+  { num: 6, labelKey: 'wizard.stepper.review' },
 ];
 
 const EMPTY_INCIDENT = { subject: '', description: '', location: '', date: '', evidenceFiles: [] };
@@ -49,7 +51,11 @@ function emptyVictim(initialPhone) {
 }
 
 function emptyViolator() {
-  return { firstName: '', lastName: '', phone: '', email: '', gender: '', address: '' };
+  return { firstName: '', lastName: '', phone: '', email: '', gender: '', address: '', unidentified: false };
+}
+
+function emptyFiledBy() {
+  return { type: 'individual', groupName: '', representativeName: '', representativePhone: '', representativeEmail: '' };
 }
 
 // Every field a victim/violator step collects, minus the wizard-only bookkeeping fields
@@ -67,13 +73,33 @@ function toVictimRecord(v) {
   };
 }
 
+// An "unidentified" violator still needs *some* non-empty `name` since everything downstream
+// (Avatar, HeroPersonCard, ComplaintsTable, ComplaintCard, OffenderCaseHistoryDrawer) reads
+// `allegedViolator.name` directly with no null-guard — a sentinel name plus the `unidentified`
+// flag keeps every one of those call sites working unchanged, rather than making
+// `allegedViolator` nullable and having to guard it everywhere.
 function toViolatorRecord(v) {
+  if (v.unidentified) {
+    return { name: 'Unidentified', unidentified: true, gender: null, phone: null, email: null, address: null };
+  }
   return {
     name: `${v.firstName} ${v.lastName}`.trim(),
     gender: v.gender || null,
     phone: v.phone || null,
     email: v.email || null,
     address: v.address || null,
+    unidentified: false,
+  };
+}
+
+function toFiledByRecord(filedBy) {
+  if (filedBy.type !== 'group') return { type: 'individual' };
+  return {
+    type: 'group',
+    groupName: filedBy.groupName,
+    representativeName: filedBy.representativeName,
+    representativePhone: filedBy.representativePhone,
+    representativeEmail: filedBy.representativeEmail || null,
   };
 }
 
@@ -104,8 +130,9 @@ export default function ComplaintWizardForm({
     description: initialDescription,
     location: initialLocation,
   }));
-  // Arrays, always at least one entry — a group complaint is just more than one victim and/or
-  // violator, so the single-person case (the vast majority) is simply the array-of-one case.
+  // Arrays, always at least one entry — multiple victims/violators (a co-worked case with
+  // several people affected) is unrelated to `filedBy` below (WHO is doing the filing); the
+  // single-person case (the vast majority) is simply the array-of-one case either way.
   const [victims, setVictims] = useState(() => {
     const { firstName, lastName } = splitName(initialVictimName);
     return [{ ...emptyVictim(initialVictimPhone), firstName, lastName }];
@@ -114,11 +141,17 @@ export default function ComplaintWizardForm({
     const { firstName, lastName } = splitName(initialViolatorName);
     return [{ ...emptyViolator(), firstName, lastName }];
   });
+  // Who is actually filing the complaint — an individual (the common case, victim or someone
+  // filing on their behalf) or a group/committee — independent of how many victims/violators end
+  // up on the complaint itself.
+  const [filedBy, setFiledBy] = useState(emptyFiledBy);
   const [office, setOffice] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null); // null | 'success' | 'error'
 
   const patchIncident = (patch) => setIncident((prev) => ({ ...prev, ...patch }));
+
+  const patchFiledBy = (patch) => setFiledBy((prev) => ({ ...prev, ...patch }));
 
   const patchVictim = (index, patch) => setVictims((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
   const addVictim = () => setVictims((prev) => [...prev, emptyVictim()]);
@@ -160,6 +193,7 @@ export default function ComplaintWizardForm({
           allegedViolator: toViolatorRecord(violators[0]),
           additionalVictims: victims.slice(1).map(toVictimRecord),
           additionalViolators: violators.slice(1).map(toViolatorRecord),
+          filedBy: toFiledByRecord(filedBy),
           voiceRecordingUrl,
         });
         setSubmitResult('success');
@@ -246,6 +280,8 @@ export default function ComplaintWizardForm({
               onChange={patchVictim}
               onAdd={addVictim}
               onRemove={removeVictim}
+              filedBy={filedBy}
+              onFiledByChange={patchFiledBy}
               onBack={() => setCurrentStep(2)}
               onContinue={() => setCurrentStep(4)}
               stepLabel={stepLabel(3)}
@@ -265,19 +301,30 @@ export default function ComplaintWizardForm({
           )}
 
           {currentStep === 5 && (
+            <StepEvidence
+              value={incident}
+              onChange={patchIncident}
+              onBack={() => setCurrentStep(4)}
+              onContinue={() => setCurrentStep(6)}
+              stepLabel={stepLabel(5)}
+            />
+          )}
+
+          {currentStep === 6 && (
             <StepReview
               category={category}
               subCategory={subCategory}
               incident={incident}
               victims={victims}
               violators={violators}
+              filedBy={filedBy}
               office={office}
               onOfficeChange={setOffice}
               onEditStep={setCurrentStep}
-              onBack={() => setCurrentStep(4)}
+              onBack={() => setCurrentStep(5)}
               onSubmit={handleSubmit}
               submitting={submitting}
-              stepLabel={stepLabel(5)}
+              stepLabel={stepLabel(6)}
             />
           )}
         </div>

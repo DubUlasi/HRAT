@@ -22,7 +22,7 @@
     "label": "Language"
   },
   "login": {
-    "title": "Human Right Tracker",
+    "title": "Human Rights Abuse Tracking System (HRAT)",
     "subtitle": "Welcome back! Please enter your details.",
     "googleSignIn": "Sign in with Google",
     "googleAuthenticating": "Authenticating with Google...",
@@ -68,6 +68,7 @@
       "incident": "Incident",
       "victim": "Victim",
       "violator": "Violator",
+      "evidence": "Evidence",
       "review": "Review"
     },
     "phoneGate": {
@@ -88,6 +89,9 @@
       "subjectPlaceholder": "Brief title of the incident",
       "descriptionLabel": "Tell us what happened",
       "descriptionPlaceholder": "Share as much detail as you're comfortable with, every detail helps us understand and respond to your situation.",
+      "micStart": "Speak your answer instead of typing",
+      "micStop": "Stop recording",
+      "micListening": "Listening…",
       "locationLabel": "Where did it happen?",
       "locationPlaceholder": "State, city, or landmark",
       "dateLabel": "When did it happen?",
@@ -97,6 +101,12 @@
     "victim": {
       "title": "Who was affected?",
       "subtitle": "Tell us about the person this happened to.",
+      "filedByQuestion": "Who is filing this complaint?",
+      "filedByIndividual": "An Individual",
+      "filedByGroup": "A Group / Committee",
+      "groupName": "Group / Committee Name",
+      "representativeSectionLabel": "Representative's Contact Details",
+      "representativeName": "Representative's Name",
       "whoExperienced": "Who experienced this?",
       "myself": "Myself (I am the victim)",
       "someoneElse": "Someone else (Reporting on behalf)",
@@ -117,10 +127,18 @@
       "title": "Who is responsible?",
       "subtitle": "Provide details of the individual, organization, or officer responsible, if known.",
       "optionalNote": "All fields below are optional except the name, share whatever you know.",
+      "identityQuestion": "Do you know who is responsible?",
+      "knownLabel": "Violator Is Known",
+      "unidentifiedLabel": "Violator Is Unidentified",
+      "unidentifiedHint": "You can skip the details below, we'll add them once identified during the investigation.",
       "primaryViolator": "Violator 1",
       "violatorNumber": "Violator {{number}}",
       "addAnotherViolator": "+ Add Another Violator",
       "removeViolator": "Remove"
+    },
+    "evidence": {
+      "title": "Any evidence to attach?",
+      "subtitle": "Photos, videos, or documents that support your complaint. You can skip this if you don't have anything to attach yet."
     },
     "review": {
       "title": "Review & Submit",
@@ -128,8 +146,12 @@
       "edit": "Edit",
       "sectionCategory": "Category",
       "sectionIncident": "Incident Details",
+      "sectionFiledBy": "Filed By",
+      "filedByIndividual": "An Individual",
+      "filedByGroupRepresentedBy": "Represented by {{name}}",
       "sectionVictim": "Victim",
       "sectionViolator": "Alleged Violator",
+      "unidentifiedViolator": "Unidentified",
       "officeLabel": "Preferred Handling Office",
       "recommendedTag": "Recommended",
       "officeHeadOfficeWarning": "Headquarters handles a much higher volume of complaints and may take longer. Your complaint may still end up referred to your state office regardless, choosing that office directly is usually faster.",

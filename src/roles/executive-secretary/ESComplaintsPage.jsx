@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
+import DownloadCsvButton from '../../components/ui/DownloadCsvButton';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import SearchBar from '../../components/ui/SearchBar';
 import Pagination from '../../components/ui/Pagination';
@@ -12,6 +13,7 @@ import ComplaintListFilters, {
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { usePagination } from '../../hooks/usePagination';
+import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { executiveSecretaryNavItems } from './navConfig';
 
 function matchesSearch(complaint, search) {
@@ -41,7 +43,9 @@ export default function ESComplaintsPage() {
 
   return (
     <AppShell navItems={executiveSecretaryNavItems} user={user}>
-      <PageHeader title="All Complaints" subtitle="Every complaint in the system, at any stage." />
+      <PageHeader title="All Complaints" subtitle="Every complaint in the system, at any stage."
+        actions={<DownloadCsvButton onDownload={() => downloadComplaintsExcel(rows, 'All Complaints')} disabled={!rows.length} />}
+      />
 
       <div className="filter-toolbar">
         <SearchBar

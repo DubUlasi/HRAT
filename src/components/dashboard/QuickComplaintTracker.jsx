@@ -76,6 +76,7 @@ export default function QuickComplaintTracker() {
               <StatusBadge status={c.subStatus} />
               <ActionIconButton
                 to={`${detailBase}/${c.id}`}
+                state={{ from: '/registry-head/track' }}
                 label={`View details for ${c.victim?.name || 'complaint'}`}
               />
             </div>

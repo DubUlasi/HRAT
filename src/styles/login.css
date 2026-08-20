@@ -211,11 +211,13 @@ body {
 }
 
 .login-card-header h2 {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
+  margin: 0 auto 8px;
+  max-width: 320px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 .login-card-header p {
@@ -293,23 +295,30 @@ body {
   color: #374151;
 }
 
-.form-error {
+.form-label-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  background-color: #FEF3F2;
-  color: #B42318;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
-  line-height: 1.4;
-  margin-bottom: 16px;
 }
 
-.form-error svg {
-  flex-shrink: 0;
-  margin-top: 1px;
+.forgot-password-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-color);
+  cursor: pointer;
 }
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+/* .form-error itself now lives in modals.css (shared with every other staff-facing modal's
+   inline validation banner) — login.css imports it transitively since LoginPage.jsx imports
+   both. */
 
 .demo-hint-list {
   display: flex;
@@ -354,7 +363,7 @@ body {
   padding: 12px 16px;
   border: 1px solid #D1D5DB;
   border-radius: 8px;
-  background-color: var(--text-white);
+  background-color: transparent;
   font-family: inherit;
   font-size: 14px;
   color: var(--text-dark);
@@ -368,8 +377,22 @@ body {
 }
 
 .form-input:focus {
+  background-color: transparent;
   border-color: #079455;
   box-shadow: none !important;
+}
+
+/* Same autofill fix as the wizard's own inputs (see signup.css) — the browser paints its own
+   opaque autofill background over email/password fields regardless of `background-color:
+   transparent`, so this fakes transparency by matching the shadow to the actual page background. */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover,
+.form-input:-webkit-autofill:focus,
+.form-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-dark);
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset;
+  box-shadow: 0 0 0 1000px #FFFFFF inset;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .password-wrapper {
@@ -449,12 +472,12 @@ body {
 }
 
 .input-blue {
-  background-color: #EFF6FF !important;
+  background-color: transparent !important;
   border-color: #DBEAFE !important;
 }
 
 .input-blue:focus {
-  background-color: #FFFFFF !important;
+  background-color: transparent !important;
   border-color: #079455 !important;
   box-shadow: none !important;
 }
@@ -465,7 +488,7 @@ body {
   font-size: 13.5px;
   font-family: inherit;
   color: #1F2937;
-  background-color: #FFFFFF;
+  background-color: transparent;
   border: 1px solid #E5E7EB;
   border-radius: 8px;
   outline: none;
@@ -545,16 +568,17 @@ body {
 
 /* ── Global Dark Mode Styling for Login & Sign Up ───────────────────── */
 [data-theme="dark"] .login-container {
-  background-color: #0B0F19;
+  background-color: #101523;
 }
 
 [data-theme="dark"] .login-form-container {
-  background-color: #0B0F19;
+  background-color: #101523;
 }
 
+/* Same background as the page/container around it (not a slightly different shade) — the card
+   shouldn't read as a separate boxed-in section, just the same surface the fields sit on. */
 [data-theme="dark"] .login-card {
   background-color: #101523;
-  border: 1px solid #1E293B;
 }
 
 [data-theme="dark"] .login-card-header h2,
@@ -571,9 +595,18 @@ body {
 }
 
 [data-theme="dark"] .form-input {
-  background-color: #1E293B;
+  background-color: transparent;
   border-color: #334155;
   color: #F8FAFC;
+}
+
+[data-theme="dark"] .form-input:-webkit-autofill,
+[data-theme="dark"] .form-input:-webkit-autofill:hover,
+[data-theme="dark"] .form-input:-webkit-autofill:focus,
+[data-theme="dark"] .form-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #F8FAFC;
+  -webkit-box-shadow: 0 0 0 1000px #101523 inset;
+  box-shadow: 0 0 0 1000px #101523 inset;
 }
 
 [data-theme="dark"] .form-input::placeholder {
@@ -581,13 +614,13 @@ body {
 }
 
 [data-theme="dark"] .input-blue {
-  background-color: #1E293B !important;
+  background-color: transparent !important;
   border-color: #334155 !important;
   color: #F8FAFC !important;
 }
 
 [data-theme="dark"] .form-select {
-  background-color: #1E293B;
+  background-color: transparent;
   border-color: #334155;
   color: #F8FAFC;
 }

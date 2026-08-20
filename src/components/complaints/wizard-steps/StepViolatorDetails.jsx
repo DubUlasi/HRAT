@@ -1,9 +1,9 @@
 import React from 'react';
-import { ArrowRight, ChevronDown, Trash2, UserPlus } from 'lucide-react';
+import { ArrowRight, ChevronDown, Trash2, UserPlus, UserCheck, UserX, Check } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import LocationAutocomplete from '../../ui/LocationAutocomplete';
 
-// Step 4 of 5 — "Who is responsible?" One card per violator, mirroring StepVictimDetails —
+// Step 4 of 6 — "Who is responsible?" One card per violator, mirroring StepVictimDetails —
 // numbering/remove controls only appear once there's more than one. Only the name is required;
 // complainants often don't know anything else about the alleged violator(s).
 export default function StepViolatorDetails({ violators, onChange, onAdd, onRemove, onBack, onContinue, stepLabel }) {
@@ -35,77 +35,103 @@ export default function StepViolatorDetails({ violators, onChange, onAdd, onRemo
               </div>
             )}
 
-            <div className="victim-form-grid">
-              <div className="su-field-group">
-                <label className="su-label-dark">
-                  {t('common.firstName')} <span className="su-req-red">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="su-input-blue"
-                  value={violator.firstName}
-                  onChange={(e) => onChange(index, { firstName: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="su-field-group">
-                <label className="su-label-dark">
-                  {t('common.lastName')} <span className="su-req-red">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="su-input-blue"
-                  value={violator.lastName}
-                  onChange={(e) => onChange(index, { lastName: e.target.value })}
-                  required
-                />
-              </div>
+            <div className="su-section-label">{t('wizard.violator.identityQuestion')}</div>
+            <div className="toggle-card-row">
+              <button
+                type="button"
+                className={`toggle-card ${!violator.unidentified ? 'selected' : ''}`}
+                onClick={() => onChange(index, { unidentified: false })}
+              >
+                {!violator.unidentified && <span className="toggle-card-check"><Check size={11} /></span>}
+                <span className="toggle-card-icon"><UserCheck size={20} /></span>
+                <span className="toggle-card-label">{t('wizard.violator.knownLabel')}</span>
+              </button>
+              <button
+                type="button"
+                className={`toggle-card ${violator.unidentified ? 'selected' : ''}`}
+                onClick={() => onChange(index, { unidentified: true })}
+              >
+                {violator.unidentified && <span className="toggle-card-check"><Check size={11} /></span>}
+                <span className="toggle-card-icon"><UserX size={20} /></span>
+                <span className="toggle-card-label">{t('wizard.violator.unidentifiedLabel')}</span>
+              </button>
+            </div>
 
-              <div className="su-field-group">
-                <label className="su-label-dark">{t('common.phone')} ({t('wizard.optional')})</label>
-                <input
-                  type="tel"
-                  className="su-input-blue"
-                  value={violator.phone}
-                  onChange={(e) => onChange(index, { phone: e.target.value })}
-                />
-              </div>
+            {violator.unidentified ? (
+              <p className="su-field-hint-dark">{t('wizard.violator.unidentifiedHint')}</p>
+            ) : (
+              <div className="victim-form-grid">
+                <div className="su-field-group">
+                  <label className="su-label-dark">
+                    {t('common.firstName')} <span className="su-req-red">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="su-input-blue"
+                    value={violator.firstName}
+                    onChange={(e) => onChange(index, { firstName: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="su-field-group">
+                  <label className="su-label-dark">
+                    {t('common.lastName')} <span className="su-req-red">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="su-input-blue"
+                    value={violator.lastName}
+                    onChange={(e) => onChange(index, { lastName: e.target.value })}
+                    required
+                  />
+                </div>
 
-              <div className="su-field-group">
-                <label className="su-label-dark">{t('common.gender')} ({t('wizard.optional')})</label>
-                <div className="su-select-wrap">
-                  <select
-                    className="su-input-white su-select"
-                    value={violator.gender}
-                    onChange={(e) => onChange(index, { gender: e.target.value })}
-                  >
-                    <option value="">{t('common.selectGender')}</option>
-                    <option value="female">{t('common.genderFemale')}</option>
-                    <option value="male">{t('common.genderMale')}</option>
-                    <option value="rather_not_say">{t('common.genderRatherNotSay')}</option>
-                  </select>
-                  <ChevronDown className="su-select-chevron" size={16} />
+                <div className="su-field-group">
+                  <label className="su-label-dark">{t('common.phone')} ({t('wizard.optional')})</label>
+                  <input
+                    type="tel"
+                    className="su-input-blue"
+                    value={violator.phone}
+                    onChange={(e) => onChange(index, { phone: e.target.value })}
+                  />
+                </div>
+
+                <div className="su-field-group">
+                  <label className="su-label-dark">{t('common.gender')} ({t('wizard.optional')})</label>
+                  <div className="su-select-wrap">
+                    <select
+                      className="su-input-white su-select"
+                      value={violator.gender}
+                      onChange={(e) => onChange(index, { gender: e.target.value })}
+                    >
+                      <option value="">{t('common.selectGender')}</option>
+                      <option value="female">{t('common.genderFemale')}</option>
+                      <option value="male">{t('common.genderMale')}</option>
+                      <option value="rather_not_say">{t('common.genderRatherNotSay')}</option>
+                    </select>
+                    <ChevronDown className="su-select-chevron" size={16} />
+                  </div>
+                </div>
+
+                <div className="su-field-group full-width">
+                  <label className="su-label-dark">{t('common.email')} ({t('wizard.optional')})</label>
+                  <input
+                    type="email"
+                    className="su-input-white"
+                    value={violator.email}
+                    onChange={(e) => onChange(index, { email: e.target.value })}
+                  />
+                </div>
+
+                <div className="su-field-group full-width">
+                  <label className="su-label-dark">{t('common.address')} ({t('wizard.optional')})</label>
+                  <LocationAutocomplete
+                    value={violator.address}
+                    onChange={(address) => onChange(index, { address })}
+                  />
                 </div>
               </div>
-
-              <div className="su-field-group full-width">
-                <label className="su-label-dark">{t('common.email')} ({t('wizard.optional')})</label>
-                <input
-                  type="email"
-                  className="su-input-white"
-                  value={violator.email}
-                  onChange={(e) => onChange(index, { email: e.target.value })}
-                />
-              </div>
-
-              <div className="su-field-group full-width">
-                <label className="su-label-dark">{t('common.address')} ({t('wizard.optional')})</label>
-                <LocationAutocomplete
-                  value={violator.address}
-                  onChange={(address) => onChange(index, { address })}
-                />
-              </div>
-            </div>
+            )}
           </div>
         ))}
 

@@ -1,40 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
+import DownloadCsvButton from '../../components/ui/DownloadCsvButton';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
+import SearchBar from '../../components/ui/SearchBar';
 import Pagination from '../../components/ui/Pagination';
+import ComplaintListFilters, {
+  matchesStatusFilter,
+  matchesCategoryFilter,
+  matchesPopulationFilter,
+} from '../../components/complaints/ComplaintListFilters';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { usePagination } from '../../hooks/usePagination';
-import { SUB_STATUS } from '../../constants/complaintStatus';
+import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { deskOfficerNavItems } from './navConfig';
+import { needsDeskOfficerAction } from './deskOfficerQueue';
 
-function needsNumber(c, officerId) {
-  return c.registryOfficerId === officerId && c.subStatus === SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT && !c.complaintNumber;
-}
-
-function needsAdmissibilityDecision(c, officerId) {
-  return (
-    c.admissibilityOfficerId === officerId &&
-    c.subStatus === SUB_STATUS.ADMISSIBILITY_CHECK &&
-    (!c.admissibility.decision || (c.admissibility.headConfirmed && c.admissibility.headAgree === false))
-  );
+function matchesSearch(complaint, search) {
+  if (!search) return true;
+  const term = search.toLowerCase();
+  return [complaint.subject, complaint.complaintNumber, complaint.victim?.name, complaint.allegedViolator?.name]
+    .filter(Boolean)
+    .some((field) => field.toLowerCase().includes(term));
 }
 
 export default function DeskOfficerQueuePage() {
   const { user } = useAuth();
   const { complaints } = useComplaints();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [populationFilter, setPopulationFilter] = useState('all');
+  const [keyGroupFilter, setKeyGroupFilter] = useState('all');
   const officerId = user?.officerId;
 
-  const needsAction = complaints.filter((c) => needsNumber(c, officerId) || needsAdmissibilityDecision(c, officerId));
-  const pagination = usePagination(needsAction, 10);
+  const needsAction = complaints
+    .filter((c) => needsDeskOfficerAction(c, officerId))
+    .filter((c) => matchesSearch(c, search))
+    .filter((c) => matchesStatusFilter(c, statusFilter))
+    .filter((c) => matchesCategoryFilter(c, categoryFilter))
+    .filter((c) => matchesPopulationFilter(c, populationFilter, keyGroupFilter));
+  const pagination = usePagination(needsAction, 10, `${search}|${statusFilter}|${categoryFilter}|${populationFilter}|${keyGroupFilter}`);
 
   return (
     <AppShell navItems={deskOfficerNavItems} user={user}>
       <PageHeader
         title="My Queue"
         subtitle="Complaints assigned to you that still need a complaint number or an admissibility decision."
+        actions={<DownloadCsvButton onDownload={() => downloadComplaintsExcel(needsAction, 'My Queue')} disabled={!needsAction.length} />}
       />
+
+      <div className="filter-toolbar">
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+          placeholder="Search by subject, complaint number, victim, or alleged violator..."
+        />
+        <ComplaintListFilters
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          populationFilter={populationFilter}
+          onPopulationChange={setPopulationFilter}
+          keyGroupFilter={keyGroupFilter}
+          onKeyGroupChange={setKeyGroupFilter}
+        />
+      </div>
 
       <ComplaintsTable
         complaints={pagination.pageItems}

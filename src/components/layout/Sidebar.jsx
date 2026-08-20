@@ -1,9 +1,39 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings, LogOut, Moon, Sun, MoreVertical, ChevronLeft, X } from 'lucide-react';
 import SidebarNavItem from './SidebarNavItem';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../context/AuthContext';
+import { useComplaints } from '../../context/ComplaintsContext';
+import { getNavBadgeCounts } from '../../roles/navBadgeCounts';
+
+// A page like a complaint's own detail view never matches a nav item's URL directly, so on its
+// own nothing would ever highlight there. Resolves which single nav item should read as
+// "active" for the current URL, in priority order:
+//   1. An explicit `state.from` stamped onto the link that was clicked to get here (see
+//      ComplaintsTable/ActionQueueList/ComplaintCard) — most accurate, reflects exactly which
+//      list you actually drilled in from.
+//   2. An exact match — we're sitting on a page that IS a nav item's own URL.
+//   3. The nav item whose own path is the longest matching prefix of the current URL — a
+//      sensible default (e.g. "All Complaints" for a complaint detail page) when there's no
+//      explicit signal, such as a direct URL/bookmark, a page refresh, or a link from a
+//      cross-cutting feature (Related Complaints, Repeat Violators) that isn't tied to one item.
+function resolveActiveNavPath(navItems, pathname, explicitFrom) {
+  if (explicitFrom && navItems.some((item) => item.to === explicitFrom)) {
+    return explicitFrom;
+  }
+
+  const exact = navItems.find((item) => item.to === pathname);
+  if (exact) return exact.to;
+
+  let best = null;
+  navItems.forEach((item) => {
+    if (pathname.startsWith(`${item.to}/`) && (!best || item.to.length > best.length)) {
+      best = item.to;
+    }
+  });
+  return best;
+}
 
 // Items sharing a `section` collapse into one labeled group; items without one (Dashboard,
 // Help, Settings) stay flat top/bottom-level links, same as before this grouping existed.
@@ -36,7 +66,9 @@ function groupNavItems(navItems) {
 export default function Sidebar({ navItems, user, collapsed = false, onToggleCollapsed, logoHref = '/', logoSrc = '/hrat_nhrc_logo.png', mobileOpen = false, onCloseMobile }) {
   const { isDark, toggleTheme } = useTheme();
   const { logout } = useAuth();
+  const { complaints } = useComplaints();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleSignOut = () => {
@@ -46,6 +78,11 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
   };
   const settingsHref = navItems.find((item) => item.label === 'Settings')?.to || '/settings';
   const navBlocks = groupNavItems(navItems);
+  const activeTo = resolveActiveNavPath(navItems, location.pathname, location.state?.from);
+  // Reuses each role's own existing "needs action" predicates (see navBadgeCounts.js) so this
+  // number never drifts out of sync with what the dashboard/queue page itself counts.
+  const badgeCounts = useMemo(() => getNavBadgeCounts(user, complaints), [user, complaints]);
+  const badgeFor = (path) => (badgeCounts[path] > 0 ? <span className="nav-count-badge">{badgeCounts[path]}</span> : null);
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
@@ -79,7 +116,7 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
       <nav className="nav-section">
         {collapsed
           ? navItems.map((item) => (
-              <SidebarNavItem key={item.to} {...item} collapsed={collapsed} onNavigate={onCloseMobile} />
+              <SidebarNavItem key={item.to} {...item} active={item.to === activeTo} badge={badgeFor(item.to)} collapsed={collapsed} onNavigate={onCloseMobile} />
             ))
           : navBlocks.map((block, idx) =>
               Array.isArray(block.items) ? (
@@ -87,12 +124,12 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
                   <div className="nav-group-label">{block.label}</div>
                   <div className="nav-group-content">
                     {block.items.map((item) => (
-                      <SidebarNavItem key={item.to} {...item} onNavigate={onCloseMobile} />
+                      <SidebarNavItem key={item.to} {...item} active={item.to === activeTo} badge={badgeFor(item.to)} onNavigate={onCloseMobile} />
                     ))}
                   </div>
                 </div>
               ) : (
-                <SidebarNavItem key={block.to} {...block} onNavigate={onCloseMobile} />
+                <SidebarNavItem key={block.to} {...block} active={block.to === activeTo} badge={badgeFor(block.to)} onNavigate={onCloseMobile} />
               )
             )}
       </nav>

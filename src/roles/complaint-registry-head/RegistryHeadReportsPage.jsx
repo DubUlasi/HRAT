@@ -18,7 +18,8 @@ import { offices } from '../../data/mockOfficers';
 import { PERIOD_OPTIONS, withinPeriod } from '../../constants/reportPeriods';
 import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
-import { ROLE_NAV_ITEMS } from '../roleNavMap';
+import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
+import { scopeComplaintsForUser } from '../scopeComplaints';
 
 const DEFAULT_FILTERS = { period: 'all', category: 'all', status: 'all', office: 'all', customStart: '', customEnd: '' };
 
@@ -80,7 +81,9 @@ function downloadCsv(rows, filters) {
 export default function RegistryHeadReportsPage() {
   const { user } = useAuth();
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
-  const { complaints } = useComplaints();
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
+  const { complaints: allComplaints } = useComplaints();
+  const complaints = scopeComplaintsForUser(allComplaints, user);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [report, setReport] = useState(null);
 
@@ -176,7 +179,7 @@ export default function RegistryHeadReportsPage() {
 
               <ComplaintsTable
                 complaints={pagination.pageItems}
-                getActionHref={(c) => `/registry-head/complaints/${c.id}`}
+                getActionHref={(c) => `${detailBase}/${c.id}`}
               />
 
               <Pagination

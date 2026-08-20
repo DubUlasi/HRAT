@@ -15,7 +15,7 @@ const ROLE_LABELS = {
   'desk-officer': 'Complaint Registry Desk Officer',
   'department-director': 'Department Director',
   'department-supervisor': 'Department Supervisor',
-  'department-investigator': 'Department Investigator',
+  'department-investigator': 'Department Investigation Officer',
   'executive-secretary': 'Executive Secretary',
 };
 
@@ -111,7 +111,10 @@ export default function LoginPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="loginPassword" className="form-label">{t('login.passwordLabel')}</label>
+              <div className="form-label-row">
+                <label htmlFor="loginPassword" className="form-label">{t('login.passwordLabel')}</label>
+                <Link to="/forgot-password" className="forgot-password-link">Forgot password?</Link>
+              </div>
               <div className="password-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}

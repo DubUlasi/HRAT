@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Paperclip } from 'lucide-react';
 import Modal from '../../../components/ui/Modal';
 import Button from '../../../components/ui/Button';
 import FormField from '../../../components/ui/FormField';
@@ -11,6 +12,7 @@ export default function UpdateFindingsModal({ open, onClose, complaint, onSubmit
   const [finding, setFinding] = useState(complaint?.investigation.finding || '');
   const [recommendation, setRecommendation] = useState(complaint?.investigation.recommendation || '');
   const [files, setFiles] = useState([]);
+  const alreadyAttached = complaint?.investigation.findingDocuments || [];
 
   // Resync from the latest saved values every time the modal opens — without this, reopening
   // after a previous save would show stale text (this modal, unlike others in the app, can be
@@ -39,7 +41,20 @@ export default function UpdateFindingsModal({ open, onClose, complaint, onSubmit
           <TextArea value={recommendation} onChange={(e) => setRecommendation(e.target.value)} placeholder="Recommend..." />
         </FormField>
 
-        <AttachDocumentsField files={files} onChange={setFiles} />
+        {alreadyAttached.length > 0 && (
+          <FormField label="Already Attached">
+            <div className="activity-attachment-list">
+              {alreadyAttached.map((doc) => (
+                <a key={doc.id} href={doc.url} download={doc.name} target="_blank" rel="noreferrer" className="activity-attachment-row">
+                  <Paperclip size={12} />
+                  <span>{doc.name}</span>
+                </a>
+              ))}
+            </div>
+          </FormField>
+        )}
+
+        <AttachDocumentsField files={files} onChange={setFiles} label={alreadyAttached.length > 0 ? 'Attach More Documents (optional)' : 'Attach Documents (optional)'} />
 
         <div className="modal-actions">
           <Button type="submit" variant="submit">Save</Button>

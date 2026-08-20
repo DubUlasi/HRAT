@@ -11,7 +11,7 @@
 /* Sidebar */
 .sidebar {
   width: 208px;
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
@@ -189,7 +189,20 @@
   box-shadow: none !important;
 }
 
-[data-theme="dark"] .theme-switch-handle {
+/* Scoped to .theme-mode-switch specifically (not every .theme-switch) — this one's "on" position
+   is dictated by the global dark/light attribute itself, not a class, since it IS the control
+   that sets that attribute. A generic reused toggle (e.g. Settings' Email Notifications, via the
+   .on class below) must stay independent of whatever theme happens to be active. */
+[data-theme="dark"] .theme-mode-switch .theme-switch-handle {
+  transform: translateX(18px);
+}
+
+/* Generic "on" state so .theme-switch can be reused for any boolean toggle. */
+.theme-switch.on {
+  background-color: var(--accent-color);
+}
+
+.theme-switch.on .theme-switch-handle {
   transform: translateX(18px);
 }
 
@@ -198,6 +211,25 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-border) transparent;
+}
+
+.nav-section::-webkit-scrollbar {
+  width: 5px;
+}
+
+.nav-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-section::-webkit-scrollbar-thumb {
+  background-color: var(--sidebar-border);
+  border-radius: 10px;
 }
 
 .nav-item {
@@ -273,6 +305,24 @@
    Dashboard doesn't visually blend into the "Complaints" group. */
 .nav-item + .nav-group {
   margin-top: 10px;
+}
+
+/* Sidebar "needs your action" count — a solid fill (not the pale .count-badge tint used
+   elsewhere, which nearly disappeared against the sidebar's own white/near-white background)
+   in the brand green, matching the active-nav-item accent rather than the red/danger palette. */
+.nav-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background-color: var(--accent-color);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .nav-group-label {
@@ -665,5 +715,136 @@ th {
     margin-left: 0;
     padding: 15px;
   }
+}
+
+/* ── Complaint number format builder (Settings → Complaint Numbering) ────────── */
+.seg-preview-label,
+.seg-editor-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.seg-preview-box {
+  font-family: monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent-color);
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-color);
+  margin-bottom: 20px;
+  word-break: break-all;
+}
+
+.seg-preview-empty {
+  opacity: 0.5;
+}
+
+.seg-editor-label {
+  margin-top: 4px;
+}
+
+.seg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.seg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seg-row-move {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.seg-icon-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.12s;
+}
+
+.seg-icon-btn:hover:not(:disabled) {
+  background: var(--active-bg);
+  color: var(--text-primary);
+}
+
+.seg-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.seg-icon-btn--danger {
+  color: var(--danger-color);
+}
+
+.seg-icon-btn--danger:hover:not(:disabled) {
+  background: var(--danger-light);
+  border-color: var(--danger-color);
+}
+
+.seg-type-select {
+  flex: 0 0 120px;
+}
+
+.seg-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.seg-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.seg-next-num {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.seg-next-num-input {
+  width: 90px;
+  flex: 0 0 auto;
+}
+
+.seg-next-num-preview {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.seg-next-num-preview strong {
+  font-family: monospace;
+  color: var(--text-primary);
 }
 

@@ -31,7 +31,7 @@ export default function RepeatOffendersTable({ offenders, onViewHistory }) {
               <td>
                 <div className="person-cell">
                   <Avatar name={offender.name} size={28} />
-                  <span>{offender.name}</span>
+                  <span className="person-cell-name">{offender.name}</span>
                 </div>
               </td>
               <td><span className="count-badge">{offender.complaintCount}</span></td>

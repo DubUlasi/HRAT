@@ -98,7 +98,7 @@ export const mockCalls = [
     callerType: 'returning',
     linkedComplaintIds: ['c6'],
     suggestedCategory: 'others',
-    notes: 'Caller asked when the department supervisor would be assigning an investigator to his assault case.',
+    notes: 'Caller asked when the department supervisor would be assigning an investigation officer to his assault case.',
     handledBy: 'Mike Peter',
     timestamp: '2024-10-01T12:25:00',
     outcome: 'info_only',

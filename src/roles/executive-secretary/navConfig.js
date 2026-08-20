@@ -1,4 +1,4 @@
-import { LayoutDashboard, Gavel, Siren, AlertOctagon, FileText, Search, TrendingUp, FileBarChart, HelpCircle, Settings } from 'lucide-react';
+import { LayoutDashboard, Gavel, Siren, AlertOctagon, FileText, Search, TrendingUp, FileBarChart, HelpCircle, Settings, Flag } from 'lucide-react';
 
 // No static `user` export — every page pulls its `user` straight from useAuth(). The ES sees
 // every complaint (no ownership filter). Business Intelligence/Reports/Track Complaint/Help/
@@ -11,7 +11,8 @@ export const executiveSecretaryNavItems = [
   { to: '/executive-secretary', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/executive-secretary/council', icon: Gavel, label: 'Ready For Council', end: true, section: 'Complaints' },
   { to: '/executive-secretary/escalated', icon: Siren, label: 'Escalated To Me', section: 'Complaints' },
-  { to: '/executive-secretary/complaints', icon: FileText, label: 'All Complaints', section: 'Complaints' },
+  { to: '/executive-secretary/complaints', icon: FileText, label: 'All Complaints', end: true, section: 'Complaints' },
+  { to: '/registry-head/flagged', icon: Flag, label: 'Flagged Complaints', section: 'Complaints' },
   { to: '/registry-head/repeat-offenders', icon: AlertOctagon, label: 'Repeat Violators', section: 'Complaints' },
   { to: '/registry-head/track', icon: Search, label: 'Track Complaint', section: 'Insights' },
   { to: '/registry-head/business-intelligence', icon: TrendingUp, label: 'Business Intelligence', section: 'Insights' },

@@ -14,9 +14,17 @@ import { departmentDirectorNavItems } from './navConfig';
 
 function actionReason(c, departmentId) {
   if (needsDeptReview(c, departmentId)) return 'New assignment, needs your accept/reject review';
-  if (needsAssignment(c, departmentId)) return 'Accepted, needs a supervisor or investigator assigned';
+  if (needsAssignment(c, departmentId)) return 'Accepted, needs a supervisor or investigation officer assigned';
   if (needsFinalReview(c, departmentId)) return 'Back from your supervisor, needs final sign-off';
   return null;
+}
+
+// New Assignments and Review Findings are two separate nav pages — this queue merges rows from
+// both, so which one a given row "belongs to" (for sidebar highlighting) depends on its own
+// status, not on the fact that they're all sitting in one widget here.
+function actionNavFrom(c, departmentId) {
+  if (needsDeptReview(c, departmentId) || needsAssignment(c, departmentId)) return '/department-director/new';
+  return '/department-director/final-review';
 }
 
 export default function DepartmentDirectorDashboardPage() {
@@ -72,6 +80,7 @@ export default function DepartmentDirectorDashboardPage() {
         items={needsAction}
         getHref={(c) => `/department-director/complaints/${c.id}`}
         getReason={(c) => actionReason(c, departmentId)}
+        getNavFrom={(c) => actionNavFrom(c, departmentId)}
       />
 
       <div className="recent-complaints-card">
