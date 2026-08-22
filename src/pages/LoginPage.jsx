@@ -17,6 +17,9 @@ const ROLE_LABELS = {
   'department-supervisor': 'Department Supervisor',
   'department-investigator': 'Department Investigation Officer',
   'executive-secretary': 'Executive Secretary',
+  'ict-head': 'ICT Head',
+  'ict-personnel': 'ICT Personnel',
+  'complainant': 'Complainant',
 };
 
 export default function LoginPage() {

@@ -28,10 +28,21 @@ import ESEscalatedPage from './roles/executive-secretary/ESEscalatedPage';
 import ESComplaintsPage from './roles/executive-secretary/ESComplaintsPage';
 import ESComplaintDetailPage from './roles/executive-secretary/ESComplaintDetailPage';
 import RequireRole from './components/auth/RequireRole';
+import GlobalTooltip from './components/ui/GlobalTooltip';
 import { AuthProvider } from './context/AuthContext';
 import { ComplaintsProvider } from './context/ComplaintsContext';
 import { CallsProvider } from './context/CallsContext';
 import { I18nProvider } from './context/I18nContext';
+import { UserManagementProvider } from './context/UserManagementContext';
+import IctHeadDashboardPage from './roles/ict-head/IctHeadDashboardPage';
+import IctHeadUserManagementPage from './roles/ict-head/IctHeadUserManagementPage';
+import IctHeadUserProfilePage from './roles/ict-head/IctHeadUserProfilePage';
+import IctHeadOnboardingPage from './roles/ict-head/IctHeadOnboardingPage';
+import IctHeadDepartmentsPage from './roles/ict-head/IctHeadDepartmentsPage';
+import IctPersonnelDashboardPage from './roles/ict-personnel/IctPersonnelDashboardPage';
+import ComplainantDashboardPage from './roles/complainant/ComplainantDashboardPage';
+import ComplainantSupportPage from './roles/complainant/ComplainantSupportPage';
+import ComplainantRightsPage from './roles/complainant/ComplainantRightsPage';
 import RegistryHeadDashboardPage from './roles/complaint-registry-head/RegistryHeadDashboardPage';
 import RegistryHeadComplaintsPage from './roles/complaint-registry-head/RegistryHeadComplaintsPage';
 import RegistryHeadComplaintDetailPage from './roles/complaint-registry-head/RegistryHeadComplaintDetailPage';
@@ -57,6 +68,8 @@ export default function App() {
       <I18nProvider>
         <ComplaintsProvider>
           <CallsProvider>
+            <UserManagementProvider>
+            <GlobalTooltip />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<LoginPage />} />
@@ -111,8 +124,33 @@ export default function App() {
                 <Route path="/registry-head/reports" element={<RegistryHeadReportsPage />} />
                 <Route path="/registry-head/help" element={<RegistryHeadHelpPage />} />
                 <Route path="/registry-head/settings" element={<RegistryHeadSettingsPage />} />
+
+                {/* ICT Head: view-only complaint access (reuses the Registry Head complaint
+                    pages, action buttons gated off internally, see rolePermissions.js) plus new
+                    admin routes shared with ICT Personnel. */}
+                <Route path="/ict-head" element={<RequireRole role="ict-head"><IctHeadDashboardPage /></RequireRole>} />
+                <Route path="/ict-head/complaints" element={<RequireRole role={['registry-head', 'ict-head']}><RegistryHeadComplaintsPage /></RequireRole>} />
+                <Route path="/ict-head/complaints/treated" element={<RequireRole role={['registry-head', 'ict-head']}><RegistryHeadComplaintsPage filter="treated" /></RequireRole>} />
+                <Route path="/ict-head/complaints/:complaintId" element={<RequireRole role={['registry-head', 'ict-head']}><RegistryHeadComplaintDetailPage /></RequireRole>} />
+                <Route path="/ict-head/users" element={<RequireRole role={['ict-head', 'ict-personnel']}><IctHeadUserManagementPage /></RequireRole>} />
+                <Route path="/ict-head/users/:userId" element={<RequireRole role={['ict-head', 'ict-personnel']}><IctHeadUserProfilePage /></RequireRole>} />
+                <Route path="/ict-head/onboarding" element={<RequireRole role={['ict-head', 'ict-personnel']}><IctHeadOnboardingPage /></RequireRole>} />
+                <Route path="/ict-head/departments" element={<RequireRole role={['ict-head', 'ict-personnel']}><IctHeadDepartmentsPage /></RequireRole>} />
+
+                {/* ICT Personnel: onboarding + user management + departments only, zero
+                    complaint access (no complaint routes list this role — see scopeComplaints.js). */}
+                <Route path="/ict-personnel" element={<RequireRole role="ict-personnel"><IctPersonnelDashboardPage /></RequireRole>} />
+
+                {/* Complainant Portal: demo-account only. Track Complaint and My Profile reuse
+                    the same shared /registry-head/track and /registry-head/settings routes every
+                    other role already uses — scopeComplaints.js restricts what a complainant
+                    sees there to their own case(s). */}
+                <Route path="/complainant" element={<RequireRole role="complainant"><ComplainantDashboardPage /></RequireRole>} />
+                <Route path="/complainant/support" element={<RequireRole role="complainant"><ComplainantSupportPage /></RequireRole>} />
+                <Route path="/complainant/rights" element={<RequireRole role="complainant"><ComplainantRightsPage /></RequireRole>} />
               </Routes>
             </BrowserRouter>
+            </UserManagementProvider>
           </CallsProvider>
         </ComplaintsProvider>
       </I18nProvider>

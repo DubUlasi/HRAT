@@ -83,6 +83,39 @@ export const mockUsers = [
     address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
     joinedDate: '2016-11-30',
   },
+  {
+    id: 'user-ict-head',
+    email: 'chidinma.obi@example.com',
+    password: DEMO_PASSWORD,
+    role: 'ict-head',
+    name: 'Chidinma Obi',
+    avatarSrc: '/alicia.png',
+    phone: '+234 810 789 0123',
+    address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
+    joinedDate: '2022-02-14',
+  },
+  {
+    id: 'user-ict-personnel',
+    email: 'tunde.bakare@example.com',
+    password: DEMO_PASSWORD,
+    role: 'ict-personnel',
+    name: 'Tunde Bakare',
+    avatarSrc: '/alicia.png',
+    phone: '+234 811 890 1234',
+    address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
+    joinedDate: '2023-05-22',
+  },
+  {
+    id: 'user-complainant',
+    email: 'susan.peters@example.com',
+    password: DEMO_PASSWORD,
+    role: 'complainant',
+    name: 'Susan Peters',
+    avatarSrc: '/alicia.png',
+    phone: '+234 812 901 2345',
+    address: '18 Okonjo Street, Surulere, Lagos',
+    joinedDate: '2024-01-09',
+  },
 ];
 
 // Where each role lands after login — single source of truth for LoginPage + App.jsx routes.
@@ -93,4 +126,7 @@ export const ROLE_HOME = {
   'department-supervisor': '/department-supervisor',
   'department-investigator': '/department-investigator',
   'executive-secretary': '/executive-secretary',
+  'ict-head': '/ict-head',
+  'ict-personnel': '/ict-personnel',
+  'complainant': '/complainant',
 };

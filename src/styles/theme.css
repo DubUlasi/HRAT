@@ -107,3 +107,63 @@ html, body {
   border-radius: 999px !important;
   cursor: pointer;
 }
+
+/* GlobalTooltip.jsx — replaces the browser's native `title` tooltip everywhere in the app with
+   one styled to match. Lives here (not a page-specific stylesheet) since GlobalTooltip is
+   mounted once at the app root and needs to work on every page, including the public ones
+   (login/signup) that don't load dashboard-shell.css. Same inverted dark/light convention as
+   the Chart.js tooltips elsewhere: dark chip on the light theme, light chip on the dark theme. */
+.global-tooltip {
+  position: fixed;
+  z-index: 10000;
+  background-color: #101828;
+  color: #F8FAFC;
+  font-family: var(--font-family);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  max-width: 240px;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  animation: globalTooltipFade 0.12s ease-out;
+}
+
+.global-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background-color: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.global-tooltip-top {
+  transform: translate(-50%, -100%);
+}
+
+.global-tooltip-top::after {
+  bottom: -4px;
+}
+
+.global-tooltip-bottom {
+  transform: translate(-50%, 0);
+}
+
+.global-tooltip-bottom::after {
+  top: -4px;
+}
+
+[data-theme="dark"] .global-tooltip {
+  background-color: #F8FAFC;
+  color: #101828;
+}
+
+@keyframes globalTooltipFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

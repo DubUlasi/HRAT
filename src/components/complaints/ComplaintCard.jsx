@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import Avatar from '../ui/Avatar';
 import StatusBadge from '../ui/StatusBadge';
+import { useAuth } from '../../context/AuthContext';
+import { ROLE_COMPLAINT_DETAIL_BASE } from '../../roles/roleNavMap';
 import { STAGE_ORDER, STAGE_LABELS, stageProgressPercent } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 
@@ -14,9 +16,11 @@ export default function ComplaintCard({ complaint }) {
   const currentStageLabel = stageIndex >= 0 ? STAGE_LABELS[STAGE_ORDER[stageIndex]] : 'Not yet started';
   const fillPercent = stageProgressPercent(stageIndex);
   const location = useLocation();
+  const { user } = useAuth();
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
 
   return (
-    <Link to={`/registry-head/complaints/${complaint.id}`} state={{ from: location.pathname }} className="complaint-card">
+    <Link to={`${detailBase}/${complaint.id}`} state={{ from: location.pathname }} className="complaint-card">
       <div className="complaint-card-top">
         <span className="category-pill">{CATEGORY_LABELS[complaint.category]}</span>
         {complaint.complaintNumber && <span className="detail-tracking-code">{complaint.complaintNumber}</span>}

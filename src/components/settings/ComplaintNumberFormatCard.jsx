@@ -33,7 +33,7 @@ export default function ComplaintNumberFormatCard({ currentFormat, currentSeq, a
 
       <p className="form-field-hint" style={{ marginTop: -4, marginBottom: 14 }}>
         {autoAssign
-          ? 'New complaints are numbered the moment they are submitted, using the format below — no Desk Officer needs to process them first.'
+          ? 'New complaints are numbered the moment they are submitted, using the format below — no one needs to be assigned to process it.'
           : 'New complaints will need a Desk Officer assigned to process their number before it appears, using the format below.'}
       </p>
 

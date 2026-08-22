@@ -53,18 +53,11 @@
   overflow-x: auto;
 }
 
-/* When the table is embedded inside another card (e.g. the dashboard's "Complaints" panel, or
-   the Business Intelligence office/department performance tables), let the outer card supply
-   the border/shadow so they don't double up. */
-.recent-complaints-card .complaints-table-wrap,
-.performance-table-wrap {
+/* When the table is embedded inside another card (e.g. the dashboard's "Complaints" panel), let
+   the outer card supply the border/shadow so they don't double up. */
+.recent-complaints-card .complaints-table-wrap {
   border: none;
   border-radius: 0;
-}
-
-/* This one has only 3 narrow columns, so it shouldn't inherit the wider table's 720px floor. */
-.performance-table-wrap .complaints-table {
-  min-width: 100%;
 }
 
 /* Transparent rows separated by a plain divider line, instead of a filled background per row. */
@@ -840,6 +833,24 @@
   font-weight: 600;
   cursor: pointer;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Row of small icon-only actions in an admin table cell (activate/deactivate, remove, ...). */
+.table-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Scrollable checkbox list, e.g. picking staff to assign into a department. */
+.user-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 /* Activity vertical timeline */

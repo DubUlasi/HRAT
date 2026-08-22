@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { mockComplaints } from '../data/mockComplaints';
 import { departments } from '../data/mockOfficers';
 import { STAGE_ORDER, SUB_STATUS } from '../constants/complaintStatus';
@@ -81,6 +81,23 @@ export const DEFAULT_COMPLAINT_NUMBER_FORMAT = 'NHRC/{YY}/{SEQ}';
 const COMPLAINT_NUMBER_FORMAT_KEY = 'hrat-complaint-number-format';
 const COMPLAINT_NUMBER_SEQ_KEY = 'hrat-complaint-number-seq';
 const COMPLAINT_NUMBER_AUTO_KEY = 'hrat-complaint-number-auto';
+const COMPLAINTS_KEY = 'hrat-complaints';
+
+// Persisted like the login session and numbering settings, so complaints created in the app
+// (via the wizard, or any other action) survive a page reload instead of resetting to the seed
+// data. Falls back to the static seed set the first time the app ever runs in a browser, or if
+// the stored value is missing/corrupt. Evidence file `url`s are client-only object URLs (see
+// createComplaint below) and don't survive a reload either way — a documented limitation of this
+// mock app having no real file backend, not something persisting the complaint record fixes.
+function loadComplaints() {
+  try {
+    const raw = localStorage.getItem(COMPLAINTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    // ignore storage failures / corrupt JSON — fall through to the seed data
+  }
+  return mockComplaints;
+}
 
 // Fills a Registry-Head-configured template with the running sequence number and today's year.
 // {YYYY}/{YY} = 4/2-digit year, {SEQ} = unpadded sequence, {SEQ2}/{SEQ3}/{SEQ4}/{SEQ5} = zero-padded.
@@ -128,9 +145,10 @@ function loadComplaintNumberSeq(complaints) {
   return seedComplaintNumberSeq(complaints);
 }
 
-// Defaults to ON — most registries want numbers assigned the moment a complaint is submitted,
-// with the manual "assign a Desk Officer to process the number" step as an opt-out for anyone
-// who still wants a person in the loop before a number is issued.
+// Defaults to ON — new complaints get numbered the moment they're submitted, no one assigned to
+// process it. Switching this off falls back to the original manual flow (Head assigns a Desk
+// Officer, officer processes the number) for every complaint created from then on; complaints
+// already numbered — automatically or manually — are unaffected either way.
 function loadComplaintNumberAuto() {
   try {
     const raw = localStorage.getItem(COMPLAINT_NUMBER_AUTO_KEY);
@@ -156,10 +174,19 @@ export function ComplaintsProvider({ children }) {
   const actorName = user?.name || 'System';
   const actorOfficerId = user?.officerId || null;
 
-  const [complaints, setComplaints] = useState(mockComplaints);
+  const [complaints, setComplaints] = useState(loadComplaints);
   const [complaintNumberFormat, setComplaintNumberFormat] = useState(loadComplaintNumberFormat);
-  const [complaintNumberSeq, setComplaintNumberSeq] = useState(() => loadComplaintNumberSeq(mockComplaints));
+  const [complaintNumberSeq, setComplaintNumberSeq] = useState(() => loadComplaintNumberSeq(loadComplaints()));
   const [complaintNumberAuto, setComplaintNumberAuto] = useState(loadComplaintNumberAuto);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(COMPLAINTS_KEY, JSON.stringify(complaints));
+    } catch {
+      // ignore storage failures (e.g. quota exceeded, private browsing) — complaints still work
+      // for the rest of this session, they just won't survive a reload
+    }
+  }, [complaints]);
 
   const updateComplaintNumberAuto = useCallback((on) => {
     setComplaintNumberAuto(on);
@@ -189,6 +216,38 @@ export function ComplaintsProvider({ children }) {
       // ignore storage failures (e.g. private browsing) — the counter still applies for this session
     }
   }, []);
+
+  // Auto-assignment isn't just for complaints created going forward — any complaint that
+  // hasn't reached the numbering stage yet (still SUB_STATUS.NEW, no number) should be swept
+  // into the automatic flow the moment the toggle is on, whether it's a seed complaint that
+  // predates this feature or one left unnumbered from a stretch when the toggle was off.
+  // Complaints that already have a number are untouched either way — only the not-yet-numbered
+  // ones move. Re-runs whenever the toggle flips on or the complaint list changes; once nothing
+  // matches, the functional update returns the same array reference and React skips the render.
+  useEffect(() => {
+    if (!complaintNumberAuto) return;
+    setComplaints((prev) => {
+      const pending = prev.filter((c) => c.subStatus === SUB_STATUS.NEW && !c.complaintNumber);
+      if (pending.length === 0) return prev;
+      let seq = complaintNumberSeq;
+      const next = prev.map((c) => {
+        if (c.subStatus !== SUB_STATUS.NEW || c.complaintNumber) return c;
+        const complaintNumber = formatComplaintNumber(complaintNumberFormat, seq);
+        seq += 1;
+        let updated = {
+          ...c,
+          complaintNumber,
+          subStatus: SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT,
+          stageIndex: STAGE_ORDER.indexOf('case_created'),
+        };
+        updated = pushActivity(updated, `Complaint number ${complaintNumber} assigned automatically`, 'System');
+        return updated;
+      });
+      updateComplaintNumberSeq(seq);
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [complaintNumberAuto, complaints]);
 
   const getComplaintById = useCallback(
     (id) => complaints.find((c) => c.id === id),
@@ -284,6 +343,18 @@ export function ComplaintsProvider({ children }) {
       next = pushActivity(next, flagged ? `Flagged for attention${reason ? `, "${reason}"` : ''}` : 'Flag removed', actorName);
       return next;
     });
+  }, [updateComplaint, actorName]);
+
+  // A complainant withdrawing their own case — `stageIndex` is deliberately left untouched
+  // (WITHDRAWN is carried entirely by subStatus, same as CLOSED/INADMISSIBLE) rather than jumped
+  // to a fixed stage, since a complaint can be withdrawn from any point in the pipeline and
+  // forcing it to e.g. "Governing Council" would misrepresent how far it actually got.
+  const withdrawComplaint = useCallback((id, reason) => {
+    updateComplaint(id, (c) => pushActivity(
+      { ...c, subStatus: SUB_STATUS.WITHDRAWN },
+      `Complaint withdrawn by complainant${reason ? `: ${reason}` : ''}`,
+      actorName
+    ));
   }, [updateComplaint, actorName]);
 
   // Fills in a violator that was filed as "Unidentified" once staff actually learn who they
@@ -771,10 +842,11 @@ export function ComplaintsProvider({ children }) {
     // file about a single victim, and one person can file about several, so these don't imply
     // each other.
     const scope = (additionalVictims?.length || 0) > 0 || (additionalViolators?.length || 0) > 0 ? 'group' : 'single';
-    // When auto-assignment is on, the complaint number is stamped immediately and the pipeline
-    // skips straight past the manual "assign a Desk Officer to process the number" step — it
-    // lands exactly where a complaint sits right after that step completes today, so the Head's
-    // queue, the Desk Officer's queue, and the detail page all behave correctly with no changes.
+    // With auto-assignment on, the number is stamped immediately and no one is ever assigned to
+    // process it — the complaint lands exactly where one used to sit right after that manual step
+    // completed, so the Head's "assign an admissibility officer" queue, StageTracker, etc. all
+    // pick it up correctly with no changes on their end. With it off, this falls back to the
+    // original NEW/unnumbered state so the manual assign-a-Desk-Officer flow still applies.
     const autoNumber = complaintNumberAuto;
     const complaintNumber = autoNumber ? formatComplaintNumber(complaintNumberFormat, complaintNumberSeq) : null;
     let complaint = {
@@ -846,6 +918,7 @@ export function ComplaintsProvider({ children }) {
     findCallerHistory,
     attachDocuments,
     toggleComplaintFlag,
+    withdrawComplaint,
     identifyViolator,
     assignComplaintNumberOfficer,
     assignAdmissibilityOfficer,
@@ -881,7 +954,7 @@ export function ComplaintsProvider({ children }) {
     currentUser: user || { name: 'Unknown', email: null },
   }), [
     complaints, getComplaintById, getRepeatOffenders, findRelatedComplaints, findCallerHistory, attachDocuments,
-    toggleComplaintFlag, identifyViolator,
+    toggleComplaintFlag, withdrawComplaint, identifyViolator,
     assignComplaintNumberOfficer, assignAdmissibilityOfficer, confirmAdmissibilityCheck, assignToDepartment,
     processComplaintNumberAssignment, submitAdmissibilityDecision, reassignToStateOffice, returnFromStateOffice,
     directorReviewDepartment, assignSupervisor, assignInvestigator, logInvestigationActivity, updateInvestigationActivity,

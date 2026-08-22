@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Download, AlertOctagon, FileText, Clock, CalendarClock, Building2, Timer, CheckCircle2, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Download, AlertOctagon, FileText, Clock, CalendarClock, Building2, Timer, CheckCircle2, ShieldCheck, TrendingUp, Award } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
@@ -9,6 +9,8 @@ import Input from '../../components/ui/Input';
 import BreakdownList from '../../components/dashboard/BreakdownList';
 import OfficePerformanceTable from '../../components/dashboard/OfficePerformanceTable';
 import TrendComparisonCard from '../../components/dashboard/TrendComparisonCard';
+import ChartCard from '../../components/dashboard/ChartCard';
+import ComplaintsDoughnutChart from '../../components/charts/ComplaintsDoughnutChart';
 import Pagination from '../../components/ui/Pagination';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import { useAuth } from '../../context/AuthContext';
@@ -16,153 +18,26 @@ import { useComplaints } from '../../context/ComplaintsContext';
 import { STAGE_ORDER, STAGE_LABELS, SUB_STATUS, getSubStatusMeta, stageProgressPercent } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
-import { PERIOD_OPTIONS, withinPeriod } from '../../constants/reportPeriods';
+import { PERIOD_OPTIONS, MONTH_OPTIONS, getAvailableYears, withinPeriod } from '../../constants/reportPeriods';
 import { usePagination } from '../../hooks/usePagination';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS } from '../roleNavMap';
 import { scopeComplaintsForUser, scopeRepeatOffendersForUser, REPEAT_VIOLATOR_ROLES } from '../scopeComplaints';
-
-const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// The "current" year the trend widget compares against — for "Last Year" this shifts the
-// whole comparison back a year too, so the widget stays meaningful for whatever period is
-// selected instead of always anchoring to the real calendar year. For the open-ended periods
-// ("All Time", "Last 30/90 Days") it anchors to the most recent year actually present in the
-// data instead of the real calendar year, so the comparison stays meaningful even against an
-// older seeded dataset rather than showing two empty years.
-function comparisonYearFor(period, complaints) {
-  const now = new Date();
-  if (period === 'this_year') return now.getFullYear();
-  if (period === 'last_year') return now.getFullYear() - 1;
-  const years = complaints.map((c) => new Date(c.dateFiled).getFullYear()).filter((y) => !Number.isNaN(y));
-  return years.length ? Math.max(...years) : now.getFullYear();
-}
-
-function monthlyCountsForYear(complaints, year) {
-  const counts = new Array(12).fill(0);
-  complaints.forEach((c) => {
-    const d = new Date(c.dateFiled);
-    if (d.getFullYear() === year) counts[d.getMonth()] += 1;
-  });
-  return MONTH_LABELS.map((label, i) => ({ label, value: counts[i] }));
-}
-
-function formatDuration(ms) {
-  if (ms == null) return null;
-  const hours = ms / (1000 * 60 * 60);
-  if (hours < 24) return `${hours.toFixed(1)} hrs`;
-  return `${(hours / 24).toFixed(1)} days`;
-}
-
-function daysBetween(a, b) {
-  return Math.max(0, (b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-// Stage-entry activity markers — the exact message logged in ComplaintsContext.jsx the moment
-// a complaint's stageIndex advances onto that stage. This lets "time in stage" be derived
-// purely from activityLog timestamps without inventing any stage vocabulary of its own —
-// STAGE_ORDER / STAGE_LABELS stay the single source of truth for stage names.
-const STAGE_ENTRY_MARKERS = {
-  case_created: 'Complaint number assigned',
-  admissibility_check: 'Admissibility check decision added',
-  assigned_dept: 'Complaint assigned to department',
-  assigned_supervisor: 'Complaint assigned to a supervisor',
-};
-
-function findEntry(sortedLog, marker) {
-  return sortedLog.find((entry) => entry.message.includes(marker));
-}
-
-function computeStageTimings(complaints) {
-  const trackedStages = Object.keys(STAGE_ENTRY_MARKERS);
-  const samples = {};
-  trackedStages.forEach((key) => { samples[key] = []; });
-
-  complaints.forEach((complaint) => {
-    const sorted = [...complaint.activityLog].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    trackedStages.forEach((key, i) => {
-      const startEntry = findEntry(sorted, STAGE_ENTRY_MARKERS[key]);
-      const nextMarker = STAGE_ENTRY_MARKERS[trackedStages[i + 1]];
-      const endEntry = nextMarker ? findEntry(sorted, nextMarker) : null;
-      if (startEntry && endEntry) {
-        const ms = new Date(endEntry.timestamp) - new Date(startEntry.timestamp);
-        if (ms >= 0) samples[key].push(ms);
-      }
-    });
-  });
-
-  const avgFor = (key) => (samples[key].length ? samples[key].reduce((a, b) => a + b, 0) / samples[key].length : null);
-  const maxAvg = Math.max(1, ...trackedStages.map((key) => avgFor(key) || 0));
-
-  return STAGE_ORDER.map((key) => {
-    const avgMs = trackedStages.includes(key) ? avgFor(key) : null;
-    const sampleCount = trackedStages.includes(key) ? samples[key].length : 0;
-    return {
-      key,
-      label: STAGE_LABELS[key],
-      avgMs,
-      percent: avgMs ? Math.round((avgMs / maxAvg) * 100) : 0,
-      displayValue: avgMs ? `${formatDuration(avgMs)} (${sampleCount} case${sampleCount === 1 ? '' : 's'})` : 'No data yet',
-    };
-  });
-}
-
-function computePerformance(complaints, entities, keyField) {
-  const now = new Date();
-  return entities
-    .map((entity) => {
-      const matching = complaints.filter((c) => c[keyField] === entity.id);
-      const closed = matching.filter((c) => c.subStatus === SUB_STATUS.CLOSED);
-      let avgResolutionMs = null;
-      if (closed.length) {
-        const total = closed.reduce((sum, c) => {
-          const sorted = [...c.activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-          const lastEntry = sorted[0];
-          const resolvedAt = lastEntry ? new Date(lastEntry.timestamp) : now;
-          return sum + (resolvedAt - new Date(c.dateFiled));
-        }, 0);
-        avgResolutionMs = total / closed.length;
-      }
-      return {
-        id: entity.id,
-        name: entity.name,
-        volume: matching.length,
-        resolutionLabel: avgResolutionMs != null ? formatDuration(avgResolutionMs) : 'No resolved cases yet',
-      };
-    })
-    .sort((a, b) => b.volume - a.volume);
-}
-
-function categoryBreakdown(complaints) {
-  const counts = {};
-  complaints.forEach((c) => {
-    counts[c.category] = (counts[c.category] || 0) + 1;
-  });
-  const total = complaints.length || 1;
-  return Object.entries(counts).map(([key, count]) => ({
-    key,
-    label: CATEGORY_LABELS[key] || key,
-    count,
-    percent: Math.round((count / total) * 100),
-  }));
-}
-
-function statusBreakdown(complaints) {
-  const counts = {};
-  complaints.forEach((c) => {
-    counts[c.subStatus] = (counts[c.subStatus] || 0) + 1;
-  });
-  const total = complaints.length || 1;
-  return Object.entries(counts)
-    .map(([key, count]) => ({ key, label: getSubStatusMeta(key).label, count, percent: Math.round((count / total) * 100) }))
-    .sort((a, b) => b.count - a.count);
-}
-
-function csvEscape(value) {
-  const str = String(value ?? '');
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
+import { getBiRoleConfig } from '../biRoleConfig';
+import {
+  INACTIVE_STATUSES,
+  formatDuration,
+  daysBetween,
+  computeStageTimings,
+  computePerformance,
+  categoryBreakdown,
+  statusBreakdown,
+  monthlyCountsForYear,
+  comparisonYearFor,
+  computeHandledSince,
+  formatMonthYear,
+  csvEscape,
+} from '../biReportsHelpers';
 
 function exportCsv(complaints, period, customRange) {
   const headers = ['Subject', 'Category', 'Status', 'Stage', 'Date Filed', 'Office', 'Department'];
@@ -194,9 +69,12 @@ export default function RegistryHeadBusinessIntelligencePage() {
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const { complaints: allComplaints, getRepeatOffenders } = useComplaints();
   const complaints = useMemo(() => scopeComplaintsForUser(allComplaints, user), [allComplaints, user]);
+  const config = useMemo(() => getBiRoleConfig(user), [user]);
   const [period, setPeriod] = useState('all');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
+  const [month, setMonth] = useState(new Date().getMonth());
+  const [year, setYear] = useState(() => getAvailableYears(complaints)[0]);
   const [historyComplaintId, setHistoryComplaintId] = useState(null);
 
   const canSeeRepeatViolators = REPEAT_VIOLATOR_ROLES.includes(user?.role);
@@ -207,8 +85,8 @@ export default function RegistryHeadBusinessIntelligencePage() {
   const topRepeatOffenders = repeatOffenders.slice(0, 3);
 
   const filtered = useMemo(
-    () => complaints.filter((c) => withinPeriod(c.dateFiled, period, { start: customStart, end: customEnd })),
-    [complaints, period, customStart, customEnd]
+    () => complaints.filter((c) => withinPeriod(c.dateFiled, period, { start: customStart, end: customEnd, month, year })),
+    [complaints, period, customStart, customEnd, month, year]
   );
 
   const pendingCount = filtered.filter((c) => !INACTIVE_STATUSES.includes(c.subStatus)).length;
@@ -233,11 +111,17 @@ export default function RegistryHeadBusinessIntelligencePage() {
   const stageTimings = useMemo(() => computeStageTimings(filtered), [filtered]);
   const admissibilityTiming = stageTimings.find((row) => row.key === 'admissibility_check');
   const pipelineStatusRows = useMemo(() => statusBreakdown(filtered), [filtered]);
+  const categoryRows = useMemo(() => categoryBreakdown(filtered), [filtered]);
+
+  // Period-independent — always counts against the full role-scoped history, not the Period
+  // filter above, since the point is "how long have I been doing this," not a filtered slice.
+  const handledSince = config.showHandledSinceStat ? computeHandledSince(complaints, user?.joinedDate) : null;
+  const handledSinceLabel = formatMonthYear(user?.joinedDate);
 
   const officePerformance = useMemo(() => computePerformance(filtered, offices, 'office'), [filtered]);
   const departmentPerformance = useMemo(() => computePerformance(filtered, departments, 'department'), [filtered]);
-  const officePagination = usePagination(officePerformance, 10, `${period}|${customStart}|${customEnd}`);
-  const departmentPagination = usePagination(departmentPerformance, 10, `${period}|${customStart}|${customEnd}`);
+  const officePagination = usePagination(officePerformance, 10, `${period}|${customStart}|${customEnd}|${month}|${year}`);
+  const departmentPagination = usePagination(departmentPerformance, 10, `${period}|${customStart}|${customEnd}|${month}|${year}`);
 
   const comparisonYear = comparisonYearFor(period, complaints);
   const currentYearTrend = useMemo(() => monthlyCountsForYear(complaints, comparisonYear), [complaints, comparisonYear]);
@@ -247,7 +131,7 @@ export default function RegistryHeadBusinessIntelligencePage() {
     <AppShell navItems={navItems} user={user || registryHeadUser}>
       <PageHeader
         title="Business Intelligence"
-        subtitle="Registry-wide trends, cycle times, office/department performance, and period-over-period trends."
+        subtitle="Trends, cycle times, and performance for the complaints in your scope."
         actions={
           <Button variant="secondary" icon={Download} onClick={() => exportCsv(filtered, period, { start: customStart, end: customEnd })}>
             Export Report
@@ -263,6 +147,24 @@ export default function RegistryHeadBusinessIntelligencePage() {
             ))}
           </Select>
         </FormField>
+        {period === 'specific_month' && (
+          <>
+            <FormField label="Month">
+              <Select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
+                {MONTH_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Year">
+              <Select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+                {getAvailableYears(complaints).map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </Select>
+            </FormField>
+          </>
+        )}
         {period === 'custom' && (
           <>
             <FormField label="From">
@@ -275,7 +177,7 @@ export default function RegistryHeadBusinessIntelligencePage() {
         )}
       </div>
 
-      <div className="stats-grid">
+      <div className="stats-grid bi-stats-grid">
         <div className="stat-card accent-info">
           <div className="stat-card-icon"><FileText size={16} /></div>
           <h3>Complaints In Period</h3>
@@ -291,31 +193,44 @@ export default function RegistryHeadBusinessIntelligencePage() {
           <h3>Avg. Case Age</h3>
           <div className="value">{avgCaseAgeDays}d</div>
         </div>
-        <div className="stat-card accent-accent">
-          <div className="stat-card-icon"><Building2 size={16} /></div>
-          <h3>Active Offices</h3>
-          <div className="value">{activeOffices}</div>
-        </div>
-        <div className="stat-card accent-info">
-          <div className="stat-card-icon"><Timer size={16} /></div>
-          <h3>Avg. Admissibility Turnaround</h3>
-          <div className="value">{admissibilityTiming?.avgMs != null ? formatDuration(admissibilityTiming.avgMs) : '—'}</div>
-        </div>
+        {config.showActiveOfficesStat && (
+          <div className="stat-card accent-accent">
+            <div className="stat-card-icon"><Building2 size={16} /></div>
+            <h3>Active Offices</h3>
+            <div className="value">{activeOffices}</div>
+          </div>
+        )}
+        {config.showAdmissibilityStats && (
+          <div className="stat-card accent-info">
+            <div className="stat-card-icon"><Timer size={16} /></div>
+            <h3>Avg. Admissibility Turnaround</h3>
+            <div className="value">{admissibilityTiming?.avgMs != null ? formatDuration(admissibilityTiming.avgMs) : '—'}</div>
+          </div>
+        )}
         <div className="stat-card accent-accent">
           <div className="stat-card-icon"><CheckCircle2 size={16} /></div>
           <h3>Resolved In Period</h3>
           <div className="value">{resolvedCount}</div>
         </div>
-        <div className="stat-card accent-accent">
-          <div className="stat-card-icon"><ShieldCheck size={16} /></div>
-          <h3>Admissible Rate</h3>
-          <div className="value">{admissibleRate}%</div>
-        </div>
+        {config.showAdmissibilityStats && (
+          <div className="stat-card accent-accent">
+            <div className="stat-card-icon"><ShieldCheck size={16} /></div>
+            <h3>Admissible Rate</h3>
+            <div className="value">{admissibleRate}%</div>
+          </div>
+        )}
         <div className="stat-card accent-violet">
           <div className="stat-card-icon"><TrendingUp size={16} /></div>
           <h3>Avg. Pipeline Progress</h3>
           <div className="value">{avgProgress}%</div>
         </div>
+        {config.showHandledSinceStat && handledSince != null && (
+          <div className="stat-card accent-accent">
+            <div className="stat-card-icon"><Award size={16} /></div>
+            <h3>{handledSinceLabel ? `Cases Handled Since ${handledSinceLabel}` : 'Cases Handled'}</h3>
+            <div className="value">{handledSince}</div>
+          </div>
+        )}
       </div>
 
       {canSeeRepeatViolators && (
@@ -347,7 +262,7 @@ export default function RegistryHeadBusinessIntelligencePage() {
       )}
 
       <TrendComparisonCard
-        title="Complaints Filed, Year-over-Year Trend"
+        title={config.trend.title}
         currentLabel={String(comparisonYear)}
         previousLabel={String(comparisonYear - 1)}
         data={currentYearTrend}
@@ -355,36 +270,58 @@ export default function RegistryHeadBusinessIntelligencePage() {
       />
 
       <div className="dashboard-grid">
-        <BreakdownList title="Average Time In Stage" rows={stageTimings} />
-        <BreakdownList title="Complaints By Category" rows={categoryBreakdown(filtered)} />
+        <BreakdownList title="Complaints By Category" rows={categoryRows} fillHeight />
+        <ChartCard title="Category Distribution"><ComplaintsDoughnutChart rows={categoryRows} /></ChartCard>
       </div>
 
       <div className="dashboard-grid">
-        <BreakdownList title="Pipeline Status Breakdown" rows={pipelineStatusRows} />
-        <div>
-          <OfficePerformanceTable title="Office Performance" rows={officePagination.pageItems} />
-          <Pagination
-            page={officePagination.page}
-            pageCount={officePagination.pageCount}
-            pageSize={officePagination.pageSize}
-            totalItems={officePagination.totalItems}
-            onPageChange={officePagination.setPage}
-            onPageSizeChange={officePagination.setPageSize}
-          />
-        </div>
+        <BreakdownList title="Pipeline Status Breakdown" rows={pipelineStatusRows} fillHeight />
+        <ChartCard title="Status Distribution"><ComplaintsDoughnutChart rows={pipelineStatusRows} /></ChartCard>
       </div>
 
-      <div>
-        <OfficePerformanceTable title="Department Performance" rows={departmentPagination.pageItems} />
-        <Pagination
-          page={departmentPagination.page}
-          pageCount={departmentPagination.pageCount}
-          pageSize={departmentPagination.pageSize}
-          totalItems={departmentPagination.totalItems}
-          onPageChange={departmentPagination.setPage}
-          onPageSizeChange={departmentPagination.setPageSize}
-        />
-      </div>
+      {config.showStageTimings && (
+        <BreakdownList title="Average Time In Stage" rows={stageTimings} />
+      )}
+
+      {config.teams.length > 0 && (
+        <div className="dashboard-grid">
+          {config.teams.map((team) => (
+            <OfficePerformanceTable
+              key={team.label}
+              title={team.label}
+              rows={computePerformance(filtered, team.entities, team.keyField)}
+            />
+          ))}
+        </div>
+      )}
+
+      {config.showOrgPerformance && (
+        <>
+          <div>
+            <OfficePerformanceTable title="Office Performance" rows={officePagination.pageItems} />
+            <Pagination
+              page={officePagination.page}
+              pageCount={officePagination.pageCount}
+              pageSize={officePagination.pageSize}
+              totalItems={officePagination.totalItems}
+              onPageChange={officePagination.setPage}
+              onPageSizeChange={officePagination.setPageSize}
+            />
+          </div>
+
+          <div>
+            <OfficePerformanceTable title="Department Performance" rows={departmentPagination.pageItems} />
+            <Pagination
+              page={departmentPagination.page}
+              pageCount={departmentPagination.pageCount}
+              pageSize={departmentPagination.pageSize}
+              totalItems={departmentPagination.totalItems}
+              onPageChange={departmentPagination.setPage}
+              onPageSizeChange={departmentPagination.setPageSize}
+            />
+          </div>
+        </>
+      )}
 
       <OffenderCaseHistoryDrawer
         open={!!historyComplaintId}

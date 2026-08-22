@@ -20,18 +20,29 @@ import { useComplaints } from '../../context/ComplaintsContext';
 import { SUB_STATUS } from '../../constants/complaintStatus';
 import { usePagination } from '../../hooks/usePagination';
 import { downloadComplaintsExcel } from '../../utils/exportUtils';
-import { needsHeadAction, headActionReason } from './registryHeadQueue';
+import { needsHeadAction, headActionReason, needsNumberAssignment, needsAdmissibilityAssignment } from './registryHeadQueue';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
+import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
+
+// "New Complaints" means "the earliest stage a complaint sits in, waiting for the first real
+// human action" — and what that first action actually is depends on whether complaint numbers
+// are assigned automatically or manually (Settings > Complaint Numbering). With auto-numbering
+// on, that stage is instant, so the first real wait is for an admissibility officer; with it
+// off, the first wait is still for the number itself. Keeping this in sync with the toggle
+// (rather than hardcoding one definition) is what makes the tab non-empty in both modes.
+const NEW_FILTER_COPY = {
+  auto: { title: 'New Complaints', subtitle: 'Numbered complaints that still need an admissibility officer assigned.' },
+  manual: { title: 'New Complaints', subtitle: 'Complaints awaiting a complaint number to be assigned.' },
+};
 
 const FILTER_COPY = {
   all: { title: 'Complaints', subtitle: 'See the list of filed complaints below.' },
-  new: { title: 'New Complaints', subtitle: 'Complaints awaiting their first action, assign a complaint number to get started.' },
   treated: { title: 'Treated Complaints', subtitle: 'Complaints that have been fully investigated and closed.' },
   'needs-action': { title: 'Needs My Action', subtitle: 'Every complaint currently waiting on you, at any stage of the pipeline.' },
 };
 
-function filterComplaints(complaints, filter) {
-  if (filter === 'new') return complaints.filter((c) => c.subStatus === SUB_STATUS.NEW);
+function filterComplaints(complaints, filter, complaintNumberAuto) {
+  if (filter === 'new') return complaints.filter(complaintNumberAuto ? needsAdmissibilityAssignment : needsNumberAssignment);
   if (filter === 'treated') return complaints.filter((c) => c.subStatus === SUB_STATUS.CLOSED);
   if (filter === 'needs-action') return complaints.filter(needsHeadAction);
   return complaints;
@@ -47,7 +58,9 @@ function matchesSearch(complaint, search) {
 
 export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
   const { user } = useAuth();
-  const { complaints } = useComplaints();
+  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
+  const { complaints, complaintNumberAuto } = useComplaints();
   const [showMakeComplaint, setShowMakeComplaint] = useState(false);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState('list');
@@ -55,16 +68,16 @@ export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [populationFilter, setPopulationFilter] = useState('all');
   const [keyGroupFilter, setKeyGroupFilter] = useState('all');
-  const copy = FILTER_COPY[filter] || FILTER_COPY.all;
-  const filteredComplaints = filterComplaints(complaints, filter)
+  const copy = filter === 'new' ? NEW_FILTER_COPY[complaintNumberAuto ? 'auto' : 'manual'] : (FILTER_COPY[filter] || FILTER_COPY.all);
+  const filteredComplaints = filterComplaints(complaints, filter, complaintNumberAuto)
     .filter((c) => matchesSearch(c, search))
     .filter((c) => matchesStatusFilter(c, statusFilter))
     .filter((c) => matchesCategoryFilter(c, categoryFilter))
     .filter((c) => matchesPopulationFilter(c, populationFilter, keyGroupFilter));
-  const pagination = usePagination(filteredComplaints, 10, `${filter}|${search}|${statusFilter}|${categoryFilter}|${populationFilter}|${keyGroupFilter}`);
+  const pagination = usePagination(filteredComplaints, 10, `${filter}|${complaintNumberAuto}|${search}|${statusFilter}|${categoryFilter}|${populationFilter}|${keyGroupFilter}`);
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={user || registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser}>
       <PageHeader
         title={copy.title}
         subtitle={copy.subtitle}
@@ -100,7 +113,7 @@ export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
       {viewMode === 'list' ? (
         <ComplaintsTable
           complaints={pagination.pageItems}
-          getActionHref={(c) => `/registry-head/complaints/${c.id}`}
+          getActionHref={(c) => `${detailBase}/${c.id}`}
           getReason={filter === 'needs-action' ? headActionReason : undefined}
         />
       ) : (

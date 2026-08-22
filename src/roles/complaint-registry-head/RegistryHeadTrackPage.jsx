@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, X, Users } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -8,6 +9,10 @@ import EmptyState from '../../components/ui/EmptyState';
 import StatusBadge from '../../components/ui/StatusBadge';
 import StageTracker from '../../components/ui/StageTracker';
 import Pagination from '../../components/ui/Pagination';
+import FormField from '../../components/ui/FormField';
+import TextArea from '../../components/ui/TextArea';
+import Modal from '../../components/ui/Modal';
+import SuccessModal from '../../components/ui/SuccessModal';
 import HeroPersonCard from '../../components/complaints/HeroPersonCard';
 import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
 import ComplaintListFilters, {
@@ -18,9 +23,35 @@ import ComplaintListFilters, {
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { usePagination } from '../../hooks/usePagination';
+import { SUB_STATUS } from '../../constants/complaintStatus';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
-import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
+import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE, ROLE_BOTTOM_NAV, ROLE_MOBILE_CLASS } from '../roleNavMap';
 import { scopeComplaintsForUser } from '../scopeComplaints';
+
+const NOT_WITHDRAWABLE = [SUB_STATUS.RESOLVED, SUB_STATUS.CLOSED, SUB_STATUS.WITHDRAWN];
+
+function WithdrawModal({ open, onClose, onConfirm }) {
+  const [reason, setReason] = useState('');
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!reason.trim()) return;
+    onConfirm(reason.trim());
+    setReason('');
+  };
+  return (
+    <Modal open={open} onClose={onClose} title="Withdraw This Complaint?" width="440px">
+      <form onSubmit={handleSubmit}>
+        <p className="modal-description">This cannot be undone. Let us know why you're withdrawing it.</p>
+        <FormField label="Reason" required>
+          <TextArea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Matter resolved directly with the other party" />
+        </FormField>
+        <div className="modal-actions">
+          <Button type="submit" variant="submit" disabled={!reason.trim()}>Withdraw Complaint</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
 
 function matchesSearch(complaint, search) {
   if (!search) return true;
@@ -35,11 +66,17 @@ function matchesSearch(complaint, search) {
 export default function RegistryHeadTrackPage() {
   const { user } = useAuth();
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
-  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
-  const { complaints: allComplaints } = useComplaints();
+  const bottomNavItems = ROLE_BOTTOM_NAV[user?.role];
+  const mobileClassName = ROLE_MOBILE_CLASS[user?.role];
+  const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role];
+  const isComplainant = user?.role === 'complainant';
+  const { complaints: allComplaints, withdrawComplaint } = useComplaints();
   const complaints = useMemo(() => scopeComplaintsForUser(allComplaints, user), [allComplaints, user]);
   const [selectedId, setSelectedId] = useState('');
   const [showActivityLog, setShowActivityLog] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -50,6 +87,19 @@ export default function RegistryHeadTrackPage() {
   const [searchCollapsed, setSearchCollapsed] = useState(false);
 
   const complaint = complaints.find((c) => c.id === selectedId);
+
+  // Deep-link support: a shared page like the Complainant Dashboard's "Track" link can jump
+  // straight to a specific complaint via ?id=, instead of everyone landing on the bare search
+  // panel. Only preselects on mount/param-change — the collapse can still be undone with "Search
+  // again" like any other selection.
+  useEffect(() => {
+    const queryId = searchParams.get('id');
+    if (queryId && complaints.some((c) => c.id === queryId)) {
+      setSelectedId(queryId);
+      setSearchCollapsed(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const results = useMemo(() => {
     return complaints
@@ -67,8 +117,14 @@ export default function RegistryHeadTrackPage() {
     setSearchCollapsed(true);
   };
 
+  const handleWithdrawConfirm = (reason) => {
+    withdrawComplaint(complaint.id, reason);
+    setShowWithdraw(false);
+    setWithdrawSuccess(true);
+  };
+
   return (
-    <AppShell navItems={navItems} user={user || registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser} bottomNavItems={bottomNavItems} mobileClassName={mobileClassName}>
       <PageHeader title="Track Complaint" subtitle="Search or filter for a filed complaint to check its progress." />
 
       {searchCollapsed && complaint ? (
@@ -142,9 +198,16 @@ export default function RegistryHeadTrackPage() {
               </div>
             </div>
             <div className="track-detail-header-actions">
-              <Button variant="secondary" to={`${detailBase}/${complaint.id}`}>
-                View Complaint
-              </Button>
+              {detailBase && (
+                <Button variant="secondary" to={`${detailBase}/${complaint.id}`}>
+                  View Complaint
+                </Button>
+              )}
+              {isComplainant && !NOT_WITHDRAWABLE.includes(complaint.subStatus) && (
+                <Button variant="secondary" onClick={() => setShowWithdraw(true)}>
+                  Withdraw Complaint
+                </Button>
+              )}
               <button type="button" className="track-clear-btn" onClick={() => { setSelectedId(''); setSearchCollapsed(false); }} aria-label="Clear selection">
                 <X size={16} />
               </button>
@@ -177,6 +240,17 @@ export default function RegistryHeadTrackPage() {
         activityLog={complaint?.activityLog || []}
         documents={complaint?.documents}
       />
+
+      {isComplainant && (
+        <>
+          <WithdrawModal open={showWithdraw} onClose={() => setShowWithdraw(false)} onConfirm={handleWithdrawConfirm} />
+          <SuccessModal
+            open={withdrawSuccess}
+            message="Your complaint has been withdrawn."
+            onClose={() => { setWithdrawSuccess(false); setSelectedId(''); setSearchCollapsed(false); }}
+          />
+        </>
+      )}
     </AppShell>
   );
 }

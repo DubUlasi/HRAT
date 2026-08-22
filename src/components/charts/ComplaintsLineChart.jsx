@@ -9,7 +9,9 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { TrendingUp } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
+import ChartEmptyState from './ChartEmptyState';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
 
@@ -108,9 +110,11 @@ export default function ComplaintsLineChart({ data, compareData, compareLabel })
     },
   }), [tooltipBg, tooltipText, axisTextColor, gridColor]);
 
+  const isEmpty = data.every((d) => !d.value) && (!compareData || compareData.every((d) => !d.value));
+
   return (
     <div className="complaints-line-chart">
-      <Line ref={chartRef} data={chartData} options={options} />
+      {isEmpty ? <ChartEmptyState icon={TrendingUp} message="No complaints in this range." /> : <Line ref={chartRef} data={chartData} options={options} />}
     </div>
   );
 }

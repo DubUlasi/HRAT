@@ -7,7 +7,7 @@ import { LayoutDashboard, Inbox, FileText, Search, TrendingUp, FileBarChart, Hel
 // complaint's own detail page here, per the Registry Head/Director/ES-only scoping decision.
 export const departmentInvestigatorNavItems = [
   { to: '/department-investigator', icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/department-investigator/cases', icon: Inbox, label: 'Active Investigations', end: true, section: 'Complaints' },
+  { to: '/department-investigator/cases', icon: Inbox, label: 'Active Cases', end: true, section: 'Complaints' },
   { to: '/department-investigator/complaints', icon: FileText, label: 'All Complaints', end: true, section: 'Complaints' },
   { to: '/registry-head/flagged', icon: Flag, label: 'Flagged Complaints', section: 'Complaints' },
   { to: '/registry-head/track', icon: Search, label: 'Track Complaint', section: 'Insights' },

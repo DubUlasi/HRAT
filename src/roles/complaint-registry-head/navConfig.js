@@ -16,8 +16,8 @@ export const registryHeadNavItems = [
   { to: '/registry-head/flagged', icon: Flag, label: 'Flagged Complaints', section: 'Complaints' },
   { to: '/registry-head/repeat-offenders', icon: AlertOctagon, label: 'Repeat Violators', section: 'Complaints' },
   { to: '/registry-head/track', icon: Search, label: 'Track Complaint', section: 'Insights' },
-  { to: '/registry-head/reports', icon: FileBarChart, label: 'Reports', section: 'Insights' },
   { to: '/registry-head/business-intelligence', icon: TrendingUp, label: 'Business Intelligence', section: 'Insights' },
+  { to: '/registry-head/reports', icon: FileBarChart, label: 'Reports', section: 'Insights' },
   { to: '/registry-head/help', icon: HelpCircle, label: 'Help', section: 'Support' },
   { to: '/registry-head/settings', icon: Settings, label: 'Settings', section: 'Support' },
 ];

@@ -66,7 +66,7 @@ function groupNavItems(navItems) {
 export default function Sidebar({ navItems, user, collapsed = false, onToggleCollapsed, logoHref = '/', logoSrc = '/hrat_nhrc_logo.png', mobileOpen = false, onCloseMobile }) {
   const { isDark, toggleTheme } = useTheme();
   const { logout } = useAuth();
-  const { complaints } = useComplaints();
+  const { complaints, complaintNumberAuto } = useComplaints();
   const navigate = useNavigate();
   const location = useLocation();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -81,7 +81,7 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
   const activeTo = resolveActiveNavPath(navItems, location.pathname, location.state?.from);
   // Reuses each role's own existing "needs action" predicates (see navBadgeCounts.js) so this
   // number never drifts out of sync with what the dashboard/queue page itself counts.
-  const badgeCounts = useMemo(() => getNavBadgeCounts(user, complaints), [user, complaints]);
+  const badgeCounts = useMemo(() => getNavBadgeCounts(user, complaints, complaintNumberAuto), [user, complaints, complaintNumberAuto]);
   const badgeFor = (path) => (badgeCounts[path] > 0 ? <span className="nav-count-badge">{badgeCounts[path]}</span> : null);
 
   return (

@@ -1,0 +1,459 @@
+/* ============================================================
+   Complainant Portal — Mobile-first Responsive Styles
+   Applied via AppShell's bottomNavItems/mobileClassName props, gated behind the
+   .complainant-mobile-view wrapper class so this is entirely inert for every other role.
+   Every color below reads from theme.css tokens so it responds to dark/light mode like the
+   rest of the app — the one thing the original version of this layout got wrong.
+   ============================================================ */
+
+/* ─── Bottom Tab Bar (visible ≤768px only) ──────────────────── */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  background-color: var(--sidebar-bg);
+  border-top: 1px solid var(--sidebar-border);
+  padding: 6px 0 env(safe-area-inset-bottom, 8px);
+  box-shadow: 0 -4px 20px rgba(16, 24, 40, 0.06);
+}
+
+.mobile-bottom-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.mobile-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-bottom-nav-item.active {
+  color: var(--accent-color);
+}
+
+.mobile-bottom-nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ─── Mobile-only section toggles (hidden on desktop by default) ─── */
+.complainant-mobile-hero,
+.complainant-mobile-complaints,
+.mobile-report-btn,
+.complainant-mobile-only {
+  display: none;
+}
+
+/* ============================================================
+   @media ≤768px — Activate mobile layout
+   ============================================================ */
+@media (max-width: 768px) {
+
+  .mobile-bottom-nav {
+    display: block;
+  }
+
+  /* ─── Sidebar hide, padding adjust, bottom-nav clearance ─── */
+  .complainant-mobile-view .sidebar {
+    transform: translateX(-100%) !important;
+  }
+
+  .complainant-mobile-view .sidebar-collapse-btn,
+  .complainant-mobile-view .mobile-menu-btn {
+    display: none !important;
+  }
+
+  .complainant-mobile-view .main-content,
+  .complainant-mobile-view .main-content.sidebar-collapsed {
+    margin-left: 0 !important;
+    padding: 16px 16px 80px 16px !important;
+    gap: 16px !important;
+  }
+
+  /* ─── Dashboard: mobile hero + card list replace the desktop layout ─── */
+  .complainant-mobile-hero,
+  .complainant-mobile-complaints,
+  .mobile-report-btn,
+  .complainant-mobile-only {
+    display: block;
+  }
+
+  .complainant-mobile-view:has(.complainant-mobile-hero) .main-content,
+  .complainant-mobile-view:has(.complainant-mobile-hero) .main-content.sidebar-collapsed {
+    padding: 0 0 80px 0 !important;
+    gap: 0 !important;
+  }
+
+  .complainant-desktop-header,
+  .complainant-desktop-hero,
+  .complainant-desktop-stage-card,
+  .complainant-desktop-table,
+  .complainant-desktop-card {
+    display: none !important;
+  }
+
+  /* ─── Page header, filter toolbar, forms — stack vertically ─── */
+  .complainant-mobile-view .content-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .complainant-mobile-view .content-header .header-actions {
+    width: 100%;
+  }
+
+  .complainant-mobile-view .content-header .header-actions .btn.primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .complainant-mobile-view .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .complainant-mobile-view .filter-toolbar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .complainant-mobile-view .filter-toolbar .search-bar,
+  .complainant-mobile-view .filter-toolbar .select-wrap {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  /* ─── Touch-friendly sizing ─── */
+  .complainant-mobile-view .categories-card {
+    border-radius: 12px;
+  }
+
+  .complainant-mobile-view .form-field-input,
+  .complainant-mobile-view .form-field-textarea {
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+  }
+
+  .complainant-mobile-view h1 {
+    font-size: 22px !important;
+  }
+
+  .complainant-mobile-view .hero-banner-card {
+    border-radius: 12px;
+    padding: 20px 16px;
+  }
+
+  .complainant-mobile-view .hero-banner-title {
+    font-size: 20px;
+  }
+
+  .complainant-mobile-view .hero-stats-matrix {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .complainant-mobile-view .hero-matrix-divider {
+    display: none;
+  }
+
+  /* ─── Modals — full screen overlay on mobile ─── */
+  .complainant-mobile-view .modal-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ─── Mobile Hero Card (Dashboard) ─── */
+  .mobile-hero-card {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--text-brand) 100%);
+    padding: 24px 20px 20px;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mobile-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .mobile-hero-avatar,
+  .mobile-hero-avatar-placeholder {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .mobile-hero-avatar {
+    object-fit: cover;
+  }
+
+  .mobile-hero-avatar-placeholder {
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .mobile-hero-greeting {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 4px;
+  }
+
+  .mobile-hero-greeting h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+  }
+
+  .mobile-hero-greeting p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    font-weight: 400;
+  }
+
+  .mobile-hero-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 14px 8px;
+    margin-top: 18px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .mobile-hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .mobile-hero-stat-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+  }
+
+  .mobile-hero-stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1;
+  }
+
+  .mobile-hero-stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .mobile-report-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-report-btn:active {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  /* ─── Recent Complaints Section (Dashboard) ─── */
+  .mobile-complaints-section {
+    padding: 20px 16px 24px;
+  }
+
+  .mobile-complaints-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .mobile-complaints-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .mobile-complaints-header a {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mobile-complaint-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-complaint-card:active {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 12px rgba(7, 148, 85, 0.10);
+  }
+
+  .mobile-complaint-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .mobile-complaint-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobile-complaint-card-chevron {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .mobile-complaint-card-meta {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .mobile-complaint-card-meta strong {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .mobile-complaint-progress {
+    height: 5px;
+    background-color: var(--toggle-bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .mobile-complaint-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .mobile-complaint-progress-fill.green { background-color: var(--accent-color); }
+  .mobile-complaint-progress-fill.yellow { background-color: var(--warning-color); }
+  .mobile-complaint-progress-fill.blue { background-color: var(--info-color); }
+
+  /* ─── Track drawer — full-width overlay on mobile ─── */
+  .complainant-mobile-view .track-drawer-overlay,
+  .complainant-mobile-view .drawer-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ─── Settings — stack sections vertically ─── */
+  .complainant-mobile-view .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ============================================================
+   @media ≤480px — Extra small screen tweaks
+   ============================================================ */
+@media (max-width: 480px) {
+  .complainant-mobile-view .main-content,
+  .complainant-mobile-view .main-content.sidebar-collapsed {
+    padding: 12px 12px 80px 12px !important;
+    gap: 12px !important;
+  }
+
+  .complainant-mobile-view .categories-card {
+    padding: 14px !important;
+  }
+
+  .mobile-hero-greeting h2 {
+    font-size: 21px;
+  }
+
+  .mobile-hero-stats {
+    padding: 12px 4px;
+  }
+
+  .mobile-hero-stat-value {
+    font-size: 18px;
+  }
+}

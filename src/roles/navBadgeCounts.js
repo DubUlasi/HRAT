@@ -1,5 +1,5 @@
 import { SUB_STATUS } from '../constants/complaintStatus';
-import { needsHeadAction } from './complaint-registry-head/registryHeadQueue';
+import { needsHeadAction, needsNumberAssignment, needsAdmissibilityAssignment } from './complaint-registry-head/registryHeadQueue';
 import { needsDeskOfficerAction } from './complaint-registry-desk-officer/deskOfficerQueue';
 import { needsDeptReview, needsAssignment, needsFinalReview } from './department-director/directorQueue';
 import { needsInvestigatorAssignment, needsFindingsReview } from './department-supervisor/supervisorQueue';
@@ -10,7 +10,7 @@ import { isMyActiveCase } from './department-investigator/investigatorQueue';
 // supervisorQueue.js / investigatorQueue.js) so the sidebar number always agrees with whatever
 // that same predicate already drives on the dashboard/queue page itself — never a second,
 // slightly-different count computed from scratch here.
-export function getNavBadgeCounts(user, complaints) {
+export function getNavBadgeCounts(user, complaints, complaintNumberAuto) {
   if (!user || !complaints) return {};
   const officerId = user.officerId;
   const departmentId = user.departmentId;
@@ -19,7 +19,7 @@ export function getNavBadgeCounts(user, complaints) {
     case 'registry-head':
       return {
         '/registry-head/complaints/needs-action': complaints.filter(needsHeadAction).length,
-        '/registry-head/complaints/new': complaints.filter((c) => c.subStatus === SUB_STATUS.NEW).length,
+        '/registry-head/complaints/new': complaints.filter(complaintNumberAuto ? needsAdmissibilityAssignment : needsNumberAssignment).length,
       };
 
     case 'desk-officer':

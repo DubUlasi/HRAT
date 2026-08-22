@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { TrendingUp, FileBarChart, ArrowRight, Gavel, AlertOctagon, AlertTriangle, FileText } from 'lucide-react';
+import { TrendingUp, FileBarChart, Gavel, AlertOctagon, AlertTriangle, FileText } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import HeroBanner from '../../components/dashboard/HeroBanner';
 import QuickTrackerBlob from '../../components/dashboard/QuickTrackerBlob';
+import QuickLinksGrid from '../../components/dashboard/QuickLinksGrid';
 import ActionQueueList from '../../components/dashboard/ActionQueueList';
 import Button from '../../components/ui/Button';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
@@ -73,24 +73,13 @@ export default function ESDashboardPage() {
         ]}
       />
 
-      <div className="es-quick-links">
-        <Link to="/registry-head/business-intelligence" className="es-quick-link-card">
-          <div className="es-quick-link-icon"><TrendingUp size={18} /></div>
-          <div>
-            <h3>Business Intelligence</h3>
-            <p>Registry-wide trends, cycle times, and office/department performance.</p>
-          </div>
-          <ArrowRight size={16} />
-        </Link>
-        <Link to="/registry-head/reports" className="es-quick-link-card">
-          <div className="es-quick-link-icon"><FileBarChart size={18} /></div>
-          <div>
-            <h3>Custom Reports</h3>
-            <p>Build a report from any combination of filters and download it.</p>
-          </div>
-          <ArrowRight size={16} />
-        </Link>
-      </div>
+      <QuickLinksGrid
+        title="Quick Links"
+        links={[
+          { to: '/registry-head/business-intelligence', icon: TrendingUp, accent: 'info', title: 'Business Intelligence', description: 'Registry-wide trends, cycle times, and office/department performance.' },
+          { to: '/registry-head/reports', icon: FileBarChart, accent: 'violet', title: 'Custom Reports', description: 'Build a report from any combination of filters and download it.' },
+        ]}
+      />
 
       <ActionQueueList
         title="Needs Your Action"

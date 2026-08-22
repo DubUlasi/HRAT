@@ -16,6 +16,17 @@ function isInScope(complaint, user) {
       return complaint.supervisorId === user.officerId;
     case 'department-investigator':
       return complaint.investigatorId === user.officerId;
+    // ICT Personnel has zero complaint access, by design — explicit false rather than falling
+    // through to the default "sees everything" a genuinely new/unrecognized role would get.
+    case 'ict-personnel':
+      return false;
+    // A complainant only ever sees their own case(s), matched against their own session
+    // identity (email, and phone as a secondary signal) rather than anything guessable.
+    case 'complainant':
+      return (
+        complaint.victim?.email?.toLowerCase() === user.email?.toLowerCase()
+        || (!!user.phone && complaint.victim?.phone === user.phone)
+      );
     default:
       return true;
   }
@@ -34,7 +45,7 @@ export function userCanViewComplaint(complaint, user) {
 // Investigator only ever see the repeat-violator flag inline on a complaint's own detail page,
 // per the explicit scoping decision (mirrored by the /registry-head/repeat-offenders routes in
 // App.jsx and the "View Full History" button in RelatedComplaintsPanel).
-export const REPEAT_VIOLATOR_ROLES = ['registry-head', 'department-director', 'executive-secretary'];
+export const REPEAT_VIOLATOR_ROLES = ['registry-head', 'department-director', 'executive-secretary', 'ict-head'];
 
 // getRepeatOffenders() (ComplaintsContext) groups across every complaint in the system —
 // re-scopes that down to what the current role can actually see, dropping a violator entirely

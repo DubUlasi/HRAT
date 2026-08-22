@@ -15,7 +15,7 @@ import { useComplaints } from '../../context/ComplaintsContext';
 import { useTheme } from '../../hooks/useTheme';
 import { SUB_STATUS } from '../../constants/complaintStatus';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
-import { ROLE_NAV_ITEMS } from '../roleNavMap';
+import { ROLE_NAV_ITEMS, ROLE_BOTTOM_NAV, ROLE_MOBILE_CLASS } from '../roleNavMap';
 
 const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
 
@@ -26,6 +26,9 @@ const ROLE_LABELS = {
   'department-supervisor': 'Department Supervisor',
   'department-investigator': 'Department Investigation Officer',
   'executive-secretary': 'Executive Secretary',
+  'ict-head': 'ICT Head',
+  'ict-personnel': 'ICT Personnel',
+  'complainant': 'Complainant',
 };
 
 export default function RegistryHeadSettingsPage() {
@@ -46,6 +49,8 @@ export default function RegistryHeadSettingsPage() {
   const person = user || registryHeadUser;
   const officerId = person.officerId;
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
+  const bottomNavItems = ROLE_BOTTOM_NAV[user?.role];
+  const mobileClassName = ROLE_MOBILE_CLASS[user?.role];
   // Only the Registry Head owns the numbering scheme; the fallback demo profile has no role at
   // all and stands in for that same seat, so it's treated as one too.
   const isRegistryHead = !person.role || person.role === 'registry-head';
@@ -101,7 +106,7 @@ export default function RegistryHeadSettingsPage() {
   };
 
   return (
-    <AppShell navItems={navItems} user={person}>
+    <AppShell navItems={navItems} user={person} bottomNavItems={bottomNavItems} mobileClassName={mobileClassName}>
       <PageHeader title="Settings" subtitle="Your profile, role details, and preferences." />
 
       <div className="settings-profile-banner">
@@ -176,31 +181,33 @@ export default function RegistryHeadSettingsPage() {
         </div>
       </div>
 
-      <div className="categories-card" style={{ marginTop: 14 }}>
-        <h2>Case Load</h2>
-        <div className="settings-caseload-grid">
-          <div className="stat-card accent-info">
-            <div className="stat-card-icon"><FileText size={16} /></div>
-            <h3>New</h3>
-            <div className="value">{newCount}</div>
-          </div>
-          <div className="stat-card accent-warning">
-            <div className="stat-card-icon"><Clock size={16} /></div>
-            <h3>Active</h3>
-            <div className="value">{activeCount}</div>
-          </div>
-          <div className="stat-card accent-accent">
-            <div className="stat-card-icon"><CheckCircle2 size={16} /></div>
-            <h3>Closed</h3>
-            <div className="value">{closedCount}</div>
-          </div>
-          <div className="stat-card accent-violet">
-            <div className="stat-card-icon"><Briefcase size={16} /></div>
-            <h3>Total Handled</h3>
-            <div className="value">{myComplaints.length}</div>
+      {!!officerId && (
+        <div className="categories-card" style={{ marginTop: 14 }}>
+          <h2>Case Load</h2>
+          <div className="settings-caseload-grid">
+            <div className="stat-card accent-info">
+              <div className="stat-card-icon"><FileText size={16} /></div>
+              <h3>New</h3>
+              <div className="value">{newCount}</div>
+            </div>
+            <div className="stat-card accent-warning">
+              <div className="stat-card-icon"><Clock size={16} /></div>
+              <h3>Active</h3>
+              <div className="value">{activeCount}</div>
+            </div>
+            <div className="stat-card accent-accent">
+              <div className="stat-card-icon"><CheckCircle2 size={16} /></div>
+              <h3>Closed</h3>
+              <div className="value">{closedCount}</div>
+            </div>
+            <div className="stat-card accent-violet">
+              <div className="stat-card-icon"><Briefcase size={16} /></div>
+              <h3>Total Handled</h3>
+              <div className="value">{myComplaints.length}</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {isRegistryHead && (
         <ComplaintNumberFormatCard

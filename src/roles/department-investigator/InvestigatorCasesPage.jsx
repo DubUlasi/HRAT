@@ -45,8 +45,8 @@ export default function InvestigatorCasesPage() {
 
   return (
     <AppShell navItems={departmentInvestigatorNavItems} user={user}>
-      <PageHeader title="Active Investigations" subtitle="Complaints currently assigned to you that need investigation work."
-        actions={<DownloadCsvButton onDownload={() => downloadComplaintsExcel(rows, 'Active Investigations')} disabled={!rows.length} />}
+      <PageHeader title="Active Cases" subtitle="Complaints currently assigned to you that need investigation work."
+        actions={<DownloadCsvButton onDownload={() => downloadComplaintsExcel(rows, 'Active Cases')} disabled={!rows.length} />}
       />
 
       <div className="filter-toolbar">

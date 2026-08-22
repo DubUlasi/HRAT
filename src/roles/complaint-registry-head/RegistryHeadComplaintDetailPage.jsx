@@ -21,6 +21,8 @@ import { downloadComplaintReport } from '../../utils/exportUtils';
 import { SUB_STATUS, stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices, departments } from '../../data/mockOfficers';
+import { hasCapability } from '../../data/rolePermissions';
+import { ROLE_NAV_ITEMS } from '../roleNavMap';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import AssignRegistryOfficerModal from './modals/AssignRegistryOfficerModal';
 import ConfirmAdmissibilityCheckModal from './modals/ConfirmAdmissibilityCheckModal';
@@ -56,6 +58,8 @@ const SUCCESS_COPY = {
 export default function RegistryHeadComplaintDetailPage() {
   const { complaintId } = useParams();
   const { user } = useAuth();
+  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
+  const canManagePipeline = hasCapability(user?.role, 'manage_complaint_pipeline');
   const {
     getComplaintById,
     findRelatedComplaints,
@@ -78,9 +82,9 @@ export default function RegistryHeadComplaintDetailPage() {
 
   if (!complaint) {
     return (
-      <AppShell navItems={registryHeadNavItems} user={user || registryHeadUser}>
+      <AppShell navItems={navItems} user={user || registryHeadUser}>
         <div className="detail-top-nav-bar">
-          <BackButton navItems={registryHeadNavItems} fallbackTo="/registry-head/complaints" />
+          <BackButton navItems={navItems} fallbackTo="/registry-head/complaints" />
         </div>
         <h1>Complaint not found</h1>
         <p>This complaint may have been removed or the link is incorrect.</p>
@@ -127,6 +131,7 @@ export default function RegistryHeadComplaintDetailPage() {
   const departmentName = departments.find((d) => d.id === complaint.department)?.name;
 
   const renderActionButton = () => {
+    if (!canManagePipeline) return null;
     switch (complaint.subStatus) {
       case SUB_STATUS.NEW:
         return (
@@ -179,9 +184,9 @@ export default function RegistryHeadComplaintDetailPage() {
   const isRepeatViolator = findRelatedComplaints(complaint.id).length > 0;
 
   return (
-    <AppShell navItems={registryHeadNavItems} user={user || registryHeadUser}>
+    <AppShell navItems={navItems} user={user || registryHeadUser}>
       <div className="detail-top-nav-bar">
-        <BackButton navItems={registryHeadNavItems} fallbackTo="/registry-head/complaints" />
+        <BackButton navItems={navItems} fallbackTo="/registry-head/complaints" />
         <DownloadCsvButton onDownload={() => downloadComplaintReport(complaint)} label="Download Report" />
       </div>
 
@@ -237,9 +242,11 @@ export default function RegistryHeadComplaintDetailPage() {
 
         <div className="hero-actions-row">
           {actionButton}
-          <Button variant="secondary" icon={Flag} onClick={() => setShowFlagModal(true)}>
-            {complaint.flagged ? 'Remove Flag' : 'Flag Complaint'}
-          </Button>
+          {canManagePipeline && (
+            <Button variant="secondary" icon={Flag} onClick={() => setShowFlagModal(true)}>
+              {complaint.flagged ? 'Remove Flag' : 'Flag Complaint'}
+            </Button>
+          )}
         </div>
 
         <div className="hero-people-section">

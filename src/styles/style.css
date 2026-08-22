@@ -545,6 +545,33 @@
   gap: 16px;
 }
 
+/* Business Intelligence's own stat strip — a fixed count per row instead of auto-fit, so the
+   grid reads as a deliberate 2-row layout rather than however many happen to fit at the current
+   width. 4 per row by default (also covers the 8-card case, which is just two full rows of 4);
+   the 6-card case (some roles don't get every stat) is the one count that looks better as two
+   rows of 3 than a lopsided 4+2, so it's special-cased via :has(). */
+.bi-stats-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.bi-stats-grid:has(> .stat-card:nth-child(6):last-child) {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .bi-stats-grid,
+  .bi-stats-grid:has(> .stat-card:nth-child(6):last-child) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .bi-stats-grid,
+  .bi-stats-grid:has(> .stat-card:nth-child(6):last-child) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-card {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
