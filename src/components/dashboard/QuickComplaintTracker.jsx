@@ -22,6 +22,9 @@ export default function QuickComplaintTracker() {
   const { user } = useAuth();
   const { complaints: allComplaints } = useComplaints();
   const complaints = useMemo(() => scopeComplaintsForUser(allComplaints, user), [allComplaints, user]);
+  // The complainant has no per-role complaint detail route of their own (see roleNavMap.js) —
+  // they view a case through the shared Track Complaint page instead, deep-linked via ?id=.
+  const isComplainant = user?.role === 'complainant';
   const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
   const [query, setQuery] = useState('');
   const searched = query.trim().length > 0;
@@ -75,7 +78,7 @@ export default function QuickComplaintTracker() {
               </div>
               <StatusBadge status={c.subStatus} />
               <ActionIconButton
-                to={`${detailBase}/${c.id}`}
+                to={isComplainant ? `/registry-head/track?id=${c.id}` : `${detailBase}/${c.id}`}
                 state={{ from: '/registry-head/track' }}
                 label={`View details for ${c.victim?.name || 'complaint'}`}
               />

@@ -84,6 +84,17 @@ export const mockUsers = [
     joinedDate: '2016-11-30',
   },
   {
+    id: 'user-super-admin',
+    email: 'pixels@example.com',
+    password: DEMO_PASSWORD,
+    role: 'super-admin',
+    name: 'Pixels',
+    avatarSrc: '/alicia.png',
+    phone: '+234 813 012 3456',
+    address: 'NHRC Headquarters, Plot 800, Blantyre Street, Maitama, Abuja, FCT',
+    joinedDate: '2015-06-01',
+  },
+  {
     id: 'user-ict-head',
     email: 'chidinma.obi@example.com',
     password: DEMO_PASSWORD,
@@ -116,6 +127,32 @@ export const mockUsers = [
     address: '18 Okonjo Street, Surulere, Lagos',
     joinedDate: '2024-01-09',
   },
+  {
+    id: 'user-state-coordinator',
+    email: 'aisha.bello@example.com',
+    password: DEMO_PASSWORD,
+    role: 'state-coordinator',
+    name: 'Aisha Bello',
+    avatarSrc: '/alicia.png',
+    officerId: 'coord-aisha',
+    officeId: 'lagos',
+    phone: '+234 814 123 4567',
+    address: 'Lagos State Office, Alausa, Ikeja, Lagos',
+    joinedDate: '2020-04-17',
+  },
+  {
+    id: 'user-state-personnel',
+    email: 'tunde.adebisi@example.com',
+    password: DEMO_PASSWORD,
+    role: 'state-personnel',
+    name: 'Tunde Adebisi',
+    avatarSrc: '/alicia.png',
+    officerId: 'sp-tunde',
+    officeId: 'lagos',
+    phone: '+234 815 234 5678',
+    address: 'Lagos State Office, Alausa, Ikeja, Lagos',
+    joinedDate: '2021-08-23',
+  },
 ];
 
 // Where each role lands after login — single source of truth for LoginPage + App.jsx routes.
@@ -129,4 +166,7 @@ export const ROLE_HOME = {
   'ict-head': '/ict-head',
   'ict-personnel': '/ict-personnel',
   'complainant': '/complainant',
+  'super-admin': '/super-admin',
+  'state-coordinator': '/state-coordinator',
+  'state-personnel': '/state-personnel',
 };

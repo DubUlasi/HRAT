@@ -488,32 +488,80 @@ export function ComplaintsProvider({ children }) {
   }, [updateComplaint, actorName]);
 
   // ── State Office detour (single-tier — see plan) ──
+  // Mirrors the Department Director → Supervisor → Investigator chain, just scoped to an office
+  // instead of a department: Registry Head sends a NEW complaint to a state office (below), the
+  // State Coordinator there assigns one State Personnel officer (assignStatePersonnel), that
+  // officer does the local review and submits (submitStateFindings), the Coordinator reviews it
+  // (stateCoordinatorReview) — satisfied resumes the normal head-office flow via
+  // returnFromStateOffice, not satisfied bounces it back to the same officer for more work. The
+  // complaint's subStatus stays SENT_TO_STATE_OFFICE for the whole detour; which of these
+  // sub-steps it's actually on is read off the `stateOffice` fields themselves, not a status.
 
   const reassignToStateOffice = useCallback((id, { officeId, remark }) => {
     updateComplaint(id, (c) => {
       let next = {
         ...c,
         subStatus: SUB_STATUS.SENT_TO_STATE_OFFICE,
-        stateOffice: { sentTo: officeId, sentAt: nowIso(), remark: remark || null, returnedAt: null },
+        stateOffice: {
+          sentTo: officeId, sentAt: nowIso(), remark: remark || null,
+          assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
+          submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+        },
       };
       next = pushActivity(next, `Reassigned to state office${remark ? `, "${remark}"` : ''}`, actorName);
       return next;
     });
   }, [updateComplaint, actorName]);
 
-  // Stub for the (separately built) State Coordinator/Personnel side to call once their local
-  // review is done — resumes the normal head-office flow exactly where it left off.
-  const returnFromStateOffice = useCallback((id) => {
+  // Resumes the normal head-office flow exactly where it left off — called by
+  // stateCoordinatorReview once the Coordinator is satisfied with the state personnel's work,
+  // not directly by the UI.
+  const returnFromStateOffice = useCallback((id, remark) => {
     updateComplaint(id, (c) => {
       let next = {
         ...c,
         subStatus: SUB_STATUS.NEW,
-        stateOffice: { ...c.stateOffice, returnedAt: nowIso() },
+        stateOffice: { ...c.stateOffice, returnedAt: nowIso(), reviewRemark: remark || null },
       };
-      next = pushActivity(next, 'Returned from state office', actorName);
+      next = pushActivity(next, `Returned from state office to head office${remark ? `, "${remark}"` : ''}`, actorName);
       return next;
     });
   }, [updateComplaint, actorName]);
+
+  // State Coordinator assigns a specific State Personnel officer at their own office — the
+  // state-level analog of assignInvestigator.
+  const assignStatePersonnel = useCallback((id, { personId, personName, remark }) => {
+    updateComplaint(id, (c) => pushActivity(
+      { ...c, stateOffice: { ...c.stateOffice, assignedPersonnelId: personId, assignedPersonnelName: personName, assignmentRemark: remark || null, assignedAt: nowIso() } },
+      `Assigned to state personnel officer, ${personName}${remark ? `, "${remark}"` : ''}`,
+      actorName
+    ));
+  }, [updateComplaint, actorName]);
+
+  // State Personnel submits their local findings once done — the state-level analog of
+  // submitInvestigationFindings, puts the case in front of the coordinator for review.
+  const submitStateFindings = useCallback((id, { findingSummary }) => {
+    updateComplaint(id, (c) => pushActivity(
+      { ...c, stateOffice: { ...c.stateOffice, submittedAt: nowIso(), findingSummary: findingSummary || null } },
+      'State personnel findings submitted for coordinator review',
+      actorName
+    ));
+  }, [updateComplaint, actorName]);
+
+  // State Coordinator reviews the personnel's submitted findings — the state-level analog of
+  // supervisorReview. Satisfied sends it back to head office for real, not satisfied bounces it
+  // back to the same personnel officer (findings cleared, assignment kept) for more work.
+  const stateCoordinatorReview = useCallback((id, { satisfied, remark }) => {
+    if (satisfied) {
+      returnFromStateOffice(id, remark);
+      return;
+    }
+    updateComplaint(id, (c) => pushActivity(
+      { ...c, stateOffice: { ...c.stateOffice, submittedAt: null, findingSummary: null, reviewRemark: remark || null } },
+      `Sent back to state personnel officer for more work${remark ? `, "${remark}"` : ''}`,
+      actorName
+    ));
+  }, [updateComplaint, actorName, returnFromStateOffice]);
 
   // ── Department Director ──
 
@@ -891,7 +939,11 @@ export function ComplaintsProvider({ children }) {
       supervisorReview: { remark: null, satisfied: null, reviewedAt: null },
       directorReview: { remark: null, action: null, reviewedAt: null },
       esEscalation: { escalated: false, note: null, escalatedBy: null, escalatedAt: null, resolved: false },
-      stateOffice: { sentTo: null, sentAt: null, remark: null, returnedAt: null },
+      stateOffice: {
+        sentTo: null, sentAt: null, remark: null,
+        assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
+        submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+      },
       council: { verdict: null, recommendation: null, decidedBy: null, decidedAt: null },
       flagged: false,
       flagReason: null,
@@ -928,6 +980,9 @@ export function ComplaintsProvider({ children }) {
     submitAdmissibilityDecision,
     reassignToStateOffice,
     returnFromStateOffice,
+    assignStatePersonnel,
+    submitStateFindings,
+    stateCoordinatorReview,
     directorReviewDepartment,
     assignSupervisor,
     assignInvestigator,
@@ -957,6 +1012,7 @@ export function ComplaintsProvider({ children }) {
     toggleComplaintFlag, withdrawComplaint, identifyViolator,
     assignComplaintNumberOfficer, assignAdmissibilityOfficer, confirmAdmissibilityCheck, assignToDepartment,
     processComplaintNumberAssignment, submitAdmissibilityDecision, reassignToStateOffice, returnFromStateOffice,
+    assignStatePersonnel, submitStateFindings, stateCoordinatorReview,
     directorReviewDepartment, assignSupervisor, assignInvestigator, logInvestigationActivity, updateInvestigationActivity,
     addActivityComment, updateActivityComment, updateInvestigationFinding, submitInvestigationFindings, supervisorReview, directorFinalReview,
     escalateToExecutiveSecretary, resolveEscalation, sendToCouncil, recordCouncilVerdict, councilReopenOrClose, createComplaint,

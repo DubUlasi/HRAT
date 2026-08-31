@@ -40,6 +40,23 @@ export const offices = [
   { id: 'rivers', name: 'Rivers State Office' },
 ];
 
+// `officeId` scopes each person to one state office (matches `offices[].id` above, excluding
+// 'hq' — the state office detour only ever routes to an actual state office), same pattern as
+// departmentSupervisors/investigationOfficers being scoped by departmentId.
+export const stateCoordinators = [
+  { id: 'coord-aisha', name: 'Aisha Bello', email: 'aisha.bello@example.com', officeId: 'lagos' },
+  { id: 'coord-ibrahim', name: 'Ibrahim Yusuf', email: 'ibrahim.yusuf@example.com', officeId: 'kano' },
+  { id: 'coord-chiamaka', name: 'Chiamaka Eze', email: 'chiamaka.eze@example.com', officeId: 'enugu' },
+  { id: 'coord-boma', name: 'Boma Wariboko', email: 'boma.wariboko@example.com', officeId: 'rivers' },
+];
+
+export const statePersonnel = [
+  { id: 'sp-tunde', name: 'Tunde Adebisi', email: 'tunde.adebisi@example.com', officeId: 'lagos' },
+  { id: 'sp-fatima', name: 'Fatima Sani', email: 'fatima.sani@example.com', officeId: 'kano' },
+  { id: 'sp-emeka', name: 'Emeka Okafor', email: 'emeka.okafor@example.com', officeId: 'enugu' },
+  { id: 'sp-preye', name: 'Preye Amachree', email: 'preye.amachree@example.com', officeId: 'rivers' },
+];
+
 export const departments = [
   { id: 'women-children', name: 'Women And Children' },
   { id: 'civil-political', name: 'Civil & Political Rights' },

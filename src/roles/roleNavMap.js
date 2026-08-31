@@ -7,6 +7,9 @@ import { executiveSecretaryNavItems } from './executive-secretary/navConfig';
 import { ictHeadNavItems } from './ict-head/navConfig';
 import { ictPersonnelNavItems } from './ict-personnel/navConfig';
 import { complainantNavItems, complainantBottomNav } from './complainant/navConfig';
+import { superAdminNavItems } from './super-admin/navConfig';
+import { stateCoordinatorNavItems } from './state-coordinator/navConfig';
+import { statePersonnelNavItems } from './state-personnel/navConfig';
 
 // Central lookup so pages reused across every role (Business Intelligence, Reports, Track
 // Complaint, Help, Settings) render whoever is actually logged in's OWN sidebar instead of
@@ -21,6 +24,9 @@ export const ROLE_NAV_ITEMS = {
   'ict-head': ictHeadNavItems,
   'ict-personnel': ictPersonnelNavItems,
   'complainant': complainantNavItems,
+  'super-admin': superAdminNavItems,
+  'state-coordinator': stateCoordinatorNavItems,
+  'state-personnel': statePersonnelNavItems,
 };
 
 // Only the Complainant role gets a mobile bottom tab bar (see AppShell.jsx) — shared pages like
@@ -49,4 +55,6 @@ export const ROLE_COMPLAINT_DETAIL_BASE = {
   'department-investigator': '/department-investigator/complaints',
   'executive-secretary': '/executive-secretary/complaints',
   'ict-head': '/ict-head/complaints',
+  'state-coordinator': '/state-coordinator/complaints',
+  'state-personnel': '/state-personnel/complaints',
 };

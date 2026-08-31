@@ -31,4 +31,7 @@ export const ROLE_LABELS_FOR_ADMIN = {
   'ict-head': 'ICT Head',
   'ict-personnel': 'ICT Personnel',
   'complainant': 'Complainant',
+  'super-admin': 'Super Admin',
+  'state-coordinator': 'State Coordinator',
+  'state-personnel': 'State Personnel',
 };

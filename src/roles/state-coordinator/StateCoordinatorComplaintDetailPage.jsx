@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, Building2, Briefcase, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw, Flag, UsersRound, Phone, Mail } from 'lucide-react';
+import { Calendar, Building2, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw, Flag, UsersRound, ClipboardCheck } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import Button from '../../components/ui/Button';
 import BackButton from '../../components/ui/BackButton';
@@ -9,70 +9,42 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import StageTracker from '../../components/ui/StageTracker';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import SuccessModal from '../../components/ui/SuccessModal';
+import AssignPersonModal from '../../components/complaints/AssignPersonModal';
 import HeroPersonCard from '../../components/complaints/HeroPersonCard';
 import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
 import RelatedComplaintsPanel from '../../components/complaints/RelatedComplaintsPanel';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import FlagComplaintModal from '../../components/complaints/FlagComplaintModal';
-import InvestigationActivitiesCard from '../../components/complaints/InvestigationActivitiesCard';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { downloadComplaintReport } from '../../utils/exportUtils';
-import { SUB_STATUS, stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
+import { stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
-import { offices, departments } from '../../data/mockOfficers';
-import { useRolePermissions } from '../../context/RolePermissionsContext';
-import { ROLE_NAV_ITEMS } from '../roleNavMap';
-import { registryHeadNavItems, registryHeadUser } from './navConfig';
-import AssignRegistryOfficerModal from './modals/AssignRegistryOfficerModal';
-import ConfirmAdmissibilityCheckModal from './modals/ConfirmAdmissibilityCheckModal';
-import AssignDepartmentModal from './modals/AssignDepartmentModal';
-import ReassignStateOfficeModal from './modals/ReassignStateOfficeModal';
+import { offices, statePersonnel } from '../../data/mockOfficers';
+import { needsPersonnelAssignment, needsCoordinatorReview } from './stateCoordinatorQueue';
+import { stateCoordinatorNavItems } from './navConfig';
+import { userCanViewComplaint, scopeComplaintsForUser } from '../scopeComplaints';
+import StateCoordinatorReviewModal from './modals/StateCoordinatorReviewModal';
 
 const CONFIRM_COPY = {
-  number: { description: 'You are assigning a complaint to a officer to input the complaint number' },
-  admissibility: { description: 'You are assigning a complaint to a officer to determine its admissibility' },
-  confirmAdmissibility: { description: 'Your response is permanent' },
-  department: { description: 'You are assigning a complaint to a department' },
-  reassignState: { description: 'The complaint moves out of the head-office queue until the state office sends it back.' },
-  sendToCouncil: { description: 'This is a one-way action, once sent to the Executive Secretary for council review, it cannot be sent back to the department.' },
+  assignPersonnel: { description: 'You are assigning this complaint to a state personnel officer for local review.' },
+  review: { description: 'Your response determines whether this goes back to head office or back to the personnel officer.' },
 };
 
 const STAGE_LABEL = {
-  number: 'Complaint Number Assignment',
-  admissibility: 'Admissibility Officer Assignment',
-  confirmAdmissibility: 'Admissibility Confirmation',
-  department: 'Department Assignment',
-  reassignState: 'State Office Reassignment',
+  assignPersonnel: 'State Personnel Assignment',
+  review: 'State Coordinator Review',
 };
 
 const SUCCESS_COPY = {
-  number: 'Assigned officer to assign complaint number successfully!',
-  admissibility: 'Assigned officer to check admissibility of complaint successfully!',
-  confirmAdmissibility: 'Response recorded successfully',
-  department: 'Complaint assigned to department successfully',
-  reassignState: 'Reassigned to state office successfully!',
-  sendToCouncil: 'Sent to the Executive Secretary for council review!',
+  assignPersonnel: 'Assigned to state personnel officer successfully!',
+  review: 'Review recorded successfully!',
 };
 
-export default function RegistryHeadComplaintDetailPage() {
+export default function StateCoordinatorComplaintDetailPage() {
   const { complaintId } = useParams();
   const { user } = useAuth();
-  const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
-  const { hasCapability } = useRolePermissions();
-  const canManagePipeline = hasCapability(user?.role, 'manage_complaint_pipeline');
-  const {
-    getComplaintById,
-    findRelatedComplaints,
-    attachDocuments,
-    toggleComplaintFlag,
-    assignComplaintNumberOfficer,
-    assignAdmissibilityOfficer,
-    confirmAdmissibilityCheck,
-    assignToDepartment,
-    reassignToStateOffice,
-    sendToCouncil,
-  } = useComplaints();
+  const { getComplaintById, findRelatedComplaints, attachDocuments, toggleComplaintFlag, assignStatePersonnel, stateCoordinatorReview } = useComplaints();
 
   const complaint = getComplaintById(complaintId);
   const [flow, setFlow] = useState({ type: null, step: null, payload: null });
@@ -81,40 +53,28 @@ export default function RegistryHeadComplaintDetailPage() {
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [flagSuccessMessage, setFlagSuccessMessage] = useState(null);
 
-  if (!complaint) {
+  if (!complaint || !userCanViewComplaint(complaint, user)) {
     return (
-      <AppShell navItems={navItems} user={user || registryHeadUser}>
+      <AppShell navItems={stateCoordinatorNavItems} user={user}>
         <div className="detail-top-nav-bar">
-          <BackButton navItems={navItems} fallbackTo="/registry-head/complaints" />
+          <BackButton navItems={stateCoordinatorNavItems} fallbackTo="/state-coordinator/incoming" />
         </div>
         <h1>Complaint not found</h1>
-        <p>This complaint may have been removed or the link is incorrect.</p>
+        <p>This complaint may have been removed, or you don't have access to it.</p>
       </AppShell>
     );
   }
 
-  const startFlow = (type) => setFlow({ type, step: 'input', payload: null });
+  const officeId = user?.officeId;
   const closeFlow = () => setFlow({ type: null, step: null, payload: null });
   const handleInputSubmit = (payload) => setFlow((f) => ({ ...f, step: 'confirm', payload }));
 
   const handleConfirm = () => {
     const { type, payload } = flow;
-    if (type === 'number') {
-      assignComplaintNumberOfficer(complaint.id, payload.personId, payload.personName, payload.remark);
-    } else if (type === 'admissibility') {
-      assignAdmissibilityOfficer(complaint.id, payload.personId, payload.personName, payload.remark);
-    } else if (type === 'confirmAdmissibility') {
-      confirmAdmissibilityCheck(complaint.id, { agree: payload.agree, remark: payload.remark });
-    } else if (type === 'department') {
-      assignToDepartment(complaint.id, {
-        office: payload.officeId,
-        department: payload.departmentId,
-        remark: payload.remark,
-      });
-    } else if (type === 'reassignState') {
-      reassignToStateOffice(complaint.id, { officeId: payload.officeId, remark: payload.remark });
-    } else if (type === 'sendToCouncil') {
-      sendToCouncil(complaint.id);
+    if (type === 'assignPersonnel') {
+      assignStatePersonnel(complaint.id, { personId: payload.personId, personName: payload.personName, remark: payload.remark });
+    } else if (type === 'review') {
+      stateCoordinatorReview(complaint.id, payload);
     }
     if (payload?.files?.length) {
       attachDocuments(complaint.id, payload.files, STAGE_LABEL[type] || null);
@@ -129,65 +89,29 @@ export default function RegistryHeadComplaintDetailPage() {
   };
 
   const officeName = offices.find((o) => o.id === complaint.office)?.name;
-  const departmentName = departments.find((d) => d.id === complaint.department)?.name;
+  const stateOfficeName = offices.find((o) => o.id === complaint.stateOffice?.sentTo)?.name;
+  const officePersonnel = statePersonnel.filter((p) => p.officeId === officeId);
 
   const renderActionButton = () => {
-    if (!canManagePipeline) return null;
-    switch (complaint.subStatus) {
-      case SUB_STATUS.NEW:
-        return (
-          <>
-            <Button variant="primary" onClick={() => startFlow('number')}>Assign For Complaint Number</Button>
-            <Button variant="secondary" onClick={() => startFlow('reassignState')}>Reassign To State Office</Button>
-          </>
-        );
-      case SUB_STATUS.SENT_TO_STATE_OFFICE:
-        return <span className="status-waiting-note">Awaiting return from the state office</span>;
-      case SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT:
-        if (complaint.complaintNumber) {
-          return <Button variant="primary" onClick={() => startFlow('admissibility')}>Assign For Admissibility Check</Button>;
-        }
-        return <span className="status-waiting-note">Awaiting Desk Officer to process the complaint number</span>;
-      case SUB_STATUS.ADMISSIBILITY_CHECK:
-        if (complaint.admissibility.decision) {
-          return <Button variant="primary" onClick={() => startFlow('confirmAdmissibility')}>Confirm Admissibility Check</Button>;
-        }
-        return <span className="status-waiting-note">Awaiting Desk Officer's admissibility decision</span>;
-      case SUB_STATUS.PRELIMINARY_INVESTIGATION:
-      case SUB_STATUS.DEPT_DIRECTOR_REVIEW:
-        if (!complaint.department) {
-          return <Button variant="primary" onClick={() => startFlow('department')}>Assign To Department</Button>;
-        }
-        return null;
-      case SUB_STATUS.DEPT_REJECTED:
-        return <Button variant="primary" onClick={() => startFlow('department')}>Re-assign To Department</Button>;
-      case SUB_STATUS.DEPT_COMPLETE:
-        return (
-          <Button variant="primary" onClick={() => setFlow({ type: 'sendToCouncil', step: 'confirm', payload: null })}>
-            Send To Council
-          </Button>
-        );
-      default:
-        return null;
+    if (needsPersonnelAssignment(complaint, officeId)) {
+      return <Button variant="primary" onClick={() => setFlow({ type: 'assignPersonnel', step: 'input', payload: null })}>Assign State Personnel Officer</Button>;
     }
+    if (needsCoordinatorReview(complaint, officeId)) {
+      return <Button variant="primary" onClick={() => setFlow({ type: 'review', step: 'input', payload: null })}>Review Findings</Button>;
+    }
+    return null;
   };
-
-  // Sorted by when the activity actually happened, not when it was typed into the system —
-  // older entries predating the happenedOn field fall back to their loggedAt.
-  const activities = [...(complaint.investigation.activities || [])].sort(
-    (a, b) => new Date(b.happenedOn || b.loggedAt) - new Date(a.happenedOn || a.loggedAt)
-  );
 
   const sortedActivity = [...complaint.activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const progressPct = stageProgressPercent(complaint.stageIndex);
   const actionButton = renderActionButton();
   const categoryColor = CATEGORY_COLOR[complaint.category] || 'info';
-  const isRepeatViolator = findRelatedComplaints(complaint.id).length > 0;
+  const isRepeatViolator = scopeComplaintsForUser(findRelatedComplaints(complaint.id), user).length > 0;
 
   return (
-    <AppShell navItems={navItems} user={user || registryHeadUser}>
+    <AppShell navItems={stateCoordinatorNavItems} user={user}>
       <div className="detail-top-nav-bar">
-        <BackButton navItems={navItems} fallbackTo="/registry-head/complaints" />
+        <BackButton navItems={stateCoordinatorNavItems} fallbackTo="/state-coordinator/incoming" />
         <DownloadCsvButton onDownload={() => downloadComplaintReport(complaint)} label="Download Report" />
       </div>
 
@@ -212,11 +136,6 @@ export default function RegistryHeadComplaintDetailPage() {
                   <Flag size={11} /> Flagged
                 </span>
               )}
-              {complaint.admissibility.decision && (
-                <span className={`urgency-pill ${complaint.admissibility.decision === 'ADMISSIBLE' ? 'positive' : 'negative'}`}>
-                  {complaint.admissibility.decision}
-                </span>
-              )}
             </div>
 
             <h1 className="hero-case-title">{complaint.subject}</h1>
@@ -225,7 +144,7 @@ export default function RegistryHeadComplaintDetailPage() {
             <div className="hero-meta-row">
               <span><Calendar size={13} /> Filed {new Date(complaint.dateFiled).toDateString()}</span>
               {officeName && <span><Building2 size={13} /> {officeName}</span>}
-              {departmentName && <span><Briefcase size={13} /> {departmentName}</span>}
+              {stateOfficeName && <span><Building2 size={13} /> {stateOfficeName}</span>}
             </div>
           </div>
 
@@ -243,24 +162,16 @@ export default function RegistryHeadComplaintDetailPage() {
 
         <div className="hero-actions-row">
           {actionButton}
-          {canManagePipeline && (
-            <Button variant="secondary" icon={Flag} onClick={() => setShowFlagModal(true)}>
-              {complaint.flagged ? 'Remove Flag' : 'Flag Complaint'}
-            </Button>
-          )}
+          <Button variant="secondary" icon={Flag} onClick={() => setShowFlagModal(true)}>
+            {complaint.flagged ? 'Remove Flag' : 'Flag Complaint'}
+          </Button>
         </div>
 
         <div className="hero-people-section">
           <span className="hero-people-label"><Users size={12} /> People Involved</span>
           <div className="hero-people-grid">
             <HeroPersonCard roleLabel="Victim" person={complaint.victim} tagVariant="victim" />
-            {complaint.additionalVictims?.map((person, idx) => (
-              <HeroPersonCard key={`victim-${idx}`} roleLabel={`Victim ${idx + 2}`} person={person} tagVariant="victim" />
-            ))}
             <HeroPersonCard roleLabel="Alleged Violator" person={complaint.allegedViolator} tagVariant="violator" />
-            {complaint.additionalViolators?.map((person, idx) => (
-              <HeroPersonCard key={`violator-${idx}`} roleLabel={`Alleged Violator ${idx + 2}`} person={person} tagVariant="violator" />
-            ))}
           </div>
         </div>
       </div>
@@ -295,29 +206,22 @@ export default function RegistryHeadComplaintDetailPage() {
             </div>
           </div>
 
-          {(complaint.investigation.finding || complaint.investigation.recommendation || complaint.investigation.findingDocuments?.length > 0) && (
+          {(complaint.stateOffice?.findingSummary || complaint.stateOffice?.assignedPersonnelName) && (
             <div className="detail-section-card">
-              <h3 className="section-card-title"><FileText size={14} /> Investigation Findings</h3>
-              {complaint.investigation.finding && <p className="review-summary-line">{complaint.investigation.finding}</p>}
-              {complaint.investigation.recommendation && (
-                <p className="review-summary-line" style={{ marginTop: 8 }}>
-                  <strong>Recommendation:</strong> {complaint.investigation.recommendation}
-                </p>
+              <h3 className="section-card-title"><ClipboardCheck size={14} /> State Office Review</h3>
+              {complaint.stateOffice?.assignedPersonnelName && (
+                <p className="review-summary-line">Assigned to: <strong>{complaint.stateOffice.assignedPersonnelName}</strong></p>
               )}
-              {complaint.investigation.findingDocuments?.length > 0 && (
-                <div className="activity-attachment-list" style={{ marginTop: 10 }}>
-                  {complaint.investigation.findingDocuments.map((doc) => (
-                    <a key={doc.id} href={doc.url} download={doc.name} target="_blank" rel="noreferrer" className="activity-attachment-row">
-                      <Paperclip size={12} />
-                      <span>{doc.name}</span>
-                    </a>
-                  ))}
-                </div>
+              {complaint.stateOffice?.assignmentRemark && (
+                <p className="review-summary-line" style={{ marginTop: 8 }}>{complaint.stateOffice.assignmentRemark}</p>
+              )}
+              {complaint.stateOffice?.findingSummary && (
+                <p className="review-summary-line" style={{ marginTop: 8 }}>
+                  <strong>Findings:</strong> {complaint.stateOffice.findingSummary}
+                </p>
               )}
             </div>
           )}
-
-          <InvestigationActivitiesCard activities={activities} />
         </div>
 
         <div className="detail-column-right">
@@ -329,32 +233,6 @@ export default function RegistryHeadComplaintDetailPage() {
                 <span className="spec-value mono">{complaint.complaintNumber || '—'}</span>
               </div>
               <div className="spec-item">
-                <span className="spec-label"><Users size={12} /> Filed By</span>
-                <span className="spec-value">{complaint.filedBy?.type === 'group' ? 'Group / Committee' : 'Individual'}</span>
-              </div>
-              {complaint.filedBy?.type === 'group' && (
-                <>
-                  <div className="spec-item">
-                    <span className="spec-label"><UsersRound size={12} /> Group Name</span>
-                    <span className="spec-value">{complaint.filedBy.groupName || '—'}</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label"><Users size={12} /> Representative</span>
-                    <span className="spec-value">{complaint.filedBy.representativeName || '—'}</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label"><Phone size={12} /> Rep. Phone</span>
-                    <span className="spec-value">{complaint.filedBy.representativePhone || '—'}</span>
-                  </div>
-                  {complaint.filedBy.representativeEmail && (
-                    <div className="spec-item">
-                      <span className="spec-label"><Mail size={12} /> Rep. Email</span>
-                      <span className="spec-value">{complaint.filedBy.representativeEmail}</span>
-                    </div>
-                  )}
-                </>
-              )}
-              <div className="spec-item">
                 <span className="spec-label"><Tag size={12} /> Category</span>
                 <span className="spec-value">{CATEGORY_LABELS[complaint.category]}</span>
               </div>
@@ -363,8 +241,8 @@ export default function RegistryHeadComplaintDetailPage() {
                 <span className="spec-value">{officeName || '—'}</span>
               </div>
               <div className="spec-item">
-                <span className="spec-label"><Briefcase size={12} /> Handling Dept.</span>
-                <span className="spec-value">{departmentName || '—'}</span>
+                <span className="spec-label"><Building2 size={12} /> State Office</span>
+                <span className="spec-value">{stateOfficeName || '—'}</span>
               </div>
               <div className="spec-item">
                 <span className="spec-label"><Calendar size={12} /> Date Filed</span>
@@ -418,37 +296,19 @@ export default function RegistryHeadComplaintDetailPage() {
         </div>
       </div>
 
-      {/* Assign officer flows (numbering + admissibility) */}
-      <AssignRegistryOfficerModal
-        key={`number-${complaint.id}`}
-        open={flow.type === 'number' && flow.step === 'input'}
-        mode="number"
+      <AssignPersonModal
+        key={`assign-personnel-${complaint.id}`}
+        open={flow.type === 'assignPersonnel' && flow.step === 'input'}
+        title="Assign State Personnel Officer"
+        personLabel="State Personnel Officer"
+        people={officePersonnel}
         onClose={closeFlow}
         onSubmit={handleInputSubmit}
       />
-      <AssignRegistryOfficerModal
-        key={`admissibility-${complaint.id}`}
-        open={flow.type === 'admissibility' && flow.step === 'input'}
-        mode="admissibility"
-        onClose={closeFlow}
-        onSubmit={handleInputSubmit}
-      />
-      <ConfirmAdmissibilityCheckModal
-        key={`confirm-admissibility-${complaint.id}`}
-        open={flow.type === 'confirmAdmissibility' && flow.step === 'input'}
+      <StateCoordinatorReviewModal
+        key={`review-${complaint.id}`}
+        open={flow.type === 'review' && flow.step === 'input'}
         complaint={complaint}
-        onClose={closeFlow}
-        onSubmit={handleInputSubmit}
-      />
-      <AssignDepartmentModal
-        key={`department-${complaint.id}`}
-        open={flow.type === 'department' && flow.step === 'input'}
-        onClose={closeFlow}
-        onSubmit={handleInputSubmit}
-      />
-      <ReassignStateOfficeModal
-        key={`reassign-state-${complaint.id}`}
-        open={flow.type === 'reassignState' && flow.step === 'input'}
         onClose={closeFlow}
         onSubmit={handleInputSubmit}
       />

@@ -3,6 +3,7 @@ import { Users, UserPlus, Building2, UserCheck, FileText } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import HeroBanner from '../../components/dashboard/HeroBanner';
+import QuickTrackerBlob from '../../components/dashboard/QuickTrackerBlob';
 import QuickLinksGrid from '../../components/dashboard/QuickLinksGrid';
 import Button from '../../components/ui/Button';
 import Avatar from '../../components/ui/Avatar';
@@ -53,6 +54,7 @@ export default function IctHeadDashboardPage() {
         greetingName={person.name?.split(' ')[0]}
         badge="ICT Head"
         situationMessages={situationMessages}
+        rightSlot={<QuickTrackerBlob />}
         stats={[
           { icon: UserCheck, value: activeCount, label: 'Active Accounts' },
           { icon: UserPlus, value: pendingCount, label: 'Pending Onboarding' },
@@ -81,8 +83,8 @@ export default function IctHeadDashboardPage() {
             <div className="settings-detail-row" key={u.id}>
               <Avatar name={u.name} size={32} />
               <div style={{ flex: 1 }}>
-                <span className="settings-detail-label">{u.name}</span>
-                <span className="settings-detail-value">{ROLE_LABELS_FOR_ADMIN[u.role] || u.role}</span>
+                <span className="person-row-name">{u.name}</span>
+                <span className="person-row-caption">{ROLE_LABELS_FOR_ADMIN[u.role] || u.role}</span>
               </div>
               <span className={`status-badge ${u.status === 'active' ? 'status-success' : u.status === 'pending' ? 'status-warning' : 'status-danger'}`}>
                 {u.status}

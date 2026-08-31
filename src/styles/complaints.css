@@ -844,6 +844,89 @@
   gap: 12px;
 }
 
+/* Super Admin's role x capability grid — plain .complaints-table with a couple of tweaks: the
+   role name reads like a table's usual "primary" cell, and cells with nothing to toggle (the
+   capability isn't wired to any code path for that role) show a muted dash instead of a switch. */
+.permissions-matrix th:not(:first-child),
+.permissions-matrix td:not(:first-child) {
+  text-align: center;
+}
+
+/* text-align alone doesn't center a block-level element like .theme-switch (it only affects
+   inline/text content, which is why the dash "—" in an inapplicable cell centers fine on its
+   own) — needs its own auto margins to actually land in the middle of the column. */
+.permissions-matrix td:not(:first-child) .theme-switch {
+  margin: 0 auto;
+}
+
+.permissions-matrix-role {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.permissions-matrix-na {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* Super Admin's Roles reference page — one section per role category. */
+.roles-category-section {
+  margin: 20px 0;
+}
+
+.role-ref-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.role-ref-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.role-ref-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.role-ref-icon.accent-info { background-color: var(--info-light); color: var(--info-color); }
+.role-ref-icon.accent-violet { background-color: var(--violet-light); color: var(--violet-color); }
+.role-ref-icon.accent-accent { background-color: var(--accent-light); color: var(--accent-color); }
+.role-ref-icon.accent-warning { background-color: var(--warning-light); color: var(--warning-color); }
+
+.role-ref-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.role-ref-home {
+  display: block;
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.role-ref-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.role-ref-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 /* Scrollable checkbox list, e.g. picking staff to assign into a department. */
 .user-checklist {
   display: flex;

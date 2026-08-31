@@ -4,8 +4,8 @@ import { FileText, Clock, CheckCircle2, PlusCircle, ChevronRight } from 'lucide-
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import HeroBanner from '../../components/dashboard/HeroBanner';
+import QuickTrackerBlob from '../../components/dashboard/QuickTrackerBlob';
 import Button from '../../components/ui/Button';
-import StatusBadge from '../../components/ui/StatusBadge';
 import StageTracker from '../../components/ui/StageTracker';
 import ComplaintsTable from '../../components/ui/ComplaintsTable';
 import EmptyState from '../../components/ui/EmptyState';
@@ -17,10 +17,26 @@ import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { SUB_STATUS } from '../../constants/complaintStatus';
 import { complainantNavItems, complainantBottomNav, complainantUser } from './navConfig';
 
-const INACTIVE = [SUB_STATUS.RESOLVED, SUB_STATUS.CLOSED];
+const INACTIVE = [SUB_STATUS.CLOSED];
+
+// Own bespoke pill badge for the mobile card list (not the shared StatusBadge component) — one
+// of the deliberate custom-design pieces of the complainant mobile experience, styled via the
+// --cx-badge-* tokens in complainant-mobile.css rather than the app's shared status colors.
+function getMobileStatusBadge(status) {
+  if (status === SUB_STATUS.CLOSED) {
+    return <span className="mobile-complaint-card-badge resolved">Resolved</span>;
+  }
+  if (status === SUB_STATUS.WITHDRAWN) {
+    return <span className="mobile-complaint-card-badge withdrawn">Withdrawn</span>;
+  }
+  if (status === SUB_STATUS.NEW) {
+    return <span className="mobile-complaint-card-badge pending">Pending</span>;
+  }
+  return <span className="mobile-complaint-card-badge investigation">Under Investigation</span>;
+}
 
 function mobileProgressColor(status) {
-  if (status === SUB_STATUS.RESOLVED || status === SUB_STATUS.CLOSED) return 'green';
+  if (status === SUB_STATUS.CLOSED) return 'green';
   if (status === SUB_STATUS.NEW) return 'yellow';
   return 'blue';
 }
@@ -66,6 +82,7 @@ export default function ComplainantDashboardPage() {
           greetingName={firstName}
           badge="Citizen Portal"
           situationMessages={situationMessages}
+          rightSlot={<QuickTrackerBlob />}
           stats={[
             { icon: FileText, value: totalComplaints, label: 'Total Submitted' },
             { icon: Clock, value: activeComplaints, label: 'Active Reports' },
@@ -171,7 +188,7 @@ export default function ComplainantDashboardPage() {
                 <div key={c.id} className="mobile-complaint-card" onClick={() => navigate(`/registry-head/track?id=${c.id}`)}>
                   <div className="mobile-complaint-card-header">
                     <h4 className="mobile-complaint-card-title">{truncated}</h4>
-                    <StatusBadge status={c.subStatus} />
+                    {getMobileStatusBadge(c.subStatus)}
                     <ChevronRight size={18} className="mobile-complaint-card-chevron" />
                   </div>
                   <div className="mobile-complaint-card-meta">

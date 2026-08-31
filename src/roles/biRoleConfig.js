@@ -10,6 +10,8 @@ const TREND_BY_ROLE = {
   'department-director': { title: "My Department's Complaints, Year-over-Year Trend" },
   'department-supervisor': { title: 'My Assigned Cases, Year-over-Year Trend' },
   'department-investigator': { title: 'My Investigations, Year-over-Year Trend' },
+  'state-coordinator': { title: "My Office's Complaints, Year-over-Year Trend" },
+  'state-personnel': { title: 'My Cases, Year-over-Year Trend' },
 };
 
 export function getBiRoleConfig(user) {
@@ -19,7 +21,7 @@ export function getBiRoleConfig(user) {
   // ICT Head gets the same full org-wide view as Registry Head/Executive Secretary — it can
   // view everything, it just can't act on any of it (see rolePermissions.js).
   const isOversight = role === 'registry-head' || role === 'executive-secretary' || role === 'ict-head';
-  const isIndividualHandler = ['desk-officer', 'department-director', 'department-supervisor', 'department-investigator'].includes(role);
+  const isIndividualHandler = ['desk-officer', 'department-director', 'department-supervisor', 'department-investigator', 'state-coordinator', 'state-personnel'].includes(role);
 
   let teams = [];
   if (role === 'department-director') {

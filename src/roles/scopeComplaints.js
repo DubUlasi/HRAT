@@ -16,9 +16,18 @@ function isInScope(complaint, user) {
       return complaint.supervisorId === user.officerId;
     case 'department-investigator':
       return complaint.investigatorId === user.officerId;
-    // ICT Personnel has zero complaint access, by design — explicit false rather than falling
-    // through to the default "sees everything" a genuinely new/unrecognized role would get.
+    // State Coordinator sees every complaint sent to their own state office (scoped by office,
+    // like a Director is scoped by department); State Personnel only sees the complaint(s)
+    // actually assigned to them specifically (scoped by officerId, like an Investigator).
+    case 'state-coordinator':
+      return complaint.stateOffice?.sentTo === user.officeId;
+    case 'state-personnel':
+      return complaint.stateOffice?.assignedPersonnelId === user.officerId;
+    // ICT Personnel and Super Admin have zero complaint access, by design — explicit false
+    // rather than falling through to the default "sees everything" a genuinely new/unrecognized
+    // role would get.
     case 'ict-personnel':
+    case 'super-admin':
       return false;
     // A complainant only ever sees their own case(s), matched against their own session
     // identity (email, and phone as a secondary signal) rather than anything guessable.
@@ -45,7 +54,7 @@ export function userCanViewComplaint(complaint, user) {
 // Investigator only ever see the repeat-violator flag inline on a complaint's own detail page,
 // per the explicit scoping decision (mirrored by the /registry-head/repeat-offenders routes in
 // App.jsx and the "View Full History" button in RelatedComplaintsPanel).
-export const REPEAT_VIOLATOR_ROLES = ['registry-head', 'department-director', 'executive-secretary', 'ict-head'];
+export const REPEAT_VIOLATOR_ROLES = ['registry-head', 'department-director', 'executive-secretary'];
 
 // getRepeatOffenders() (ComplaintsContext) groups across every complaint in the system —
 // re-scopes that down to what the current role can actually see, dropping a violator entirely

@@ -1,10 +1,88 @@
 /* ============================================================
-   Complainant Portal — Mobile-first Responsive Styles
+   Complainant Portal — Mobile-first Design System
    Applied via AppShell's bottomNavItems/mobileClassName props, gated behind the
    .complainant-mobile-view wrapper class so this is entirely inert for every other role.
-   Every color below reads from theme.css tokens so it responds to dark/light mode like the
-   rest of the app — the one thing the original version of this layout got wrong.
+
+   This is a deliberately SEPARATE design system from the rest of the app (its own --cx-*
+   tokens below, not the shared theme.css tokens) — the complainant mobile experience was
+   custom-designed on its own palette, and stays that way on purpose. It still fully responds
+   to the app's light/dark toggle: both variants are defined here, the same [data-theme="dark"]
+   pattern theme.css itself uses. The light values are the original design's exact colors; the
+   dark values are a matching counterpart designed to preserve the same character (the earlier,
+   theme.css-token version of this file replaced the original entirely — this restores it).
    ============================================================ */
+
+.complainant-mobile-view {
+  --cx-nav-bg: #FFFFFF;
+  --cx-nav-border: #EAECF0;
+  --cx-nav-item: #667085;
+  --cx-nav-item-active: #067647;
+
+  --cx-card-bg: #FFFFFF;
+  --cx-card-border: #EAECF0;
+  --cx-card-active-border: #067647;
+  --cx-card-active-glow: rgba(7, 148, 85, 0.10);
+
+  --cx-text-primary: #101828;
+  --cx-text-secondary: #475467;
+  --cx-text-strong: #344054;
+  --cx-chevron: #D0D5DD;
+  --cx-link: #067647;
+
+  --cx-progress-track: #EAECF0;
+  --cx-progress-green: #067647;
+  --cx-progress-yellow: #F79009;
+  --cx-progress-blue: #2E90FA;
+
+  --cx-badge-investigation-bg: #FEF6EE;
+  --cx-badge-investigation-fg: #B93815;
+  --cx-badge-investigation-border: #FDEAD7;
+  --cx-badge-resolved-bg: #ECFDF5;
+  --cx-badge-resolved-fg: #027A48;
+  --cx-badge-resolved-border: #ABEFC6;
+  --cx-badge-pending-bg: #FFFAEB;
+  --cx-badge-pending-fg: #B54708;
+  --cx-badge-pending-border: #FEDF89;
+  --cx-badge-withdrawn-bg: #FEF3F2;
+  --cx-badge-withdrawn-fg: #B42318;
+  --cx-badge-withdrawn-border: #FECDCA;
+}
+
+[data-theme="dark"] .complainant-mobile-view {
+  --cx-nav-bg: #1D2939;
+  --cx-nav-border: #344054;
+  --cx-nav-item: #98A2B3;
+  --cx-nav-item-active: #34D399;
+
+  --cx-card-bg: #1D2939;
+  --cx-card-border: #344054;
+  --cx-card-active-border: #34D399;
+  --cx-card-active-glow: rgba(52, 211, 153, 0.14);
+
+  --cx-text-primary: #F2F4F7;
+  --cx-text-secondary: #98A2B3;
+  --cx-text-strong: #CBD5E1;
+  --cx-chevron: #64748B;
+  --cx-link: #34D399;
+
+  --cx-progress-track: #344054;
+  --cx-progress-green: #34D399;
+  --cx-progress-yellow: #FDB022;
+  --cx-progress-blue: #53B1FD;
+
+  --cx-badge-investigation-bg: #4E2A12;
+  --cx-badge-investigation-fg: #FDB022;
+  --cx-badge-investigation-border: #7A4A1E;
+  --cx-badge-resolved-bg: #0B3B2A;
+  --cx-badge-resolved-fg: #34D399;
+  --cx-badge-resolved-border: #1B5E44;
+  --cx-badge-pending-bg: #45300B;
+  --cx-badge-pending-fg: #FDB022;
+  --cx-badge-pending-border: #6B4A12;
+  --cx-badge-withdrawn-bg: #451A1A;
+  --cx-badge-withdrawn-fg: #F97066;
+  --cx-badge-withdrawn-border: #6B2626;
+}
 
 /* ─── Bottom Tab Bar (visible ≤768px only) ──────────────────── */
 .mobile-bottom-nav {
@@ -14,8 +92,8 @@
   left: 0;
   right: 0;
   z-index: 1100;
-  background-color: var(--sidebar-bg);
-  border-top: 1px solid var(--sidebar-border);
+  background-color: var(--cx-nav-bg);
+  border-top: 1px solid var(--cx-nav-border);
   padding: 6px 0 env(safe-area-inset-bottom, 8px);
   box-shadow: 0 -4px 20px rgba(16, 24, 40, 0.06);
 }
@@ -35,7 +113,7 @@
   align-items: center;
   gap: 2px;
   text-decoration: none;
-  color: var(--text-muted);
+  color: var(--cx-nav-item);
   font-size: 10px;
   font-weight: 600;
   padding: 4px 8px;
@@ -45,7 +123,7 @@
 }
 
 .mobile-bottom-nav-item.active {
-  color: var(--accent-color);
+  color: var(--cx-nav-item-active);
 }
 
 .mobile-bottom-nav-item svg {
@@ -183,9 +261,14 @@
     margin: 0 !important;
   }
 
-  /* ─── Mobile Hero Card (Dashboard) ─── */
+  /* ─── Mobile Hero Card (Dashboard) — a fixed brand-green gradient in both themes, same
+       treatment the app's own .hero-banner-card already uses elsewhere; it doesn't need a dark
+       variant since white-on-green stays legible regardless of the page's theme. ─── */
   .mobile-hero-card {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--text-brand) 100%);
+    background:
+      radial-gradient(circle at 12px 12px, rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px),
+      linear-gradient(135deg, #079455 0%, #057A44 45%, #034E2B 100%);
+    background-size: 24px 24px, 100% 100%;
     padding: 24px 20px 20px;
     color: #FFFFFF;
     position: relative;
@@ -333,14 +416,14 @@
   .mobile-complaints-header h3 {
     font-size: 18px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--cx-text-primary);
     margin: 0;
   }
 
   .mobile-complaints-header a {
     font-size: 14px;
     font-weight: 700;
-    color: var(--accent-color);
+    color: var(--cx-link);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -348,8 +431,8 @@
   }
 
   .mobile-complaint-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background-color: var(--cx-card-bg);
+    border: 1px solid var(--cx-card-border);
     border-radius: 14px;
     padding: 16px;
     margin-bottom: 12px;
@@ -359,8 +442,8 @@
   }
 
   .mobile-complaint-card:active {
-    border-color: var(--accent-color);
-    box-shadow: 0 2px 12px rgba(7, 148, 85, 0.10);
+    border-color: var(--cx-card-active-border);
+    box-shadow: 0 2px 12px var(--cx-card-active-glow);
   }
 
   .mobile-complaint-card-header {
@@ -374,7 +457,7 @@
   .mobile-complaint-card-title {
     font-size: 15px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--cx-text-primary);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -383,27 +466,63 @@
     min-width: 0;
   }
 
+  .mobile-complaint-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .mobile-complaint-card-badge.investigation {
+    background-color: var(--cx-badge-investigation-bg);
+    color: var(--cx-badge-investigation-fg);
+    border: 1px solid var(--cx-badge-investigation-border);
+  }
+
+  .mobile-complaint-card-badge.resolved {
+    background-color: var(--cx-badge-resolved-bg);
+    color: var(--cx-badge-resolved-fg);
+    border: 1px solid var(--cx-badge-resolved-border);
+  }
+
+  .mobile-complaint-card-badge.pending {
+    background-color: var(--cx-badge-pending-bg);
+    color: var(--cx-badge-pending-fg);
+    border: 1px solid var(--cx-badge-pending-border);
+  }
+
+  .mobile-complaint-card-badge.withdrawn {
+    background-color: var(--cx-badge-withdrawn-bg);
+    color: var(--cx-badge-withdrawn-fg);
+    border: 1px solid var(--cx-badge-withdrawn-border);
+  }
+
   .mobile-complaint-card-chevron {
-    color: var(--text-muted);
+    color: var(--cx-chevron);
     flex-shrink: 0;
     margin-top: 2px;
   }
 
   .mobile-complaint-card-meta {
     font-size: 12.5px;
-    color: var(--text-secondary);
+    color: var(--cx-text-secondary);
     line-height: 1.5;
     margin-bottom: 12px;
   }
 
   .mobile-complaint-card-meta strong {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--cx-text-strong);
   }
 
   .mobile-complaint-progress {
     height: 5px;
-    background-color: var(--toggle-bg);
+    background-color: var(--cx-progress-track);
     border-radius: 3px;
     overflow: hidden;
   }
@@ -414,9 +533,9 @@
     transition: width 0.3s ease;
   }
 
-  .mobile-complaint-progress-fill.green { background-color: var(--accent-color); }
-  .mobile-complaint-progress-fill.yellow { background-color: var(--warning-color); }
-  .mobile-complaint-progress-fill.blue { background-color: var(--info-color); }
+  .mobile-complaint-progress-fill.green { background-color: var(--cx-progress-green); }
+  .mobile-complaint-progress-fill.yellow { background-color: var(--cx-progress-yellow); }
+  .mobile-complaint-progress-fill.blue { background-color: var(--cx-progress-blue); }
 
   /* ─── Track drawer — full-width overlay on mobile ─── */
   .complainant-mobile-view .track-drawer-overlay,

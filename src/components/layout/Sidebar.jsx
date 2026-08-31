@@ -5,6 +5,7 @@ import SidebarNavItem from './SidebarNavItem';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
+import { useRolePermissions } from '../../context/RolePermissionsContext';
 import { getNavBadgeCounts } from '../../roles/navBadgeCounts';
 
 // A page like a complaint's own detail view never matches a nav item's URL directly, so on its
@@ -67,6 +68,7 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
   const { isDark, toggleTheme } = useTheme();
   const { logout } = useAuth();
   const { complaints, complaintNumberAuto } = useComplaints();
+  const { hasCapability } = useRolePermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -76,9 +78,16 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
     onCloseMobile?.();
     navigate('/login');
   };
-  const settingsHref = navItems.find((item) => item.label === 'Settings')?.to || '/settings';
-  const navBlocks = groupNavItems(navItems);
-  const activeTo = resolveActiveNavPath(navItems, location.pathname, location.state?.from);
+  // A nav item tagged with `capability` (see e.g. ict-head/navConfig.js) only shows while the
+  // current role actually still has it — Super Admin can revoke manage_users/manage_departments
+  // live, and a stale link that just bounces the user back on click would be worse than no link.
+  const visibleNavItems = useMemo(
+    () => navItems.filter((item) => !item.capability || hasCapability(user.role, item.capability)),
+    [navItems, hasCapability, user.role]
+  );
+  const settingsHref = visibleNavItems.find((item) => item.label === 'Settings')?.to || '/settings';
+  const navBlocks = groupNavItems(visibleNavItems);
+  const activeTo = resolveActiveNavPath(visibleNavItems, location.pathname, location.state?.from);
   // Reuses each role's own existing "needs action" predicates (see navBadgeCounts.js) so this
   // number never drifts out of sync with what the dashboard/queue page itself counts.
   const badgeCounts = useMemo(() => getNavBadgeCounts(user, complaints, complaintNumberAuto), [user, complaints, complaintNumberAuto]);
@@ -115,7 +124,7 @@ export default function Sidebar({ navItems, user, collapsed = false, onToggleCol
 
       <nav className="nav-section">
         {collapsed
-          ? navItems.map((item) => (
+          ? visibleNavItems.map((item) => (
               <SidebarNavItem key={item.to} {...item} active={item.to === activeTo} badge={badgeFor(item.to)} collapsed={collapsed} onNavigate={onCloseMobile} />
             ))
           : navBlocks.map((block, idx) =>

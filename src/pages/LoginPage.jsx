@@ -20,6 +20,9 @@ const ROLE_LABELS = {
   'ict-head': 'ICT Head',
   'ict-personnel': 'ICT Personnel',
   'complainant': 'Complainant',
+  'super-admin': 'Super Admin',
+  'state-coordinator': 'State Coordinator',
+  'state-personnel': 'State Personnel',
 };
 
 export default function LoginPage() {

@@ -250,6 +250,21 @@ a.help-contact-row:hover {
   overflow-wrap: anywhere;
 }
 
+/* A person's name as the primary line in a list row (e.g. "Recently Onboarded"), with a smaller
+   muted caption underneath — the opposite emphasis of settings-detail-label/value above, where
+   the label is the small caption sitting on top instead. */
+.person-row-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.person-row-caption {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
 .settings-caseload-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
