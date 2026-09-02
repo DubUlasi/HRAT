@@ -11,7 +11,14 @@ const GENDER_OPTIONS = ['female', 'male', 'rather_not_say'];
 // cards. The self/someone-else toggle only makes sense for the first victim (every victim added
 // after that is implicitly someone else); numbering/remove controls only appear once there's
 // more than one victim, so the common single-victim case looks exactly like before.
-export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, filedBy, onFiledByChange, onBack, onContinue, stepLabel }) {
+//
+// `isComplainant` gates the self/someone-else question entirely — it only ever makes sense on
+// an entry point where the person filling this out could plausibly BE the victim (the public
+// wizard, the Complainant's own dashboard). Staff filing on someone's behalf never sees it; for
+// them (and for any victim after the first, who's never "yourself") the wizard behaves as if
+// "someone else" was chosen — see `isSelfReport` below, which drives the depersonalized
+// "Do they belong..." population question wording.
+export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, filedBy, onFiledByChange, isComplainant, onBack, onContinue, stepLabel }) {
   const { t } = useTranslation();
   const [keyPopIndex, setKeyPopIndex] = useState(null);
   const [pendingSelection, setPendingSelection] = useState(null);
@@ -129,6 +136,10 @@ export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, 
 
         {victims.map((victim, index) => {
           const selectedPopulation = getKeyPopulation(victim.keyPopulationGroup);
+          // Only the first victim, on a complainant-facing entry point, with "Myself" actually
+          // selected, is ever a genuine self-report — everyone else (staff filing for someone,
+          // any victim past the first) gets the depersonalized "they/them" wording below.
+          const isSelfReport = isComplainant && index === 0 && victim.relationship === 'self';
           return (
             <div className="multi-person-card" key={index}>
               {victims.length > 1 && (
@@ -144,7 +155,7 @@ export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, 
                 </div>
               )}
 
-              {index === 0 && (
+              {index === 0 && isComplainant && (
                 <>
                   <div className="su-section-label">{t('wizard.victim.whoExperienced')}</div>
                   <div className="toggle-card-row">
@@ -228,8 +239,6 @@ export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, 
               </div>
 
               <div className="su-more-about-section">
-                <div className="su-section-label">{t('wizard.victim.moreAboutYou')}</div>
-
                 <div className="su-field-group full-width">
                   <label className="su-label-dark">{t('common.email')} ({t('wizard.optional')})</label>
                   <input
@@ -250,7 +259,21 @@ export default function StepVictimDetails({ victims, onChange, onAdd, onRemove, 
                 </div>
 
                 <div className="su-field-group full-width">
-                  <label className="su-label-dark">{t('wizard.victim.populationQuestion')}</label>
+                  <label className="su-label-dark">{t('wizard.landmarkLabel')} ({t('wizard.optional')})</label>
+                  <input
+                    type="text"
+                    className="su-input-white"
+                    placeholder={t('wizard.landmarkPlaceholder')}
+                    value={victim.landmark}
+                    onChange={(e) => onChange(index, { landmark: e.target.value })}
+                  />
+                </div>
+
+                <div className="su-field-group full-width">
+                  <label className="su-label-dark">
+                    {t(isSelfReport ? 'wizard.victim.populationQuestion' : 'wizard.victim.populationQuestionOther')}
+                  </label>
+                  <p className="su-field-hint-dark" style={{ fontSize: 11, marginBottom: 14 }}>{t('wizard.victim.populationHint')}</p>
                   <div className="toggle-card-row">
                     <button
                       type="button"

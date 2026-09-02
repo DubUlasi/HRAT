@@ -8,7 +8,7 @@ export const stateCoordinatorNavItems = [
   { to: '/state-coordinator', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/state-coordinator/incoming', icon: Inbox, label: 'Incoming Complaints', end: true, section: 'Complaints' },
   { to: '/state-coordinator/complaints', icon: FileText, label: 'All Complaints', section: 'Complaints' },
-  { to: '/state-coordinator/personnel', icon: Users, label: 'State Personnel', section: 'State Office' },
+  { to: '/registry-head/personnel', icon: Users, label: 'State Personnel', section: 'Team' },
   { to: '/registry-head/track', icon: Search, label: 'Track Complaint', section: 'Insights' },
   { to: '/registry-head/business-intelligence', icon: TrendingUp, label: 'Business Intelligence', section: 'Insights' },
   { to: '/registry-head/reports', icon: FileBarChart, label: 'Reports', section: 'Insights' },

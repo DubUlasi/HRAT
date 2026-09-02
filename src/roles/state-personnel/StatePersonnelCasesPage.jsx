@@ -14,7 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { usePagination } from '../../hooks/usePagination';
 import { downloadComplaintsExcel } from '../../utils/exportUtils';
-import { needsPersonnelWork } from './statePersonnelQueue';
+import { needsNumberProcessing, needsPersonnelWork } from './statePersonnelQueue';
 import { statePersonnelNavItems } from './navConfig';
 
 function matchesSearch(complaint, search) {
@@ -36,7 +36,7 @@ export default function StatePersonnelCasesPage() {
   const officerId = user?.officerId;
 
   const rows = complaints
-    .filter((c) => needsPersonnelWork(c, officerId))
+    .filter((c) => needsNumberProcessing(c, officerId) || needsPersonnelWork(c, officerId))
     .filter((c) => matchesSearch(c, search))
     .filter((c) => matchesStatusFilter(c, statusFilter))
     .filter((c) => matchesCategoryFilter(c, categoryFilter))

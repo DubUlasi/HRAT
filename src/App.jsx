@@ -52,7 +52,6 @@ import StateCoordinatorDashboardPage from './roles/state-coordinator/StateCoordi
 import StateCoordinatorIncomingPage from './roles/state-coordinator/StateCoordinatorIncomingPage';
 import StateCoordinatorComplaintsPage from './roles/state-coordinator/StateCoordinatorComplaintsPage';
 import StateCoordinatorComplaintDetailPage from './roles/state-coordinator/StateCoordinatorComplaintDetailPage';
-import StateCoordinatorPersonnelPage from './roles/state-coordinator/StateCoordinatorPersonnelPage';
 import StatePersonnelDashboardPage from './roles/state-personnel/StatePersonnelDashboardPage';
 import StatePersonnelCasesPage from './roles/state-personnel/StatePersonnelCasesPage';
 import StatePersonnelComplaintsPage from './roles/state-personnel/StatePersonnelComplaintsPage';
@@ -62,6 +61,8 @@ import RegistryHeadComplaintsPage from './roles/complaint-registry-head/Registry
 import RegistryHeadComplaintDetailPage from './roles/complaint-registry-head/RegistryHeadComplaintDetailPage';
 import RegistryHeadRepeatOffendersPage from './roles/complaint-registry-head/RegistryHeadRepeatOffendersPage';
 import RegistryHeadViolatorDetailPage from './roles/complaint-registry-head/RegistryHeadViolatorDetailPage';
+import RegistryHeadPersonnelPage from './roles/complaint-registry-head/RegistryHeadPersonnelPage';
+import RegistryHeadPersonnelDetailPage from './roles/complaint-registry-head/RegistryHeadPersonnelDetailPage';
 import RegistryHeadCallCenterPage from './roles/complaint-registry-head/RegistryHeadCallCenterPage';
 import RegistryHeadBusinessIntelligencePage from './roles/complaint-registry-head/RegistryHeadBusinessIntelligencePage';
 import RegistryHeadReportsPage from './roles/complaint-registry-head/RegistryHeadReportsPage';
@@ -70,6 +71,7 @@ import RegistryHeadFlaggedComplaintsPage from './roles/complaint-registry-head/R
 import RegistryHeadHelpPage from './roles/complaint-registry-head/RegistryHeadHelpPage';
 import RegistryHeadSettingsPage from './roles/complaint-registry-head/RegistryHeadSettingsPage';
 import { REPEAT_VIOLATOR_ROLES } from './roles/scopeComplaints';
+import { PERSONNEL_ROLES } from './roles/scopePersonnel';
 
 // A child of RolePermissionsProvider (not App itself) so it can read rolesWithCapability() —
 // the /ict-head/users, /onboarding, /departments routes are gated by whichever roles Super
@@ -124,6 +126,8 @@ function AppRoutes() {
             detail page, no dedicated page of their own. */}
         <Route path="/registry-head/repeat-offenders" element={<RequireRole role={REPEAT_VIOLATOR_ROLES}><RegistryHeadRepeatOffendersPage /></RequireRole>} />
         <Route path="/registry-head/repeat-offenders/:violatorId" element={<RequireRole role={REPEAT_VIOLATOR_ROLES}><RegistryHeadViolatorDetailPage /></RequireRole>} />
+        <Route path="/registry-head/personnel" element={<RequireRole role={PERSONNEL_ROLES}><RegistryHeadPersonnelPage /></RequireRole>} />
+        <Route path="/registry-head/personnel/:officerId" element={<RequireRole role={PERSONNEL_ROLES}><RegistryHeadPersonnelDetailPage /></RequireRole>} />
         <Route path="/registry-head/call-center" element={<RequireRole role="registry-head"><RegistryHeadCallCenterPage /></RequireRole>} />
 
         {/* Shared across every role's sidebar (Insights/Support sections) — any
@@ -174,7 +178,6 @@ function AppRoutes() {
         <Route path="/state-coordinator/incoming" element={<RequireRole role="state-coordinator"><StateCoordinatorIncomingPage /></RequireRole>} />
         <Route path="/state-coordinator/complaints" element={<RequireRole role="state-coordinator"><StateCoordinatorComplaintsPage /></RequireRole>} />
         <Route path="/state-coordinator/complaints/:complaintId" element={<RequireRole role="state-coordinator"><StateCoordinatorComplaintDetailPage /></RequireRole>} />
-        <Route path="/state-coordinator/personnel" element={<RequireRole role="state-coordinator"><StateCoordinatorPersonnelPage /></RequireRole>} />
 
         <Route path="/state-personnel" element={<RequireRole role="state-personnel"><StatePersonnelDashboardPage /></RequireRole>} />
         <Route path="/state-personnel/cases" element={<RequireRole role="state-personnel"><StatePersonnelCasesPage /></RequireRole>} />

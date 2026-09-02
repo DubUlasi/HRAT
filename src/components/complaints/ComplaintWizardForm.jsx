@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { useTranslation } from '../../context/I18nContext';
 import { suggestOfficeFromLocation } from '../../constants/officeRecommendation';
 import { splitName } from '../../constants/voiceExtraction';
+import { getSubCategoryLabel } from '../../constants/complaintSubCategories';
 import SuccessModal from '../ui/SuccessModal';
 import StepPhoneGate from './wizard-steps/StepPhoneGate';
 import StepCategory from './wizard-steps/StepCategory';
@@ -34,7 +36,7 @@ const WIZARD_STEPS = [
   { num: 6, labelKey: 'wizard.stepper.review' },
 ];
 
-const EMPTY_INCIDENT = { subject: '', description: '', location: '', date: '', evidenceFiles: [] };
+const EMPTY_INCIDENT = { subject: '', description: '', location: '', landmark: '', date: '', evidenceFiles: [] };
 
 function emptyVictim(initialPhone) {
   return {
@@ -45,13 +47,14 @@ function emptyVictim(initialPhone) {
     email: '',
     gender: 'female',
     address: '',
+    landmark: '',
     populationType: 'general',
     keyPopulationGroup: null,
   };
 }
 
 function emptyViolator() {
-  return { firstName: '', lastName: '', phone: '', email: '', gender: '', address: '', unidentified: false };
+  return { firstName: '', lastName: '', phone: '', email: '', gender: '', address: '', landmark: '', unidentified: false };
 }
 
 function emptyFiledBy() {
@@ -68,6 +71,7 @@ function toVictimRecord(v) {
     phone: v.phone,
     email: v.email || null,
     address: v.address || null,
+    landmark: v.landmark || null,
     populationType: v.populationType,
     keyPopulationGroup: v.keyPopulationGroup,
   };
@@ -80,7 +84,7 @@ function toVictimRecord(v) {
 // `allegedViolator` nullable and having to guard it everywhere.
 function toViolatorRecord(v) {
   if (v.unidentified) {
-    return { name: 'Unidentified', unidentified: true, gender: null, phone: null, email: null, address: null };
+    return { name: 'Unidentified', unidentified: true, gender: null, phone: null, email: null, address: null, landmark: null };
   }
   return {
     name: `${v.firstName} ${v.lastName}`.trim(),
@@ -88,6 +92,7 @@ function toViolatorRecord(v) {
     phone: v.phone || null,
     email: v.email || null,
     address: v.address || null,
+    landmark: v.landmark || null,
     unidentified: false,
   };
 }
@@ -107,6 +112,12 @@ export default function ComplaintWizardForm({
   onComplete,
   initialVictimPhone,
   skipPhoneGate = false,
+  // True on every entry point where the person filling this out could plausibly be reporting
+  // their own case — the public wizard page and the Complainant's own dashboard — as opposed to
+  // a staff member filing on someone else's behalf (Registry Head's Make Complaint), where the
+  // "Who experienced this? Myself / Someone else" question doesn't apply at all. See
+  // StepVictimDetails for where this actually changes what's rendered.
+  isComplainant = false,
   initialCategory = '',
   initialSubCategory = '',
   initialSubject = '',
@@ -117,6 +128,7 @@ export default function ComplaintWizardForm({
   voiceRecordingUrl = null,
 }) {
   const { createComplaint } = useComplaints();
+  const { user: authUser } = useAuth();
   const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(skipPhoneGate ? 1 : 0);
@@ -124,6 +136,7 @@ export default function ComplaintWizardForm({
 
   const [category, setCategory] = useState(initialCategory);
   const [subCategory, setSubCategory] = useState(initialSubCategory);
+  const [otherDescription, setOtherDescription] = useState('');
   const [incident, setIncident] = useState(() => ({
     ...EMPTY_INCIDENT,
     subject: initialSubject,
@@ -133,7 +146,24 @@ export default function ComplaintWizardForm({
   // Arrays, always at least one entry — multiple victims/violators (a co-worked case with
   // several people affected) is unrelated to `filedBy` below (WHO is doing the filing); the
   // single-person case (the vast majority) is simply the array-of-one case either way.
+  //
+  // A logged-in complainant filing about themselves already has an account on file — seeding
+  // the first victim from it (once, here in the initializer, so it never happens again later
+  // and can't clobber anything they go on to type/edit) saves them re-typing their own details.
+  // Nothing to seed from for the public unauthenticated wizard (authUser is null there) or for
+  // staff filing on someone else's behalf (isComplainant is false there), both of which fall
+  // back to the plain initialVictimName-only behavior.
   const [victims, setVictims] = useState(() => {
+    if (isComplainant && authUser) {
+      const { firstName, lastName } = splitName(authUser.name || '');
+      return [{
+        ...emptyVictim(initialVictimPhone || authUser.phone),
+        firstName,
+        lastName,
+        email: authUser.email || '',
+        address: authUser.address || '',
+      }];
+    }
     const { firstName, lastName } = splitName(initialVictimName);
     return [{ ...emptyVictim(initialVictimPhone), firstName, lastName }];
   });
@@ -177,6 +207,15 @@ export default function ComplaintWizardForm({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [incident.location]);
+
+  // The incident title keeps in step with "what best describes it" (the picked sub-category, or
+  // the typed description once the Others category's "Other" pill is chosen) — changing category
+  // re-syncs the title to match, though it's a normal field the whole time so more can always be
+  // typed into it afterward.
+  const subCategoryLabel = getSubCategoryLabel(category, subCategory, otherDescription);
+  useEffect(() => {
+    if (subCategoryLabel) setIncident((prev) => ({ ...prev, subject: subCategoryLabel }));
+  }, [subCategoryLabel]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -256,6 +295,8 @@ export default function ComplaintWizardForm({
             <StepCategory
               category={category}
               subCategory={subCategory}
+              otherDescription={otherDescription}
+              onOtherDescriptionChange={setOtherDescription}
               onCategoryChange={setCategory}
               onSubCategoryChange={setSubCategory}
               onBack={skipPhoneGate ? undefined : () => setCurrentStep(0)}
@@ -282,6 +323,7 @@ export default function ComplaintWizardForm({
               onRemove={removeVictim}
               filedBy={filedBy}
               onFiledByChange={patchFiledBy}
+              isComplainant={isComplainant}
               onBack={() => setCurrentStep(2)}
               onContinue={() => setCurrentStep(4)}
               stepLabel={stepLabel(3)}
@@ -313,7 +355,7 @@ export default function ComplaintWizardForm({
           {currentStep === 6 && (
             <StepReview
               category={category}
-              subCategory={subCategory}
+              subCategoryLabel={subCategoryLabel}
               incident={incident}
               victims={victims}
               violators={violators}

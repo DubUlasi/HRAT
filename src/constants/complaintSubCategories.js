@@ -77,6 +77,15 @@ export function getSubCategories(category) {
   return SUB_CATEGORIES[category] || [];
 }
 
+// The value that stands in for "what best describes it" — normally just the picked sub-category
+// pill's own label, except for the Others category's "Other (Please Describe in Details)" pill,
+// where the complainant's own typed description is the more specific, useful text to show
+// (and to default the incident title from) instead of that generic placeholder label.
+export function getSubCategoryLabel(category, subCategory, otherDescription) {
+  if (subCategory === 'other_described') return (otherDescription || '').trim();
+  return getSubCategories(category).find((opt) => opt.value === subCategory)?.label || '';
+}
+
 // Same lightweight keyword-scan heuristic as suggestCategoryFromText, one level down — once a
 // top-level category is known (picked or itself suggested), this narrows to the sub-category
 // "What best describes it?" pick.

@@ -204,7 +204,7 @@ export default function ComplainantDashboardPage() {
         </div>
       </div>
 
-      <MakeComplaintModal open={showNewModal} onClose={() => setShowNewModal(false)} />
+      <MakeComplaintModal open={showNewModal} onClose={() => setShowNewModal(false)} isComplainant />
     </AppShell>
   );
 }

@@ -63,6 +63,8 @@
   "wizard": {
     "stepLabel": "Step {{current}} of {{total}}",
     "optional": "optional",
+    "landmarkLabel": "Landmark",
+    "landmarkPlaceholder": "Nearest bus stop, building, or well-known place",
     "stepper": {
       "category": "Category",
       "incident": "Incident",
@@ -80,7 +82,9 @@
     "category": {
       "title": "What happened?",
       "subtitle": "Select the category that best describes what you experienced.",
-      "subLabel": "What best describes it?"
+      "subLabel": "What best describes it?",
+      "otherDescribeLabel": "Please describe",
+      "otherDescribePlaceholder": "Briefly describe what this is about"
     },
     "incident": {
       "title": "Tell us more",
@@ -110,9 +114,10 @@
       "whoExperienced": "Who experienced this?",
       "myself": "Myself (I am the victim)",
       "someoneElse": "Someone else (Reporting on behalf)",
-      "moreAboutYou": "A little more about you",
       "addressPlaceholder": "Street, city, state",
       "populationQuestion": "Do you belong to a general or key population?",
+      "populationQuestionOther": "Do they belong to a general or key population?",
+      "populationHint": "Key Population covers groups facing added risk of rights violations (e.g. sex workers, LGBTQ+ persons, people who use drugs, living with HIV, or in detention). Otherwise, General Population.",
       "generalPopulation": "General Population",
       "keyPopulation": "Key Population",
       "keyPopulationSheetTitle": "Which group do they belong to?",

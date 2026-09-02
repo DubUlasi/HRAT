@@ -8,7 +8,7 @@ import '../../styles/makeComplaintModal.css';
 
 // Same wizard, same fields, same signup.css styling as the public /complaint page — framed in
 // a wide desktop wizard modal chrome (header + numbered stepper bar) instead of navigating away.
-export default function MakeComplaintModal({ open, onClose, prefillPhone }) {
+export default function MakeComplaintModal({ open, onClose, prefillPhone, isComplainant = false }) {
   const { t } = useTranslation();
 
   if (!open) return null;
@@ -29,7 +29,7 @@ export default function MakeComplaintModal({ open, onClose, prefillPhone }) {
           </div>
         </div>
         <div className="wizard-modal-body">
-          <ComplaintWizardForm onComplete={onClose} initialVictimPhone={prefillPhone} skipPhoneGate />
+          <ComplaintWizardForm onComplete={onClose} initialVictimPhone={prefillPhone} skipPhoneGate isComplainant={isComplainant} />
         </div>
       </div>
     </div>,

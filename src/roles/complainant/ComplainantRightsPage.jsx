@@ -119,7 +119,7 @@ export default function ComplainantRightsPage() {
         </div>
       </div>
 
-      <MakeComplaintModal open={showNewModal} onClose={() => setShowNewModal(false)} />
+      <MakeComplaintModal open={showNewModal} onClose={() => setShowNewModal(false)} isComplainant />
     </AppShell>
   );
 }

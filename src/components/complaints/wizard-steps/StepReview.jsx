@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { ChevronDown, Pencil, MapPin, Calendar, Paperclip, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../../context/I18nContext';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../../constants/complaintCategories';
-import { getSubCategories } from '../../../constants/complaintSubCategories';
 import { getKeyPopulation } from '../../../constants/keyPopulations';
 import { relevantOfficesForComplaint, recommendedOfficeForComplaint } from '../../../constants/officeRecommendation';
 
@@ -11,7 +10,7 @@ import { relevantOfficesForComplaint, recommendedOfficeForComplaint } from '../.
 // select relocated here from the old final step, and the Submit button.
 export default function StepReview({
   category,
-  subCategory,
+  subCategoryLabel,
   incident,
   victims,
   violators,
@@ -25,7 +24,6 @@ export default function StepReview({
   stepLabel,
 }) {
   const { t } = useTranslation();
-  const subCategoryLabel = getSubCategories(category).find((o) => o.value === subCategory)?.label;
   const categoryColor = CATEGORY_COLOR[category] || 'info';
   const relevantOffices = relevantOfficesForComplaint(incident.location, victims, violators);
   const recommendedOffice = recommendedOfficeForComplaint(incident.location, victims, violators);
@@ -92,7 +90,11 @@ export default function StepReview({
           <div className="review-summary-body">
             <p className="review-summary-line strong">{incident.subject}</p>
             <p className="review-summary-line">{incident.description}</p>
-            {incident.location && <p className="review-summary-meta"><MapPin size={12} /> {incident.location}</p>}
+            {incident.location && (
+              <p className="review-summary-meta">
+                <MapPin size={12} /> {incident.location}{incident.landmark ? ` (near ${incident.landmark})` : ''}
+              </p>
+            )}
             {incident.date && <p className="review-summary-meta"><Calendar size={12} /> {incident.date}</p>}
             {incident.evidenceFiles.length > 0 && (
               <p className="review-summary-meta">
@@ -118,7 +120,11 @@ export default function StepReview({
                 <div className="review-summary-person-block" key={index}>
                   <p className="review-summary-line strong">{victim.firstName} {victim.lastName}</p>
                   <p className="review-summary-meta">{victim.phone}</p>
-                  {victim.address && <p className="review-summary-meta"><MapPin size={12} /> {victim.address}</p>}
+                  {victim.address && (
+                    <p className="review-summary-meta">
+                      <MapPin size={12} /> {victim.address}{victim.landmark ? ` (near ${victim.landmark})` : ''}
+                    </p>
+                  )}
                   {victimPopulation && <p className="review-summary-meta">{victimPopulation.label}</p>}
                 </div>
               );
@@ -144,7 +150,11 @@ export default function StepReview({
                   <>
                     <p className="review-summary-line strong">{violator.firstName} {violator.lastName}</p>
                     {violator.phone && <p className="review-summary-meta">{violator.phone}</p>}
-                    {violator.address && <p className="review-summary-meta"><MapPin size={12} /> {violator.address}</p>}
+                    {violator.address && (
+                      <p className="review-summary-meta">
+                        <MapPin size={12} /> {violator.address}{violator.landmark ? ` (near ${violator.landmark})` : ''}
+                      </p>
+                    )}
                   </>
                 )}
               </div>

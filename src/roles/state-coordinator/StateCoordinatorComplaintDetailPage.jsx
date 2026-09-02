@@ -15,10 +15,11 @@ import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
 import RelatedComplaintsPanel from '../../components/complaints/RelatedComplaintsPanel';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import FlagComplaintModal from '../../components/complaints/FlagComplaintModal';
+import InvestigationActivitiesCard from '../../components/complaints/InvestigationActivitiesCard';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { downloadComplaintReport } from '../../utils/exportUtils';
-import { stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
+import { stageProgressPercent, isBounceBackActivity, buildActivityTimeline, canStateCoordinatorCommentOnActivities } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices, statePersonnel } from '../../data/mockOfficers';
 import { needsPersonnelAssignment, needsCoordinatorReview } from './stateCoordinatorQueue';
@@ -44,7 +45,7 @@ const SUCCESS_COPY = {
 export default function StateCoordinatorComplaintDetailPage() {
   const { complaintId } = useParams();
   const { user } = useAuth();
-  const { getComplaintById, findRelatedComplaints, attachDocuments, toggleComplaintFlag, assignStatePersonnel, stateCoordinatorReview } = useComplaints();
+  const { getComplaintById, findRelatedComplaints, attachDocuments, toggleComplaintFlag, assignStatePersonnel, stateCoordinatorReview, addActivityComment, updateActivityComment } = useComplaints();
 
   const complaint = getComplaintById(complaintId);
   const [flow, setFlow] = useState({ type: null, step: null, payload: null });
@@ -66,6 +67,7 @@ export default function StateCoordinatorComplaintDetailPage() {
   }
 
   const officeId = user?.officeId;
+  const officerId = user?.officerId;
   const closeFlow = () => setFlow({ type: null, step: null, payload: null });
   const handleInputSubmit = (payload) => setFlow((f) => ({ ...f, step: 'confirm', payload }));
 
@@ -101,6 +103,12 @@ export default function StateCoordinatorComplaintDetailPage() {
     }
     return null;
   };
+
+  // Sorted by when the activity actually happened, not when it was typed into the system —
+  // older entries predating the happenedOn field fall back to their loggedAt.
+  const activities = [...(complaint.investigation.activities || [])].sort(
+    (a, b) => new Date(b.happenedOn || b.loggedAt) - new Date(a.happenedOn || a.loggedAt)
+  );
 
   const sortedActivity = [...complaint.activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const progressPct = stageProgressPercent(complaint.stageIndex);
@@ -222,6 +230,15 @@ export default function StateCoordinatorComplaintDetailPage() {
               )}
             </div>
           )}
+
+          <InvestigationActivitiesCard
+            activities={activities}
+            canComment={canStateCoordinatorCommentOnActivities(complaint)}
+            onAddComment={(entry, text) => addActivityComment(complaint.id, entry.id, text)}
+            canEditComments={canStateCoordinatorCommentOnActivities(complaint)}
+            currentUserId={officerId}
+            onEditComment={(entry, comment, text) => updateActivityComment(complaint.id, entry.id, comment.id, text)}
+          />
         </div>
 
         <div className="detail-column-right">

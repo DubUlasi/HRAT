@@ -130,6 +130,17 @@ export default function StepViolatorDetails({ violators, onChange, onAdd, onRemo
                     onChange={(address) => onChange(index, { address })}
                   />
                 </div>
+
+                <div className="su-field-group full-width">
+                  <label className="su-label-dark">{t('wizard.landmarkLabel')} ({t('wizard.optional')})</label>
+                  <input
+                    type="text"
+                    className="su-input-white"
+                    placeholder={t('wizard.landmarkPlaceholder')}
+                    value={violator.landmark}
+                    onChange={(e) => onChange(index, { landmark: e.target.value })}
+                  />
+                </div>
               </div>
             )}
           </div>

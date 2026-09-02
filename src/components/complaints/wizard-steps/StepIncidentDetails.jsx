@@ -122,6 +122,19 @@ export default function StepIncidentDetails({ value, onChange, onBack, onContinu
 
         <div className="su-field-group full-width">
           <label className="su-label-dark">
+            {t('wizard.landmarkLabel')} ({t('wizard.optional')})
+          </label>
+          <input
+            type="text"
+            className="su-input-white"
+            placeholder={t('wizard.landmarkPlaceholder')}
+            value={value.landmark}
+            onChange={(e) => onChange({ landmark: e.target.value })}
+          />
+        </div>
+
+        <div className="su-field-group full-width">
+          <label className="su-label-dark">
             {t('wizard.incident.dateLabel')} ({t('wizard.optional')})
           </label>
           <input

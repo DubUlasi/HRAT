@@ -13,7 +13,7 @@ export default function ComplaintWizardPage() {
         <img src="/hrat_nhrc_logo.png" alt="HRAT Logo" className="wizard-page-header-logo" />
         <LanguageSwitcher />
       </div>
-      <ComplaintWizardForm onComplete={() => navigate('/')} />
+      <ComplaintWizardForm onComplete={() => navigate('/')} isComplainant />
     </div>
   );
 }

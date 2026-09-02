@@ -6,12 +6,13 @@ import { useAuth } from './AuthContext';
 
 const ComplaintsContext = createContext(null);
 
-// Only Supervisors and Directors can comment on an investigation activity log entry today — kept
-// local (not a general ROLE_LABELS export) since nothing else in the app needs a role label at
-// comment-creation time.
+// Only Supervisors and Directors (and, for the state-office detour, the State Coordinator) can
+// comment on an investigation activity log entry today — kept local (not a general ROLE_LABELS
+// export) since nothing else in the app needs a role label at comment-creation time.
 const COMMENT_AUTHOR_ROLE_LABELS = {
   'department-supervisor': 'Department Supervisor',
   'department-director': 'Department Director',
+  'state-coordinator': 'State Coordinator',
 };
 
 function nowIso() {
@@ -222,26 +223,40 @@ export function ComplaintsProvider({ children }) {
   // into the automatic flow the moment the toggle is on, whether it's a seed complaint that
   // predates this feature or one left unnumbered from a stretch when the toggle was off.
   // Complaints that already have a number are untouched either way — only the not-yet-numbered
-  // ones move. Re-runs whenever the toggle flips on or the complaint list changes; once nothing
-  // matches, the functional update returns the same array reference and React skips the render.
+  // ones move. Also sweeps unnumbered complaints sitting in the state-office detour
+  // (SENT_TO_STATE_OFFICE) — numbering there is orthogonal to the detour itself, so this only
+  // stamps the number and leaves subStatus/stageIndex untouched (unlike the NEW case, which also
+  // advances the complaint into COMPLAINT_NUMBER_ASSIGNMENT). Re-runs whenever the toggle flips
+  // on or the complaint list changes; once nothing matches, the functional update returns the
+  // same array reference and React skips the render.
   useEffect(() => {
     if (!complaintNumberAuto) return;
     setComplaints((prev) => {
-      const pending = prev.filter((c) => c.subStatus === SUB_STATUS.NEW && !c.complaintNumber);
+      const pending = prev.filter((c) => !c.complaintNumber && (c.subStatus === SUB_STATUS.NEW || c.subStatus === SUB_STATUS.SENT_TO_STATE_OFFICE));
       if (pending.length === 0) return prev;
       let seq = complaintNumberSeq;
       const next = prev.map((c) => {
-        if (c.subStatus !== SUB_STATUS.NEW || c.complaintNumber) return c;
-        const complaintNumber = formatComplaintNumber(complaintNumberFormat, seq);
-        seq += 1;
-        let updated = {
-          ...c,
-          complaintNumber,
-          subStatus: SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT,
-          stageIndex: STAGE_ORDER.indexOf('case_created'),
-        };
-        updated = pushActivity(updated, `Complaint number ${complaintNumber} assigned automatically`, 'System');
-        return updated;
+        if (c.complaintNumber) return c;
+        if (c.subStatus === SUB_STATUS.NEW) {
+          const complaintNumber = formatComplaintNumber(complaintNumberFormat, seq);
+          seq += 1;
+          let updated = {
+            ...c,
+            complaintNumber,
+            subStatus: SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT,
+            stageIndex: STAGE_ORDER.indexOf('case_created'),
+          };
+          updated = pushActivity(updated, `Complaint number ${complaintNumber} assigned automatically`, 'System');
+          return updated;
+        }
+        if (c.subStatus === SUB_STATUS.SENT_TO_STATE_OFFICE) {
+          const complaintNumber = formatComplaintNumber(complaintNumberFormat, seq);
+          seq += 1;
+          let updated = { ...c, complaintNumber };
+          updated = pushActivity(updated, `Complaint number ${complaintNumber} assigned automatically`, 'System');
+          return updated;
+        }
+        return c;
       });
       updateComplaintNumberSeq(seq);
       return next;
@@ -639,7 +654,10 @@ export function ComplaintsProvider({ children }) {
       let next = {
         ...c,
         subStatus: c.subStatus === SUB_STATUS.ASSIGNED_TO_INVESTIGATOR ? SUB_STATUS.INVESTIGATING : c.subStatus,
-        stageIndex: STAGE_ORDER.indexOf('under_investigation'),
+        // Gated the same way as subStatus above — a state-office complaint logging an activity
+        // here should keep its stageIndex untouched (it stays -1 throughout that whole detour),
+        // not get pulled onto the main pipeline's "Under Investigation" stage.
+        stageIndex: c.subStatus === SUB_STATUS.ASSIGNED_TO_INVESTIGATOR ? STAGE_ORDER.indexOf('under_investigation') : c.stageIndex,
         documents: [...(c.documents || []), ...newDocs],
         investigation: { ...c.investigation, activities: [...activities, entry] },
       };
@@ -897,6 +915,15 @@ export function ComplaintsProvider({ children }) {
     // original NEW/unnumbered state so the manual assign-a-Desk-Officer flow still applies.
     const autoNumber = complaintNumberAuto;
     const complaintNumber = autoNumber ? formatComplaintNumber(complaintNumberFormat, complaintNumberSeq) : null;
+    // Selecting a state office (anything but head office) at filing time routes the complaint
+    // straight into the state-office detour instead of the head-office pipeline — the state
+    // office is theirs from day one, not something Registry Head has to manually hand off via
+    // reassignToStateOffice. Numbering is orthogonal to routing: it still happens immediately
+    // when auto-numbering is on regardless of which office it's headed to; when it's off, a
+    // State Personnel officer processes the number themselves once assigned (see
+    // needsNumberProcessing/processComplaintNumberAssignment), the exact same two-step pattern
+    // the Desk Officer already uses at head office.
+    const isStateOfficeRouted = !!office && office !== 'hq';
     let complaint = {
       id,
       subject,
@@ -925,7 +952,9 @@ export function ComplaintsProvider({ children }) {
       // with the original complaint) — shown together with `evidence` on the detail page's
       // Documents & Resources section. See attachDocuments below for how entries get added.
       documents: [],
-      subStatus: autoNumber ? SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT : SUB_STATUS.NEW,
+      subStatus: isStateOfficeRouted
+        ? SUB_STATUS.SENT_TO_STATE_OFFICE
+        : (autoNumber ? SUB_STATUS.COMPLAINT_NUMBER_ASSIGNMENT : SUB_STATUS.NEW),
       stageIndex: autoNumber ? STAGE_ORDER.indexOf('case_created') : -1,
       registryOfficerId: null,
       admissibilityOfficerId: null,
@@ -939,11 +968,17 @@ export function ComplaintsProvider({ children }) {
       supervisorReview: { remark: null, satisfied: null, reviewedAt: null },
       directorReview: { remark: null, action: null, reviewedAt: null },
       esEscalation: { escalated: false, note: null, escalatedBy: null, escalatedAt: null, resolved: false },
-      stateOffice: {
-        sentTo: null, sentAt: null, remark: null,
-        assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
-        submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
-      },
+      stateOffice: isStateOfficeRouted
+        ? {
+            sentTo: office, sentAt: nowIso(), remark: 'Filed directly for this office.',
+            assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
+            submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+          }
+        : {
+            sentTo: null, sentAt: null, remark: null,
+            assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
+            submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+          },
       council: { verdict: null, recommendation: null, decidedBy: null, decidedAt: null },
       flagged: false,
       flagReason: null,
@@ -952,6 +987,9 @@ export function ComplaintsProvider({ children }) {
       activityLog: [],
     };
     complaint = pushActivity(complaint, 'Complaint submitted', actorName);
+    if (isStateOfficeRouted) {
+      complaint = pushActivity(complaint, 'Filed directly to state office', actorName);
+    }
     if (autoNumber) {
       complaint = pushActivity(complaint, `Complaint number ${complaintNumber} assigned automatically`, 'System');
     }

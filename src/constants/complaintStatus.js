@@ -152,3 +152,12 @@ export function canSupervisorCommentOnActivities(subStatus) {
 export function canDirectorCommentOnActivities(subStatus) {
   return DIRECTOR_COMMENT_STATUSES.includes(subStatus);
 }
+
+// The state-office detour has no equivalent step-by-step subStatus chain — it stays at
+// SENT_TO_STATE_OFFICE for its entire duration, with progress read off the `stateOffice` fields
+// instead (see ComplaintsContext.jsx). So the State Coordinator's comment window isn't a status
+// list like the two above, it's simply "while this complaint is still out at the state office" —
+// open from the moment it's routed there, closed once returnFromStateOffice sends it back.
+export function canStateCoordinatorCommentOnActivities(complaint) {
+  return complaint?.subStatus === SUB_STATUS.SENT_TO_STATE_OFFICE && !complaint?.stateOffice?.returnedAt;
+}

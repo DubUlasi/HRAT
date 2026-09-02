@@ -9,6 +9,113 @@ function activity(message, actor, timestamp) {
   return { id: `${actor}-${timestamp}-${message.slice(0, 8)}`, message, actor, timestamp };
 }
 
+// Compact factory for the batch of state-office demo complaints below (STATE_OFFICE_BATCH) —
+// same full shape as the hand-written c76–c82 records, just generated from a data table instead
+// of repeating the same ~20 boilerplate fields two dozen times. `stage` is where it sits in the
+// state-office detour: 'unassigned' | 'in_progress' (assigned, no findings yet) | 'submitted'
+// (awaiting coordinator review) | 'returned' (already sent back to head office).
+const SEND_REMARKS = [
+  'Closer to where the incident occurred.',
+  'Local witnesses are more accessible from the state office.',
+  'Complainant requested an in-person interview rather than remote.',
+  'Records relevant to this case are held locally.',
+];
+const ASSIGN_REMARKS = [
+  'Please verify the details directly with those involved.',
+  'Please review this locally and confirm the key facts before submitting.',
+  'Please speak with any available witnesses and document the site if relevant.',
+  'Please request any official paperwork tied to this incident.',
+];
+const FINDING_SUMMARIES = [
+  'Interviewed those involved and confirmed the account given in the original complaint.',
+  'Reviewed the available records and spoke with two witnesses; findings support the complaint.',
+  'Visited the location, documented what was found, and gathered statements from those present.',
+  'Confirmed the key facts locally; recommend proceeding with the standard admissibility review.',
+];
+const REVIEW_REMARKS = [
+  'Thorough work, agree with the findings. Resuming at head office.',
+  'Well documented, no concerns. Sending back to head office.',
+  'Reviewed and satisfied with the local work done here.',
+];
+
+function makeStateOfficeComplaint({ id, subject, category, description, dateFiled, victim, allegedViolator, stage }, index) {
+  const sentAt = `${dateFiled}T10:00:00`;
+  const addDays = (n) => new Date(new Date(`${dateFiled}T10:00:00`).getTime() + n * 86400000).toISOString().slice(0, 19);
+
+  const assignedAt = stage !== 'unassigned' ? addDays(1) : null;
+  const submittedAt = ['submitted', 'returned'].includes(stage) ? addDays(8) : null;
+  const returnedAt = stage === 'returned' ? addDays(9) : null;
+
+  const activityLog = [
+    activity('Complaint submitted by complainant', victim.name, `${dateFiled}T08:00:00`),
+    activity(`Reassigned to state office, "${SEND_REMARKS[index % SEND_REMARKS.length]}"`, 'Sam Peter', sentAt),
+  ];
+  if (assignedAt) {
+    activityLog.push(activity(`Assigned to state personnel officer, Tunde Adebisi, "${ASSIGN_REMARKS[index % ASSIGN_REMARKS.length]}"`, 'Aisha Bello', assignedAt));
+  }
+  if (submittedAt) {
+    activityLog.push(activity('State personnel findings submitted for coordinator review', 'Tunde Adebisi', submittedAt));
+  }
+  if (returnedAt) {
+    activityLog.push(activity(`Returned from state office to head office, "${REVIEW_REMARKS[index % REVIEW_REMARKS.length]}"`, 'Aisha Bello', returnedAt));
+  }
+
+  return {
+    id, subject, complaintNumber: null, category, scope: 'single', description, dateFiled,
+    victim, allegedViolator, office: null, department: null,
+    subStatus: stage === 'returned' ? SUB_STATUS.NEW : SUB_STATUS.SENT_TO_STATE_OFFICE,
+    stageIndex: -1,
+    registryOfficerId: null, admissibilityOfficerId: null,
+    admissibility: { decision: null, explanation: null, officerRemark: null, headConfirmed: false, headAgree: null, headRemark: null },
+    investigation: { finding: null },
+    stateOffice: {
+      sentTo: 'lagos', sentAt, remark: SEND_REMARKS[index % SEND_REMARKS.length],
+      assignedPersonnelId: assignedAt ? 'sp-tunde' : null,
+      assignedPersonnelName: assignedAt ? 'Tunde Adebisi' : null,
+      assignmentRemark: assignedAt ? ASSIGN_REMARKS[index % ASSIGN_REMARKS.length] : null,
+      assignedAt,
+      submittedAt,
+      findingSummary: submittedAt ? FINDING_SUMMARIES[index % FINDING_SUMMARIES.length] : null,
+      reviewRemark: returnedAt ? REVIEW_REMARKS[index % REVIEW_REMARKS.length] : null,
+      returnedAt,
+    },
+    activityLog,
+  };
+}
+
+const STATE_OFFICE_BATCH = [
+  // ── returned (oldest — full detour already completed) ──
+  { id: 'c101', stage: 'returned', dateFiled: '2026-06-25', category: 'economic_rights', subject: 'Bribery Demand for Business Permit', description: 'The complainant states a local government permit officer refused to process her market stall renewal unless she paid an unofficial "processing fee" on top of the official charge.', victim: { name: 'Ijeoma Ude', gender: 'Female', phone: '08201234561', email: 'ijeoma.ude@example.com', ageAtIncident: 39, dob: '1987-02-11', address: 'Ojo, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Local Government Permit Office, Ojo', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Ojo, Lagos' } },
+  { id: 'c102', stage: 'returned', dateFiled: '2026-06-28', category: 'civil_political', subject: 'Assault of Journalist Covering Protest', description: 'The complainant, a freelance journalist, alleges he was struck and had his camera seized by security personnel while filming a peaceful protest, with no footage returned afterward.', victim: { name: 'Femi Adigun', gender: 'Male', phone: '08212345672', email: 'femi.adigun@example.com', ageAtIncident: 30, dob: '1996-05-19', address: 'Yaba, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Unidentified Security Personnel', unidentified: true, gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: null } },
+  { id: 'c103', stage: 'returned', dateFiled: '2026-07-01', category: 'economic_rights', subject: 'Unlawful Confiscation of Motorcycle', description: 'The complainant states his motorcycle, his only source of income, was seized by a state task force without a receipt or any explanation, and has not been returned weeks later.', victim: { name: 'Yakubu Mohammed', gender: 'Male', phone: '08223456783', email: 'yakubu.mohammed@example.com', ageAtIncident: 27, dob: '1999-01-08', address: 'Agege, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Lagos State Task Force', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos' } },
+  { id: 'c104', stage: 'returned', dateFiled: '2026-07-03', category: 'labour_abuse', subject: 'Denial of Maternity Leave Rights', description: 'The complainant states her employer refused to grant her statutory maternity leave and threatened to terminate her employment if she did not return to work within two weeks of delivery.', victim: { name: 'Blessing Okafor', gender: 'Female', phone: '08234567894', email: 'blessing.okafor@example.com', ageAtIncident: 28, dob: '1998-03-22', address: 'Ojota, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Prime Retail Stores Ltd.', gender: null, phone: '08145678905', email: 'hr@primeretail.example', ageAtIncident: null, dob: null, address: 'Ojota, Lagos' } },
+  { id: 'c105', stage: 'returned', dateFiled: '2026-07-06', category: 'others', subject: 'Neglect of Elderly Person in Care Facility', description: 'The complainant states her elderly father, a resident at a private care facility, was left without medication for several days and developed pressure sores due to lack of basic attention.', victim: { name: 'Chief Bayo Adebayo', gender: 'Male', phone: '08256789016', email: null, ageAtIncident: 79, dob: '1947-09-14', address: 'Ikeja, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Golden Years Care Home', gender: null, phone: '08167890127', email: null, ageAtIncident: null, dob: null, address: 'Ikeja, Lagos' } },
+
+  // ── submitted (awaiting coordinator review) ──
+  { id: 'c96', stage: 'submitted', dateFiled: '2026-07-10', category: 'others', subject: 'Extrajudicial Threats by Cult Group', description: 'The complainant states members of a local cult group have repeatedly threatened him and his family after he refused to pay a recurring "protection levy" in his neighborhood.', victim: { name: 'Peter Nnamdi', gender: 'Male', phone: '08267890128', email: 'peter.nnamdi@example.com', ageAtIncident: 34, dob: '1992-06-30', address: 'Ajegunle, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Local Cult Group', unidentified: true, gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Ajegunle, Lagos' } },
+  { id: 'c97', stage: 'submitted', dateFiled: '2026-07-14', category: 'economic_rights', subject: 'Forced Eviction of Slum Residents', description: 'The complainant, representing residents of an informal settlement, states dozens of families were forcibly evicted with structures demolished overnight and no resettlement plan provided.', victim: { name: 'Amina Yusuf', gender: 'Female', phone: '08278901239', email: 'amina.yusuf@example.com', ageAtIncident: 41, dob: '1985-08-02', address: 'Makoko, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Lagos State Task Force on Environmental Sanitation', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos' } },
+  { id: 'c98', stage: 'submitted', dateFiled: '2026-07-17', category: 'discrimination', subject: 'Racial Discrimination in Housing Rental', description: 'The complainant, a Nigerian of Igbo descent, states a property agent refused to rent him an apartment after learning his ethnicity, citing "landlord preference" despite meeting all requirements.', victim: { name: 'David Okoro', gender: 'Male', phone: '08289012340', email: 'david.okoro@example.com', ageAtIncident: 31, dob: '1995-04-17', address: 'Lekki, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Sunview Properties Ltd.', gender: null, phone: '08190123451', email: 'info@sunviewproperties.example', ageAtIncident: null, dob: null, address: 'Lekki, Lagos' } },
+  { id: 'c99', stage: 'submitted', dateFiled: '2026-07-20', category: 'police_brutality', subject: 'Excessive Force During Protest Dispersal', description: 'The complainant states she was struck with a baton and briefly detained while attempting to leave a protest area, despite not participating in any confrontation with officers.', victim: { name: 'Chiamaka Okeke', gender: 'Female', phone: '08290123452', email: 'chiamaka.okeke@example.com', ageAtIncident: 25, dob: '2001-10-05', address: 'Yaba, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Mobile Police Unit 15', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos' } },
+  { id: 'c100', stage: 'submitted', dateFiled: '2026-07-23', category: 'discrimination', subject: 'Denial of Disability Access at Government Office', description: 'The complainant, a wheelchair user, states he was unable to access a government office to file routine paperwork because there was no ramp or alternative entrance, and staff refused to assist him outside.', victim: { name: 'Rasheed Balogun', gender: 'Male', phone: '08301234563', email: 'rasheed.balogun@example.com', ageAtIncident: 44, dob: '1982-12-01', address: 'Alausa, Ikeja, Lagos', populationType: 'key', keyPopulationGroup: 'pwd' }, allegedViolator: { name: 'Lagos State Secretariat, Alausa', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Alausa, Ikeja, Lagos' } },
+
+  // ── in_progress (assigned, no findings yet) ──
+  { id: 'c89', stage: 'in_progress', dateFiled: '2026-07-27', category: 'discrimination', subject: 'Harassment of Individual by Neighborhood Mob', description: 'The complainant states a mob gathered outside their residence making threats and shouting slurs after online rumors spread about their private life, forcing them to flee to a relative\'s home.', victim: { name: 'Chidera Obi', gender: 'Female', phone: '08312345674', email: 'chidera.obi@example.com', ageAtIncident: 23, dob: '2003-02-27', address: 'Ajegunle, Lagos', populationType: 'key', keyPopulationGroup: 'lgbtq' }, allegedViolator: { name: 'Neighborhood Group, Ajegunle', unidentified: true, gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Ajegunle, Lagos' } },
+  { id: 'c90', stage: 'in_progress', dateFiled: '2026-07-29', category: 'civil_political', subject: 'Unlawful Search of Private Residence', description: 'The complainant states officers entered his home without a warrant, searched every room, and damaged property while looking for a relative who does not live there.', victim: { name: 'Tobenna Nwafor', gender: 'Male', phone: '08323456785', email: 'tobenna.nwafor@example.com', ageAtIncident: 36, dob: '1990-07-13', address: 'Egbeda, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Rapid Response Squad Officers', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos' } },
+  { id: 'c91', stage: 'in_progress', dateFiled: '2026-08-01', category: 'police_brutality', subject: 'Physical Assault by Traffic Officials', description: 'The complainant states he was dragged from his vehicle and beaten by traffic officials after a dispute over an alleged parking violation, sustaining a fractured wrist.', victim: { name: 'Kunle Fashola', gender: 'Male', phone: '08334567896', email: 'kunle.fashola@example.com', ageAtIncident: 38, dob: '1988-11-25', address: 'Ikeja, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Lagos State Traffic Management Officials', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Ikeja, Lagos' } },
+  { id: 'c92', stage: 'in_progress', dateFiled: '2026-08-03', category: 'child_rights', subject: 'Child Labor at Market Stalls', description: 'The complainant, a market association member, reports several children under twelve are being made to sell goods late into the evening instead of attending school, allegedly arranged by relatives.', victim: { name: 'Unnamed Minor (reported by Blessing Nnamdi)', gender: null, phone: null, email: null, ageAtIncident: 11, dob: null, address: 'Balogun Market, Lagos Island', populationType: 'key', keyPopulationGroup: 'children' }, allegedViolator: { name: 'Balogun Market Trader Association Members', unidentified: true, gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos Island' } },
+  { id: 'c93', stage: 'in_progress', dateFiled: '2026-08-06', category: 'gender_based_violence', subject: 'Sexual Harassment by Supervisor', description: 'The complainant states her supervisor repeatedly made unwelcome advances and threatened to reduce her shifts when she refused, and that HR dismissed her complaint without any investigation.', victim: { name: 'Temitope Alao', gender: 'Female', phone: '08345678907', email: 'temitope.alao@example.com', ageAtIncident: 29, dob: '1997-05-09', address: 'Apapa, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Shift Supervisor, Coastal Logistics Ltd.', gender: 'Male', phone: null, email: null, ageAtIncident: null, dob: null, address: 'Apapa, Lagos' } },
+  { id: 'c94', stage: 'in_progress', dateFiled: '2026-08-08', category: 'civil_political', subject: 'Denial of Fair Hearing in Land Dispute', description: 'The complainant states a local land panel ruled against him in a boundary dispute without ever inviting him to present evidence, relying solely on the opposing party\'s submission.', victim: { name: 'Chief Adewale Ogunleye', gender: 'Male', phone: '08356789018', email: 'adewale.ogunleye@example.com', ageAtIncident: 61, dob: '1965-03-30', address: 'Epe, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Local Land Use Panel, Epe', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Epe, Lagos' } },
+  { id: 'c95', stage: 'in_progress', dateFiled: '2026-08-10', category: 'labour_abuse', subject: 'Unpaid Wages and Threats by Employer', description: 'The complainant states she has not been paid for three months of work and was threatened with dismissal without severance when she asked her employer for the outstanding wages.', victim: { name: 'Grace Effiong', gender: 'Female', phone: '08367890129', email: 'grace.effiong@example.com', ageAtIncident: 32, dob: '1994-01-16', address: 'Amuwo-Odofin, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Sunrise Textiles Nigeria Ltd.', gender: null, phone: '08178901230', email: 'admin@sunrisetextiles.example', ageAtIncident: null, dob: null, address: 'Amuwo-Odofin, Lagos' } },
+
+  // ── unassigned (newest — awaiting personnel assignment) ──
+  { id: 'c83', stage: 'unassigned', dateFiled: '2026-08-17', category: 'labour_abuse', subject: 'Forced Labor at Construction Site', description: 'The complainant states he and several other laborers were made to work sixteen-hour days without rest and had their pay withheld until the project\'s end, effectively trapping them on site.', victim: { name: 'Musa Danladi', gender: 'Male', phone: '08378901240', email: 'musa.danladi@example.com', ageAtIncident: 27, dob: '1999-04-12', address: 'Badagry, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'BuildRight Construction Ltd.', gender: null, phone: '08189012341', email: 'contact@buildright.example', ageAtIncident: null, dob: null, address: 'Badagry, Lagos' } },
+  { id: 'c84', stage: 'unassigned', dateFiled: '2026-08-19', category: 'others', subject: 'Denial of Medical Care at Public Hospital', description: 'The complainant states she was turned away from the emergency ward while in visible distress because she could not immediately produce a deposit, and had to be treated at a distant private clinic instead.', victim: { name: 'Chidinma Eze', gender: 'Female', phone: '08389012352', email: 'chidinma.eze@example.com', ageAtIncident: 30, dob: '1996-09-08', address: 'Lagos Island, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Lagos Island General Hospital Staff', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos Island, Lagos' } },
+  { id: 'c85', stage: 'unassigned', dateFiled: '2026-08-21', category: 'gender_based_violence', subject: 'Domestic Violence Case Dismissed by Local Police', description: 'The complainant states she reported repeated physical abuse by her husband to the local station, but officers told her to "settle it at home" and refused to open a formal case.', victim: { name: 'Amara Chukwu', gender: 'Female', phone: '08390123463', email: 'amara.chukwu@example.com', ageAtIncident: 34, dob: '1992-06-21', address: 'Ojodu, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Obinna Chukwu', gender: 'Male', phone: '08101234574', email: null, ageAtIncident: 37, dob: '1989-02-14', address: 'Ojodu, Lagos' } },
+  { id: 'c86', stage: 'unassigned', dateFiled: '2026-08-23', category: 'child_rights', subject: 'Unlawful Detention of Minor', description: 'The complainant states her fifteen-year-old son was held overnight at a police division without a guardian being notified, following an accusation of theft that was later dropped.', victim: { name: 'Unnamed Minor (reported by Hauwa Bello)', gender: 'Male', phone: null, email: null, ageAtIncident: 15, dob: null, address: 'Ikeja, Lagos', populationType: 'key', keyPopulationGroup: 'children' }, allegedViolator: { name: 'Ikeja Police Division', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Ikeja, Lagos' } },
+  { id: 'c87', stage: 'unassigned', dateFiled: '2026-08-25', category: 'environmental_rights', subject: 'Water Pollution from Factory Discharge', description: 'The complainant, representing residents near a processing plant, states untreated waste has been discharged into the community\'s only water source for months, causing illness among children.', victim: { name: 'Yakubu Sule', gender: 'Male', phone: '08112345685', email: 'yakubu.sule@example.com', ageAtIncident: 46, dob: '1980-08-19', address: 'Ikorodu, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Delta Chemicals Processing Ltd.', gender: null, phone: '08123456796', email: 'info@deltachemicals.example', ageAtIncident: null, dob: null, address: 'Ikorodu, Lagos' } },
+  { id: 'c88', stage: 'unassigned', dateFiled: '2026-08-27', category: 'economic_rights', subject: 'Denial of Land Compensation to Farmers', description: 'The complainant, representing a group of farmers, states their land was acquired for a road project two years ago and the promised compensation has never been paid despite repeated inquiries.', victim: { name: 'Ibrahim Musa', gender: 'Male', phone: '08134567807', email: 'ibrahim.musa@example.com', ageAtIncident: 52, dob: '1974-01-30', address: 'Epe, Lagos', populationType: 'general', keyPopulationGroup: null }, allegedViolator: { name: 'Lagos State Ministry of Works', gender: null, phone: null, email: null, ageAtIncident: null, dob: null, address: 'Lagos' } },
+].map(makeStateOfficeComplaint);
+
 export const mockComplaints = [
   {
     id: 'c1',
@@ -4785,5 +4892,241 @@ export const mockComplaints = [
       activity('State personnel findings submitted for coordinator review', 'Tunde Adebisi', '2026-08-14T16:00:00'),
     ],
   },
+  {
+    id: 'c78',
+    subject: 'Denial of Voting Rights at Polling Unit',
+    complaintNumber: null,
+    category: 'civil_political',
+    scope: 'single',
+    description: 'The complainant states he was turned away from his registered polling unit despite having a valid voter card, allegedly because officials claimed his name was "missing" from a list that other voters at the same address were on.',
+    dateFiled: '2026-08-20',
+    victim: {
+      name: 'Chukwuemeka Ibe',
+      gender: 'Male',
+      phone: '08156789234',
+      email: 'chukwuemeka.ibe@example.com',
+      ageAtIncident: 41,
+      dob: '1985-02-14',
+      address: 'Surulere, Lagos',
+      populationType: 'general',
+      keyPopulationGroup: null,
+    },
+    allegedViolator: {
+      name: 'Surulere Ward 3 Electoral Officials',
+      gender: null,
+      phone: null,
+      email: null,
+      ageAtIncident: null,
+      dob: null,
+      address: 'Surulere, Lagos',
+    },
+    office: null,
+    department: null,
+    subStatus: SUB_STATUS.SENT_TO_STATE_OFFICE,
+    stageIndex: -1,
+    registryOfficerId: null,
+    admissibilityOfficerId: null,
+    admissibility: { decision: null, explanation: null, officerRemark: null, headConfirmed: false, headAgree: null, headRemark: null },
+    investigation: { finding: null },
+    stateOffice: {
+      sentTo: 'lagos', sentAt: '2026-08-20T11:00:00', remark: 'Election-related, best handled locally while records are still fresh.',
+      assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
+      submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+    },
+    activityLog: [
+      activity('Complaint submitted by complainant', 'Chukwuemeka Ibe', '2026-08-20T08:00:00'),
+      activity('Reassigned to state office, "Election-related, best handled locally while records are still fresh."', 'Sam Peter', '2026-08-20T11:00:00'),
+    ],
+  },
+  {
+    id: 'c79',
+    subject: 'Extortion by Estate Security Guards',
+    complaintNumber: null,
+    category: 'others',
+    scope: 'single',
+    description: 'The complainant alleges private security guards at her residential estate have been demanding illegal "access fees" from visitors and residents, threatening to block entry or damage vehicles of those who refuse to pay.',
+    dateFiled: '2026-08-19',
+    victim: {
+      name: 'Folasade Bakre',
+      gender: 'Female',
+      phone: '08167890345',
+      email: 'folasade.bakre@example.com',
+      ageAtIncident: 37,
+      dob: '1989-06-22',
+      address: 'Lekki, Lagos',
+      populationType: 'general',
+      keyPopulationGroup: null,
+    },
+    allegedViolator: {
+      name: 'Lekki Gardens Estate Security',
+      gender: null,
+      phone: '08178901456',
+      email: null,
+      ageAtIncident: null,
+      dob: null,
+      address: 'Lekki, Lagos',
+    },
+    office: null,
+    department: null,
+    subStatus: SUB_STATUS.SENT_TO_STATE_OFFICE,
+    stageIndex: -1,
+    registryOfficerId: null,
+    admissibilityOfficerId: null,
+    admissibility: { decision: null, explanation: null, officerRemark: null, headConfirmed: false, headAgree: null, headRemark: null },
+    investigation: { finding: null },
+    stateOffice: {
+      sentTo: 'lagos', sentAt: '2026-08-19T14:30:00', remark: 'Complainant and witnesses are all local to Lagos.',
+      assignedPersonnelId: null, assignedPersonnelName: null, assignmentRemark: null, assignedAt: null,
+      submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+    },
+    activityLog: [
+      activity('Complaint submitted by complainant', 'Folasade Bakre', '2026-08-19T09:15:00'),
+      activity('Reassigned to state office, "Complainant and witnesses are all local to Lagos."', 'Sam Peter', '2026-08-19T14:30:00'),
+    ],
+  },
+  {
+    id: 'c80',
+    subject: 'Wrongful Arrest and Detention Without Charge',
+    complaintNumber: null,
+    category: 'police_brutality',
+    scope: 'single',
+    description: 'The complainant states he was arrested during a raid on his street and held for four days without being informed of any charge, released only after his family paid an unofficial "bail" fee to station officers.',
+    dateFiled: '2026-08-11',
+    victim: {
+      name: 'Segun Adeyemi',
+      gender: 'Male',
+      phone: '08189012567',
+      email: 'segun.adeyemi@example.com',
+      ageAtIncident: 26,
+      dob: '2000-04-03',
+      address: 'Mushin, Lagos',
+      populationType: 'general',
+      keyPopulationGroup: null,
+    },
+    allegedViolator: {
+      name: 'Mushin Divisional Police Station',
+      gender: null,
+      phone: null,
+      email: null,
+      ageAtIncident: null,
+      dob: null,
+      address: 'Mushin, Lagos',
+    },
+    office: null,
+    department: null,
+    subStatus: SUB_STATUS.SENT_TO_STATE_OFFICE,
+    stageIndex: -1,
+    registryOfficerId: null,
+    admissibilityOfficerId: null,
+    admissibility: { decision: null, explanation: null, officerRemark: null, headConfirmed: false, headAgree: null, headRemark: null },
+    investigation: { finding: null },
+    stateOffice: {
+      sentTo: 'lagos', sentAt: '2026-08-11T10:00:00', remark: 'Station records need to be reviewed in person at the Lagos office.',
+      assignedPersonnelId: 'sp-tunde', assignedPersonnelName: 'Tunde Adebisi', assignmentRemark: 'Please request the station\'s custody log for the relevant dates and speak with the family directly.', assignedAt: '2026-08-12T09:00:00',
+      submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+    },
+    activityLog: [
+      activity('Complaint submitted by complainant', 'Segun Adeyemi', '2026-08-11T08:00:00'),
+      activity('Reassigned to state office, "Station records need to be reviewed in person at the Lagos office."', 'Sam Peter', '2026-08-11T10:00:00'),
+      activity('Assigned to state personnel officer, Tunde Adebisi, "Please request the station\'s custody log for the relevant dates and speak with the family directly."', 'Aisha Bello', '2026-08-12T09:00:00'),
+    ],
+  },
+  {
+    id: 'c81',
+    subject: 'Workplace Discrimination Against Person With Disability',
+    complaintNumber: null,
+    category: 'discrimination',
+    scope: 'single',
+    description: 'The complainant, who uses a wheelchair, states she was passed over for a promotion she was qualified for after a manager told her directly that the new role "required someone who could move around the office easily."',
+    dateFiled: '2026-08-09',
+    victim: {
+      name: 'Ngozi Anyanwu',
+      gender: 'Female',
+      phone: '08190123678',
+      email: 'ngozi.anyanwu@example.com',
+      ageAtIncident: 33,
+      dob: '1993-09-17',
+      address: 'Victoria Island, Lagos',
+      populationType: 'key',
+      keyPopulationGroup: 'pwd',
+    },
+    allegedViolator: {
+      name: 'Meridian Business Solutions Ltd.',
+      gender: null,
+      phone: '08101234789',
+      email: 'hr@meridianbiz.example',
+      ageAtIncident: null,
+      dob: null,
+      address: 'Victoria Island, Lagos',
+    },
+    office: null,
+    department: null,
+    subStatus: SUB_STATUS.SENT_TO_STATE_OFFICE,
+    stageIndex: -1,
+    registryOfficerId: null,
+    admissibilityOfficerId: null,
+    admissibility: { decision: null, explanation: null, officerRemark: null, headConfirmed: false, headAgree: null, headRemark: null },
+    investigation: { finding: null },
+    stateOffice: {
+      sentTo: 'lagos', sentAt: '2026-08-09T13:00:00', remark: 'Complainant prefers to be interviewed in person rather than remotely.',
+      assignedPersonnelId: 'sp-tunde', assignedPersonnelName: 'Tunde Adebisi', assignmentRemark: 'Please arrange an in-person interview and request the promotion decision paperwork from HR.', assignedAt: '2026-08-10T09:00:00',
+      submittedAt: null, findingSummary: null, reviewRemark: null, returnedAt: null,
+    },
+    activityLog: [
+      activity('Complaint submitted by complainant', 'Ngozi Anyanwu', '2026-08-09T10:00:00'),
+      activity('Reassigned to state office, "Complainant prefers to be interviewed in person rather than remotely."', 'Sam Peter', '2026-08-09T13:00:00'),
+      activity('Assigned to state personnel officer, Tunde Adebisi, "Please arrange an in-person interview and request the promotion decision paperwork from HR."', 'Aisha Bello', '2026-08-10T09:00:00'),
+    ],
+  },
+  {
+    id: 'c82',
+    subject: 'Illegal Demolition of Market Stalls',
+    complaintNumber: null,
+    category: 'economic_rights',
+    scope: 'single',
+    description: 'The complainant, a market trader, states her stall and stock were demolished by task force officials without any prior notice or the compensation promised under the local market relocation policy.',
+    dateFiled: '2026-07-28',
+    victim: {
+      name: 'Adaeze Okonji',
+      gender: 'Female',
+      phone: '08112345890',
+      email: 'adaeze.okonji@example.com',
+      ageAtIncident: 45,
+      dob: '1981-11-08',
+      address: 'Oshodi, Lagos',
+      populationType: 'general',
+      keyPopulationGroup: null,
+    },
+    allegedViolator: {
+      name: 'Lagos State Environmental Task Force',
+      gender: null,
+      phone: null,
+      email: null,
+      ageAtIncident: null,
+      dob: null,
+      address: 'Oshodi, Lagos',
+    },
+    office: null,
+    department: null,
+    subStatus: SUB_STATUS.NEW,
+    stageIndex: -1,
+    registryOfficerId: null,
+    admissibilityOfficerId: null,
+    admissibility: { decision: null, explanation: null, officerRemark: null, headConfirmed: false, headAgree: null, headRemark: null },
+    investigation: { finding: null },
+    stateOffice: {
+      sentTo: 'lagos', sentAt: '2026-07-28T10:00:00', remark: 'Local market association can provide records faster than HQ can.',
+      assignedPersonnelId: 'sp-tunde', assignedPersonnelName: 'Tunde Adebisi', assignmentRemark: 'Please speak with the market association chairman and document the extent of the loss.', assignedAt: '2026-07-29T09:00:00',
+      submittedAt: '2026-08-06T15:00:00', findingSummary: 'Confirmed with the market association that no relocation notice was given. Photographed the site and collected three witness statements. Recommend the task force be required to honor the compensation policy.', reviewRemark: 'Solid documentation, agree with the recommendation. Resuming at head office.', returnedAt: '2026-08-07T10:00:00',
+    },
+    activityLog: [
+      activity('Complaint submitted by complainant', 'Adaeze Okonji', '2026-07-28T08:30:00'),
+      activity('Reassigned to state office, "Local market association can provide records faster than HQ can."', 'Sam Peter', '2026-07-28T10:00:00'),
+      activity('Assigned to state personnel officer, Tunde Adebisi, "Please speak with the market association chairman and document the extent of the loss."', 'Aisha Bello', '2026-07-29T09:00:00'),
+      activity('State personnel findings submitted for coordinator review', 'Tunde Adebisi', '2026-08-06T15:00:00'),
+      activity('Returned from state office to head office, "Solid documentation, agree with the recommendation. Resuming at head office."', 'Aisha Bello', '2026-08-07T10:00:00'),
+    ],
+  },
+  ...STATE_OFFICE_BATCH,
 
 ];

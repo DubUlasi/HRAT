@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, Search, Inbox, CheckCircle2, HelpCircle, Settings, FileBarChart, TrendingUp, AlertOctagon, ClipboardCheck, Flag } from 'lucide-react';
+import { LayoutDashboard, FileText, Search, Inbox, CheckCircle2, HelpCircle, Settings, FileBarChart, TrendingUp, AlertOctagon, ClipboardCheck, Flag, Users } from 'lucide-react';
 
 // `section` groups items into a labeled block in the sidebar (see Sidebar.jsx) — Dashboard is
 // the only item left without one, rendering as a flat top-level link above every section.
@@ -15,6 +15,7 @@ export const registryHeadNavItems = [
   { to: '/registry-head/complaints/treated', icon: CheckCircle2, label: 'Treated Complaints', section: 'Complaints' },
   { to: '/registry-head/flagged', icon: Flag, label: 'Flagged Complaints', section: 'Complaints' },
   { to: '/registry-head/repeat-offenders', icon: AlertOctagon, label: 'Repeat Violators', section: 'Complaints' },
+  { to: '/registry-head/personnel', icon: Users, label: 'Desk Officers', section: 'Team' },
   { to: '/registry-head/track', icon: Search, label: 'Track Complaint', section: 'Insights' },
   { to: '/registry-head/business-intelligence', icon: TrendingUp, label: 'Business Intelligence', section: 'Insights' },
   { to: '/registry-head/reports', icon: FileBarChart, label: 'Reports', section: 'Insights' },

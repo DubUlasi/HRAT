@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, Building2, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw, Flag, UsersRound, ClipboardCheck } from 'lucide-react';
+import { Calendar, Building2, Mic, Activity, FileText, Hash, Tag, Paperclip, Users, AlertOctagon, RotateCcw, Flag, UserX, UsersRound, ClipboardCheck } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import Button from '../../components/ui/Button';
 import BackButton from '../../components/ui/BackButton';
@@ -14,28 +14,44 @@ import ActivityLogDrawer from '../../components/complaints/ActivityLogDrawer';
 import RelatedComplaintsPanel from '../../components/complaints/RelatedComplaintsPanel';
 import OffenderCaseHistoryDrawer from '../../components/complaints/OffenderCaseHistoryDrawer';
 import FlagComplaintModal from '../../components/complaints/FlagComplaintModal';
+import InvestigationActivitiesCard from '../../components/complaints/InvestigationActivitiesCard';
 import { useAuth } from '../../context/AuthContext';
 import { useComplaints } from '../../context/ComplaintsContext';
 import { downloadComplaintReport } from '../../utils/exportUtils';
 import { stageProgressPercent, isBounceBackActivity, buildActivityTimeline } from '../../constants/complaintStatus';
 import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCategories';
 import { offices } from '../../data/mockOfficers';
-import { needsPersonnelWork, awaitingCoordinatorReview } from './statePersonnelQueue';
+import { needsNumberProcessing, needsPersonnelWork, awaitingCoordinatorReview } from './statePersonnelQueue';
 import { statePersonnelNavItems } from './navConfig';
 import { userCanViewComplaint, scopeComplaintsForUser } from '../scopeComplaints';
 import SubmitStateFindingsModal from './modals/SubmitStateFindingsModal';
+import LogActivityModal from '../department-investigator/modals/LogActivityModal';
+import UpdateFindingsModal from '../department-investigator/modals/UpdateFindingsModal';
+import IdentifyViolatorModal from '../department-investigator/modals/IdentifyViolatorModal';
+
+const CONFIRM_COPY = {
+  number: { description: 'This auto-generates the complaint number and cannot be undone.' },
+};
 
 const SUCCESS_COPY = {
+  number: 'Complaint number assigned successfully!',
   submitFindings: 'Findings submitted for coordinator review!',
+  logActivity: 'Activity logged successfully!',
+  editActivity: 'Activity updated successfully!',
+  updateFindings: 'Findings updated successfully!',
+  identifyViolator: 'Violator details saved successfully!',
 };
 
 export default function StatePersonnelComplaintDetailPage() {
   const { complaintId } = useParams();
   const { user } = useAuth();
-  const { getComplaintById, findRelatedComplaints, toggleComplaintFlag, submitStateFindings } = useComplaints();
+  const {
+    getComplaintById, findRelatedComplaints, toggleComplaintFlag, submitStateFindings, processComplaintNumberAssignment,
+    identifyViolator, logInvestigationActivity, updateInvestigationActivity, updateInvestigationFinding,
+  } = useComplaints();
 
   const complaint = getComplaintById(complaintId);
-  const [flow, setFlow] = useState({ type: null, step: null });
+  const [flow, setFlow] = useState({ type: null, step: null, payload: null });
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [showOffenderHistory, setShowOffenderHistory] = useState(false);
   const [showFlagModal, setShowFlagModal] = useState(false);
@@ -54,11 +70,38 @@ export default function StatePersonnelComplaintDetailPage() {
   }
 
   const officerId = user?.officerId;
-  const closeFlow = () => setFlow({ type: null, step: null });
+  const closeFlow = () => setFlow({ type: null, step: null, payload: null });
 
   const handleSubmitFindings = ({ findingSummary }) => {
     submitStateFindings(complaint.id, { findingSummary });
-    setFlow({ type: 'submitFindings', step: 'success' });
+    setFlow({ type: 'submitFindings', step: 'success', payload: null });
+  };
+
+  const handleConfirm = () => {
+    if (flow.type === 'number') {
+      processComplaintNumberAssignment(complaint.id);
+    }
+    setFlow((f) => ({ ...f, step: 'success' }));
+  };
+
+  const handleLogActivity = (payload) => {
+    logInvestigationActivity(complaint.id, payload);
+    setFlow((f) => ({ ...f, step: 'success' }));
+  };
+
+  const handleEditActivity = (payload) => {
+    updateInvestigationActivity(complaint.id, flow.payload.id, payload);
+    setFlow((f) => ({ ...f, step: 'success' }));
+  };
+
+  const handleUpdateFindings = (payload) => {
+    updateInvestigationFinding(complaint.id, payload);
+    setFlow((f) => ({ ...f, step: 'success' }));
+  };
+
+  const handleIdentifyViolator = (payload) => {
+    identifyViolator(complaint.id, payload);
+    setFlow((f) => ({ ...f, step: 'success' }));
   };
 
   const handleToggleFlag = ({ flagged, reason }) => {
@@ -71,6 +114,9 @@ export default function StatePersonnelComplaintDetailPage() {
   const stateOfficeName = offices.find((o) => o.id === complaint.stateOffice?.sentTo)?.name;
 
   const renderActionButton = () => {
+    if (needsNumberProcessing(complaint, officerId)) {
+      return <Button variant="primary" onClick={() => setFlow({ type: 'number', step: 'confirm' })}>Process Complaint Number</Button>;
+    }
     if (needsPersonnelWork(complaint, officerId)) {
       return <Button variant="primary" onClick={() => setFlow({ type: 'submitFindings', step: 'input' })}>Submit Findings</Button>;
     }
@@ -79,6 +125,15 @@ export default function StatePersonnelComplaintDetailPage() {
     }
     return null;
   };
+
+  // "Active" the same way Investigator's own page means it — this case is yours to work on right
+  // now, versus already submitted and sitting with the Coordinator or not yet numbered.
+  const isActive = needsPersonnelWork(complaint, officerId);
+  // Sorted by when the activity actually happened, not when it was typed into the system —
+  // older entries predating the happenedOn field fall back to their loggedAt.
+  const activities = [...(complaint.investigation.activities || [])].sort(
+    (a, b) => new Date(b.happenedOn || b.loggedAt) - new Date(a.happenedOn || a.loggedAt)
+  );
 
   const sortedActivity = [...complaint.activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const progressPct = stageProgressPercent(complaint.stageIndex);
@@ -139,6 +194,17 @@ export default function StatePersonnelComplaintDetailPage() {
         </div>
 
         <div className="hero-actions-row">
+          {isActive && (
+            <>
+              {complaint.allegedViolator?.unidentified && (
+                <Button variant="secondary" icon={UserX} onClick={() => setFlow({ type: 'identifyViolator', step: 'input', payload: null })}>
+                  Identify Violator
+                </Button>
+              )}
+              <Button variant="secondary" onClick={() => setFlow({ type: 'logActivity', step: 'input', payload: null })}>Log Activity</Button>
+              <Button variant="secondary" onClick={() => setFlow({ type: 'updateFindings', step: 'input', payload: null })}>Update Findings</Button>
+            </>
+          )}
           {actionButton}
           <Button variant="secondary" icon={Flag} onClick={() => setShowFlagModal(true)}>
             {complaint.flagged ? 'Remove Flag' : 'Flag Complaint'}
@@ -200,6 +266,38 @@ export default function StatePersonnelComplaintDetailPage() {
               )}
             </div>
           )}
+
+          <div className="detail-section-card">
+            <h3 className="section-card-title"><FileText size={14} /> Findings &amp; Recommendation</h3>
+            {(complaint.investigation.finding || complaint.investigation.findingDocuments?.length > 0) ? (
+              <>
+                {complaint.investigation.finding && <p className="review-summary-line">{complaint.investigation.finding}</p>}
+                {complaint.investigation.recommendation && (
+                  <p className="review-summary-line" style={{ marginTop: 8 }}>
+                    <strong>Recommendation:</strong> {complaint.investigation.recommendation}
+                  </p>
+                )}
+                {complaint.investigation.findingDocuments?.length > 0 && (
+                  <div className="activity-attachment-list" style={{ marginTop: 10 }}>
+                    {complaint.investigation.findingDocuments.map((doc) => (
+                      <a key={doc.id} href={doc.url} download={doc.name} target="_blank" rel="noreferrer" className="activity-attachment-row">
+                        <Paperclip size={12} />
+                        <span>{doc.name}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="review-summary-line" style={{ color: 'var(--text-muted)' }}>No findings recorded yet, use Update Findings to add them.</p>
+            )}
+          </div>
+
+          <InvestigationActivitiesCard
+            activities={activities}
+            canEdit={isActive}
+            onEditEntry={(entry) => setFlow({ type: 'editActivity', step: 'input', payload: entry })}
+          />
         </div>
 
         <div className="detail-column-right">
@@ -275,6 +373,34 @@ export default function StatePersonnelComplaintDetailPage() {
         open={flow.type === 'submitFindings' && flow.step === 'input'}
         onClose={closeFlow}
         onSubmit={handleSubmitFindings}
+      />
+
+      <LogActivityModal
+        key={`log-activity-${complaint.id}`}
+        open={(flow.type === 'logActivity' || flow.type === 'editActivity') && flow.step === 'input'}
+        initialData={flow.type === 'editActivity' ? flow.payload : null}
+        onClose={closeFlow}
+        onSubmit={flow.type === 'editActivity' ? handleEditActivity : handleLogActivity}
+      />
+      <UpdateFindingsModal
+        key={`update-findings-${complaint.id}`}
+        open={flow.type === 'updateFindings' && flow.step === 'input'}
+        complaint={complaint}
+        onClose={closeFlow}
+        onSubmit={handleUpdateFindings}
+      />
+      <IdentifyViolatorModal
+        key={`identify-violator-${complaint.id}`}
+        open={flow.type === 'identifyViolator' && flow.step === 'input'}
+        onClose={closeFlow}
+        onSubmit={handleIdentifyViolator}
+      />
+
+      <ConfirmActionModal
+        open={flow.type === 'number' && flow.step === 'confirm'}
+        description={CONFIRM_COPY.number.description}
+        onCancel={closeFlow}
+        onConfirm={handleConfirm}
       />
 
       <SuccessModal

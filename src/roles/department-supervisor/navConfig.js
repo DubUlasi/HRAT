@@ -1,4 +1,4 @@
-import { LayoutDashboard, Inbox, CheckCircle2, FileText, Search, TrendingUp, FileBarChart, HelpCircle, Settings, Flag } from 'lucide-react';
+import { LayoutDashboard, Inbox, CheckCircle2, FileText, Search, TrendingUp, FileBarChart, HelpCircle, Settings, Flag, Users } from 'lucide-react';
 
 // No static `user` export — every page pulls its `user` straight from useAuth().
 // Business Intelligence/Reports/Track Complaint/Help/Settings all point at the existing
@@ -11,6 +11,7 @@ export const departmentSupervisorNavItems = [
   { to: '/department-supervisor/review', icon: CheckCircle2, label: 'Review Findings', section: 'Complaints' },
   { to: '/department-supervisor/complaints', icon: FileText, label: 'All Complaints', end: true, section: 'Complaints' },
   { to: '/registry-head/flagged', icon: Flag, label: 'Flagged Complaints', section: 'Complaints' },
+  { to: '/registry-head/personnel', icon: Users, label: 'My Investigators', section: 'Team' },
   { to: '/registry-head/track', icon: Search, label: 'Track Complaint', section: 'Insights' },
   { to: '/registry-head/business-intelligence', icon: TrendingUp, label: 'Business Intelligence', section: 'Insights' },
   { to: '/registry-head/reports', icon: FileBarChart, label: 'Reports', section: 'Insights' },

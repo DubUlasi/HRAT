@@ -6,11 +6,16 @@ import { getSubCategories } from '../../../constants/complaintSubCategories';
 
 // Step 1 of 6 — "What happened?" A 3-column icon+label tile grid drives the top-level
 // CATEGORY_LABELS (the single source of truth, not a separate hardcoded list), then reveals a
-// vertical pill list of sub-categories specific to whichever category was picked.
-export default function StepCategory({ category, subCategory, onCategoryChange, onSubCategoryChange, onBack, onContinue, stepLabel }) {
+// vertical pill list of sub-categories specific to whichever category was picked. Picking the
+// Others category's "Other (Please Describe in Details)" pill reveals a free-text field — the
+// typed text stands in for "what best describes it" everywhere that would otherwise show the
+// picked pill's own label (the Review step, and the incident title default in
+// ComplaintWizardForm), so it's required before continuing.
+export default function StepCategory({ category, subCategory, otherDescription, onOtherDescriptionChange, onCategoryChange, onSubCategoryChange, onBack, onContinue, stepLabel }) {
   const { t } = useTranslation();
   const subOptions = getSubCategories(category);
-  const canContinue = !!category && !!subCategory;
+  const isOtherDescribed = subCategory === 'other_described';
+  const canContinue = !!category && !!subCategory && (!isOtherDescribed || !!otherDescription.trim());
 
   const handleSelectCategory = (key) => {
     if (key === category) return;
@@ -65,6 +70,22 @@ export default function StepCategory({ category, subCategory, onCategoryChange, 
                 );
               })}
             </div>
+
+            {isOtherDescribed && (
+              <div className="su-field-group full-width" style={{ marginTop: 12 }}>
+                <label className="su-label-dark">
+                  {t('wizard.category.otherDescribeLabel')} <span className="su-req-red">*</span>
+                </label>
+                <textarea
+                  className="su-textarea-white"
+                  rows="3"
+                  placeholder={t('wizard.category.otherDescribePlaceholder')}
+                  value={otherDescription}
+                  onChange={(e) => onOtherDescriptionChange(e.target.value)}
+                  required
+                />
+              </div>
+            )}
           </div>
         )}
 
