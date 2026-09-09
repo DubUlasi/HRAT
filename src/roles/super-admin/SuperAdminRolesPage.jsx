@@ -16,7 +16,7 @@ const CATEGORIES = [
     label: 'Complaint Pipeline',
     icon: FileText,
     accent: 'info',
-    roles: ['registry-head', 'desk-officer', 'department-director', 'department-supervisor', 'department-investigator', 'executive-secretary', 'state-coordinator', 'state-personnel'],
+    roles: ['complaint-registry-head', 'complaint-registry-desk-officer', 'department-director', 'department-supervisor', 'department-investigation-officer', 'executive-secretary', 'state-coordinator', 'state-personnel'],
   },
   {
     label: 'Administration',

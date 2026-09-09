@@ -64,19 +64,29 @@ export function UserManagementProvider({ children }) {
   const createUser = useCallback((data) => {
     const id = `managed-${Date.now()}`;
     setUsers((prev) => [
-      { id, status: 'pending', deactivationReason: null, departmentId: null, lastLoginAt: null, joinedDate: new Date().toISOString().slice(0, 10), ...data },
+      { id, status: 'pending', statusHistory: [], departmentId: null, lastLoginAt: null, joinedDate: new Date().toISOString().slice(0, 10), ...data },
       ...prev,
     ]);
     return id;
   }, []);
 
-  const activateUser = useCallback((id) => {
-    updateUser(id, { status: 'active', deactivationReason: null });
-  }, [updateUser]);
+  // Every deactivate/reactivate is its own entry, newest first — not just the latest one
+  // overwriting the last, so a "History" drawer can show the full back-and-forth for an account
+  // that's been deactivated and reactivated more than once.
+  const pushStatusHistory = useCallback((id, action, reason) => {
+    const entry = { id: `hist-${Date.now()}`, action, reason, at: new Date().toISOString() };
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, statusHistory: [entry, ...(u.statusHistory || [])] } : u)));
+  }, []);
+
+  const activateUser = useCallback((id, reason) => {
+    updateUser(id, { status: 'active' });
+    pushStatusHistory(id, 'reactivated', reason);
+  }, [updateUser, pushStatusHistory]);
 
   const deactivateUser = useCallback((id, reason) => {
-    updateUser(id, { status: 'inactive', deactivationReason: reason });
-  }, [updateUser]);
+    updateUser(id, { status: 'inactive' });
+    pushStatusHistory(id, 'deactivated', reason);
+  }, [updateUser, pushStatusHistory]);
 
   const removeUser = useCallback((id) => {
     setUsers((prev) => prev.filter((u) => u.id !== id));

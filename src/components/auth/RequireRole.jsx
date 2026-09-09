@@ -9,7 +9,15 @@ import { ROLE_HOME } from '../../data/mockUsers';
 // nothing looks broken, it just looks like there's no data. This guard makes that fail loudly:
 // not logged in goes to /login, logged in as the wrong role goes to that role's own dashboard.
 export default function RequireRole({ role, children }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, authLoading } = useAuth();
+
+  // A real session lives in an HTTP-only cookie the app can't read directly — the only way to
+  // know whether one exists is the async /auth/me check AuthContext kicks off on mount. Render
+  // nothing rather than redirecting while that's still in flight, or a real returning user would
+  // get bounced to /login for the split second before the answer comes back.
+  if (authLoading) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

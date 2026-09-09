@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check, KeyRound } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
+import BackButton from '../../components/ui/BackButton';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -20,7 +21,7 @@ const STEPS = [
   { num: 4, label: 'Review & Send' },
 ];
 
-const DEPARTMENT_SCOPED_ROLES = ['department-director', 'department-supervisor', 'department-investigator'];
+const DEPARTMENT_SCOPED_ROLES = ['department-director', 'department-supervisor', 'department-investigation-officer'];
 
 function generateTempPassword() {
   return `Nhrc${Math.random().toString(36).slice(2, 8)}`;
@@ -33,7 +34,7 @@ export default function IctHeadOnboardingPage() {
   const { departments, createUser } = useUserManagement();
 
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'desk-officer', departmentId: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'complaint-registry-desk-officer', departmentId: '' });
   const [tempPassword] = useState(generateTempPassword);
   const [done, setDone] = useState(false);
 
@@ -59,11 +60,15 @@ export default function IctHeadOnboardingPage() {
   const handleCloseSuccess = () => {
     setDone(false);
     setStep(1);
-    setForm({ name: '', email: '', phone: '', role: 'desk-officer', departmentId: '' });
+    setForm({ name: '', email: '', phone: '', role: 'complaint-registry-desk-officer', departmentId: '' });
   };
 
   return (
     <AppShell navItems={navItems} user={person}>
+      <div className="detail-top-nav-bar">
+        <BackButton navItems={navItems} fallbackTo="/ict-head/users" />
+      </div>
+
       <PageHeader title="Onboard Someone" subtitle="Create a new staff account and assign it a role." />
 
       <div className="wizard-stepper-bar">
@@ -83,10 +88,13 @@ export default function IctHeadOnboardingPage() {
         ))}
       </div>
 
-      <div className="categories-card" style={{ maxWidth: 560 }}>
+      <div className="onboarding-step-card">
         {step === 1 && (
           <>
-            <h2>Personal Info</h2>
+            <div className="onboarding-step-heading">
+              <h2>Personal Info</h2>
+              <p>Basic details for the person you're onboarding.</p>
+            </div>
             <FormField label="Full Name" required>
               <Input value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Ada Obi" />
             </FormField>
@@ -101,7 +109,10 @@ export default function IctHeadOnboardingPage() {
 
         {step === 2 && (
           <>
-            <h2>Role & Access</h2>
+            <div className="onboarding-step-heading">
+              <h2>Role & Access</h2>
+              <p>Choose what this account will be able to do.</p>
+            </div>
             <FormField label="Role" required>
               <Select value={form.role} onChange={(e) => set({ role: e.target.value, departmentId: '' })}>
                 {Object.entries(ROLE_LABELS_FOR_ADMIN).map(([value, label]) => (
@@ -124,11 +135,14 @@ export default function IctHeadOnboardingPage() {
 
         {step === 3 && (
           <>
-            <h2>Contact & Login</h2>
+            <div className="onboarding-step-heading">
+              <h2>Contact & Login</h2>
+              <p>A temporary password is generated below for their first sign-in.</p>
+            </div>
             <p className="review-summary-line">
-              A temporary password is generated below. Share it with {form.name || 'this person'} through your usual secure channel — they'll be required to change it on first sign-in.
+              Share it with {form.name || 'this person'} through your usual secure channel — they'll be required to change it on first sign-in.
             </p>
-            <div className="settings-detail-row" style={{ marginTop: 10 }}>
+            <div className="settings-detail-row onboarding-highlight-row" style={{ marginTop: 14 }}>
               <span className="settings-detail-icon accent-info"><KeyRound size={15} /></span>
               <div>
                 <span className="settings-detail-label">Temporary Password</span>
@@ -140,7 +154,10 @@ export default function IctHeadOnboardingPage() {
 
         {step === 4 && (
           <>
-            <h2>Review & Send</h2>
+            <div className="onboarding-step-heading">
+              <h2>Review & Send</h2>
+              <p>Check everything below before sending the invitation.</p>
+            </div>
             <div className="settings-detail-row"><span className="settings-detail-label">Name</span><span className="settings-detail-value">{form.name}</span></div>
             <div className="settings-detail-row"><span className="settings-detail-label">Email</span><span className="settings-detail-value">{form.email}</span></div>
             {form.phone && <div className="settings-detail-row"><span className="settings-detail-label">Phone</span><span className="settings-detail-value">{form.phone}</span></div>}
@@ -151,7 +168,7 @@ export default function IctHeadOnboardingPage() {
           </>
         )}
 
-        <div className="modal-actions" style={{ marginTop: 18 }}>
+        <div className="modal-actions onboarding-step-nav">
           {step > 1 && <Button variant="secondary" onClick={() => setStep(step - 1)}>Back</Button>}
           {step < 4 ? (
             <Button variant="primary" disabled={!canContinueFrom[step]} onClick={() => setStep(step + 1)}>Continue</Button>

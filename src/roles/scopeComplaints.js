@@ -8,13 +8,13 @@
 function isInScope(complaint, user) {
   if (!complaint || !user) return false;
   switch (user.role) {
-    case 'desk-officer':
+    case 'complaint-registry-desk-officer':
       return complaint.registryOfficerId === user.officerId || complaint.admissibilityOfficerId === user.officerId;
     case 'department-director':
       return complaint.department === user.departmentId;
     case 'department-supervisor':
       return complaint.supervisorId === user.officerId;
-    case 'department-investigator':
+    case 'department-investigation-officer':
       return complaint.investigatorId === user.officerId;
     // State Coordinator sees every complaint sent to their own state office (scoped by office,
     // like a Director is scoped by department); State Personnel only sees the complaint(s)
@@ -54,7 +54,7 @@ export function userCanViewComplaint(complaint, user) {
 // Investigator only ever see the repeat-violator flag inline on a complaint's own detail page,
 // per the explicit scoping decision (mirrored by the /registry-head/repeat-offenders routes in
 // App.jsx and the "View Full History" button in RelatedComplaintsPanel).
-export const REPEAT_VIOLATOR_ROLES = ['registry-head', 'department-director', 'executive-secretary'];
+export const REPEAT_VIOLATOR_ROLES = ['complaint-registry-head', 'department-director', 'executive-secretary'];
 
 // getRepeatOffenders() (ComplaintsContext) groups across every complaint in the system —
 // re-scopes that down to what the current role can actually see, dropping a violator entirely

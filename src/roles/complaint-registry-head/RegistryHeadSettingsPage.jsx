@@ -20,11 +20,11 @@ import { ROLE_NAV_ITEMS, ROLE_BOTTOM_NAV, ROLE_MOBILE_CLASS } from '../roleNavMa
 const INACTIVE_STATUSES = [SUB_STATUS.CLOSED, SUB_STATUS.INADMISSIBLE, SUB_STATUS.WITHDRAWN];
 
 const ROLE_LABELS = {
-  'registry-head': 'Complaint Registry Head',
-  'desk-officer': 'Complaint Registry Desk Officer',
+  'complaint-registry-head': 'Complaint Registry Head',
+  'complaint-registry-desk-officer': 'Complaint Registry Desk Officer',
   'department-director': 'Department Director',
   'department-supervisor': 'Department Supervisor',
-  'department-investigator': 'Department Investigation Officer',
+  'department-investigation-officer': 'Department Investigation Officer',
   'executive-secretary': 'Executive Secretary',
   'ict-head': 'ICT Head',
   'ict-personnel': 'ICT Personnel',
@@ -56,7 +56,7 @@ export default function RegistryHeadSettingsPage() {
   const mobileClassName = ROLE_MOBILE_CLASS[user?.role];
   // Only the Registry Head owns the numbering scheme; the fallback demo profile has no role at
   // all and stands in for that same seat, so it's treated as one too.
-  const isRegistryHead = !person.role || person.role === 'registry-head';
+  const isRegistryHead = !person.role || person.role === 'complaint-registry-head';
 
   const handleSaveComplaintNumberFormat = (format, seq) => {
     updateComplaintNumberFormat(format);

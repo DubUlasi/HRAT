@@ -13,7 +13,7 @@ export const CAPABILITY_DEFS = [
     id: 'manage_complaint_pipeline',
     label: 'Manage Complaint Pipeline',
     description: 'Assign officers, confirm admissibility, assign departments, send to council.',
-    applicableRoles: ['registry-head', 'ict-head'],
+    applicableRoles: ['complaint-registry-head', 'ict-head'],
     gatedBy: 'Action buttons on the shared complaint detail page (RegistryHeadComplaintDetailPage.jsx).',
   },
   {
@@ -34,7 +34,7 @@ export const CAPABILITY_DEFS = [
 
 // Seed mapping — identical to what this table held before Super Admin existed to edit it.
 export const DEFAULT_ROLE_CAPABILITIES = {
-  'registry-head': ['manage_complaint_pipeline'],
+  'complaint-registry-head': ['manage_complaint_pipeline'],
   'ict-head': ['manage_users', 'manage_departments'],
   'ict-personnel': ['manage_users', 'manage_departments'],
 };

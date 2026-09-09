@@ -16,13 +16,13 @@ export function getNavBadgeCounts(user, complaints, complaintNumberAuto) {
   const departmentId = user.departmentId;
 
   switch (user.role) {
-    case 'registry-head':
+    case 'complaint-registry-head':
       return {
         '/registry-head/complaints/needs-action': complaints.filter(needsHeadAction).length,
         '/registry-head/complaints/new': complaints.filter(complaintNumberAuto ? needsAdmissibilityAssignment : needsNumberAssignment).length,
       };
 
-    case 'desk-officer':
+    case 'complaint-registry-desk-officer':
       return {
         '/desk-officer/queue': complaints.filter((c) => needsDeskOfficerAction(c, officerId)).length,
       };
@@ -39,7 +39,7 @@ export function getNavBadgeCounts(user, complaints, complaintNumberAuto) {
         '/department-supervisor/review': complaints.filter((c) => needsFindingsReview(c, officerId)).length,
       };
 
-    case 'department-investigator':
+    case 'department-investigation-officer':
       return {
         '/department-investigator/cases': complaints.filter((c) => isMyActiveCase(c, officerId)).length,
       };

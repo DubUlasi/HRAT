@@ -90,10 +90,10 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/complaint" element={<ComplaintWizardPage />} />
 
-        <Route path="/desk-officer" element={<RequireRole role="desk-officer"><DeskOfficerDashboardPage /></RequireRole>} />
-        <Route path="/desk-officer/queue" element={<RequireRole role="desk-officer"><DeskOfficerQueuePage /></RequireRole>} />
-        <Route path="/desk-officer/complaints" element={<RequireRole role="desk-officer"><DeskOfficerComplaintsPage /></RequireRole>} />
-        <Route path="/desk-officer/complaints/:complaintId" element={<RequireRole role="desk-officer"><DeskOfficerComplaintDetailPage /></RequireRole>} />
+        <Route path="/desk-officer" element={<RequireRole role="complaint-registry-desk-officer"><DeskOfficerDashboardPage /></RequireRole>} />
+        <Route path="/desk-officer/queue" element={<RequireRole role="complaint-registry-desk-officer"><DeskOfficerQueuePage /></RequireRole>} />
+        <Route path="/desk-officer/complaints" element={<RequireRole role="complaint-registry-desk-officer"><DeskOfficerComplaintsPage /></RequireRole>} />
+        <Route path="/desk-officer/complaints/:complaintId" element={<RequireRole role="complaint-registry-desk-officer"><DeskOfficerComplaintDetailPage /></RequireRole>} />
         <Route path="/department-director" element={<RequireRole role="department-director"><DepartmentDirectorDashboardPage /></RequireRole>} />
         <Route path="/department-director/new" element={<RequireRole role="department-director"><DirectorNewAssignmentsPage /></RequireRole>} />
         <Route path="/department-director/final-review" element={<RequireRole role="department-director"><DirectorFinalReviewsPage /></RequireRole>} />
@@ -104,22 +104,22 @@ function AppRoutes() {
         <Route path="/department-supervisor/review" element={<RequireRole role="department-supervisor"><SupervisorReviewPage /></RequireRole>} />
         <Route path="/department-supervisor/complaints" element={<RequireRole role="department-supervisor"><SupervisorComplaintsPage /></RequireRole>} />
         <Route path="/department-supervisor/complaints/:complaintId" element={<RequireRole role="department-supervisor"><SupervisorComplaintDetailPage /></RequireRole>} />
-        <Route path="/department-investigator" element={<RequireRole role="department-investigator"><InvestigatorDashboardPage /></RequireRole>} />
-        <Route path="/department-investigator/cases" element={<RequireRole role="department-investigator"><InvestigatorCasesPage /></RequireRole>} />
-        <Route path="/department-investigator/complaints" element={<RequireRole role="department-investigator"><InvestigatorComplaintsPage /></RequireRole>} />
-        <Route path="/department-investigator/complaints/:complaintId" element={<RequireRole role="department-investigator"><InvestigatorComplaintDetailPage /></RequireRole>} />
+        <Route path="/department-investigator" element={<RequireRole role="department-investigation-officer"><InvestigatorDashboardPage /></RequireRole>} />
+        <Route path="/department-investigator/cases" element={<RequireRole role="department-investigation-officer"><InvestigatorCasesPage /></RequireRole>} />
+        <Route path="/department-investigator/complaints" element={<RequireRole role="department-investigation-officer"><InvestigatorComplaintsPage /></RequireRole>} />
+        <Route path="/department-investigator/complaints/:complaintId" element={<RequireRole role="department-investigation-officer"><InvestigatorComplaintDetailPage /></RequireRole>} />
         <Route path="/executive-secretary" element={<RequireRole role="executive-secretary"><ESDashboardPage /></RequireRole>} />
         <Route path="/executive-secretary/council" element={<RequireRole role="executive-secretary"><ESCouncilPage /></RequireRole>} />
         <Route path="/executive-secretary/escalated" element={<RequireRole role="executive-secretary"><ESEscalatedPage /></RequireRole>} />
         <Route path="/executive-secretary/complaints" element={<RequireRole role="executive-secretary"><ESComplaintsPage /></RequireRole>} />
         <Route path="/executive-secretary/complaints/:complaintId" element={<RequireRole role="executive-secretary"><ESComplaintDetailPage /></RequireRole>} />
 
-        <Route path="/registry-head" element={<RequireRole role="registry-head"><RegistryHeadDashboardPage /></RequireRole>} />
-        <Route path="/registry-head/complaints" element={<RequireRole role="registry-head"><RegistryHeadComplaintsPage /></RequireRole>} />
-        <Route path="/registry-head/complaints/new" element={<RequireRole role="registry-head"><RegistryHeadComplaintsPage filter="new" /></RequireRole>} />
-        <Route path="/registry-head/complaints/treated" element={<RequireRole role="registry-head"><RegistryHeadComplaintsPage filter="treated" /></RequireRole>} />
-        <Route path="/registry-head/complaints/needs-action" element={<RequireRole role="registry-head"><RegistryHeadComplaintsPage filter="needs-action" /></RequireRole>} />
-        <Route path="/registry-head/complaints/:complaintId" element={<RequireRole role="registry-head"><RegistryHeadComplaintDetailPage /></RequireRole>} />
+        <Route path="/registry-head" element={<RequireRole role="complaint-registry-head"><RegistryHeadDashboardPage /></RequireRole>} />
+        <Route path="/registry-head/complaints" element={<RequireRole role="complaint-registry-head"><RegistryHeadComplaintsPage /></RequireRole>} />
+        <Route path="/registry-head/complaints/new" element={<RequireRole role="complaint-registry-head"><RegistryHeadComplaintsPage filter="new" /></RequireRole>} />
+        <Route path="/registry-head/complaints/treated" element={<RequireRole role="complaint-registry-head"><RegistryHeadComplaintsPage filter="treated" /></RequireRole>} />
+        <Route path="/registry-head/complaints/needs-action" element={<RequireRole role="complaint-registry-head"><RegistryHeadComplaintsPage filter="needs-action" /></RequireRole>} />
+        <Route path="/registry-head/complaints/:complaintId" element={<RequireRole role="complaint-registry-head"><RegistryHeadComplaintDetailPage /></RequireRole>} />
         {/* Repeat Violators: Registry Head, Department Director, and the Executive
             Secretary get the full list/detail pages. Supervisor/Investigator/Desk
             Officer only ever see the repeat-violator flag inline on a complaint's own
@@ -128,7 +128,7 @@ function AppRoutes() {
         <Route path="/registry-head/repeat-offenders/:violatorId" element={<RequireRole role={REPEAT_VIOLATOR_ROLES}><RegistryHeadViolatorDetailPage /></RequireRole>} />
         <Route path="/registry-head/personnel" element={<RequireRole role={PERSONNEL_ROLES}><RegistryHeadPersonnelPage /></RequireRole>} />
         <Route path="/registry-head/personnel/:officerId" element={<RequireRole role={PERSONNEL_ROLES}><RegistryHeadPersonnelDetailPage /></RequireRole>} />
-        <Route path="/registry-head/call-center" element={<RequireRole role="registry-head"><RegistryHeadCallCenterPage /></RequireRole>} />
+        <Route path="/registry-head/call-center" element={<RequireRole role="complaint-registry-head"><RegistryHeadCallCenterPage /></RequireRole>} />
 
         {/* Shared across every role's sidebar (Insights/Support sections) — any
             authenticated staff member can view these, not just the Registry Head. */}
@@ -143,8 +143,8 @@ function AppRoutes() {
             pages, action buttons gated off internally, see rolePermissions.js) plus new
             admin routes shared with ICT Personnel. */}
         <Route path="/ict-head" element={<RequireRole role="ict-head"><IctHeadDashboardPage /></RequireRole>} />
-        <Route path="/ict-head/complaints" element={<RequireRole role={['registry-head', 'ict-head']}><RegistryHeadComplaintsPage /></RequireRole>} />
-        <Route path="/ict-head/complaints/:complaintId" element={<RequireRole role={['registry-head', 'ict-head']}><RegistryHeadComplaintDetailPage /></RequireRole>} />
+        <Route path="/ict-head/complaints" element={<RequireRole role={['complaint-registry-head', 'ict-head']}><RegistryHeadComplaintsPage /></RequireRole>} />
+        <Route path="/ict-head/complaints/:complaintId" element={<RequireRole role={['complaint-registry-head', 'ict-head']}><RegistryHeadComplaintDetailPage /></RequireRole>} />
         <Route path="/ict-head/users" element={<RequireRole role={manageUsersRoles}><IctHeadUserManagementPage /></RequireRole>} />
         <Route path="/ict-head/users/:userId" element={<RequireRole role={manageUsersRoles}><IctHeadUserProfilePage /></RequireRole>} />
         <Route path="/ict-head/onboarding" element={<RequireRole role={manageUsersRoles}><IctHeadOnboardingPage /></RequireRole>} />

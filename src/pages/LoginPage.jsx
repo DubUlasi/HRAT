@@ -11,11 +11,11 @@ import '../styles/login.css';
 import '../styles/modals.css';
 
 const ROLE_LABELS = {
-  'registry-head': 'Complaint Registry Head',
-  'desk-officer': 'Complaint Registry Desk Officer',
+  'complaint-registry-head': 'Complaint Registry Head',
+  'complaint-registry-desk-officer': 'Complaint Registry Desk Officer',
   'department-director': 'Department Director',
   'department-supervisor': 'Department Supervisor',
-  'department-investigator': 'Department Investigation Officer',
+  'department-investigation-officer': 'Department Investigation Officer',
   'executive-secretary': 'Executive Secretary',
   'ict-head': 'ICT Head',
   'ict-personnel': 'ICT Personnel',
@@ -37,27 +37,28 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showCredentials, setShowCredentials] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
-    setTimeout(() => {
-      const user = login(email, password);
+    try {
+      const user = await login(email, password);
       if (user) {
         navigate(ROLE_HOME[user.role] || '/registry-head');
       } else {
         setError(t('login.errorInvalid'));
         setSubmitting(false);
       }
-    }, 600);
+    } catch (err) {
+      setError(err.message || t('login.errorInvalid'));
+      setSubmitting(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setGoogleSubmitting(true);
-    setTimeout(() => {
-      login('sampete@example.com', 'password123');
-      navigate('/registry-head');
-    }, 600);
+    await login('sampete@example.com', 'password123');
+    navigate('/registry-head');
   };
 
   return (

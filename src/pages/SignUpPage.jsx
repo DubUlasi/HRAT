@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import ShowcaseGrid from '../components/ShowcaseGrid';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 import { useTranslation } from '../context/I18nContext';
+import { useAuth } from '../context/AuthContext';
+import { ROLE_HOME } from '../data/mockUsers';
 import '../styles/login.css';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -18,6 +21,7 @@ export default function SignUpPage() {
     password: 'password123',
     confirmPassword: ''
   });
+  const [error, setError] = useState('');
 
   const [showPassword1, setShowPassword1] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
@@ -29,12 +33,29 @@ export default function SignUpPage() {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
     setSubmitting(true);
-    setTimeout(() => {
-      navigate('/');
-    }, 600);
+    try {
+      const user = await signUp({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        gender: formData.gender,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
+      navigate(ROLE_HOME[user.role] || '/complainant');
+    } catch (err) {
+      setError(err.problem?.detail || err.message || 'Something went wrong, please try again.');
+      setSubmitting(false);
+    }
   };
 
   const handleGoogleSignUp = () => {
@@ -78,6 +99,13 @@ export default function SignUpPage() {
           </button>
 
           <div className="divider">{t('signup.orDivider')}</div>
+
+          {error && (
+            <div className="form-error">
+              <AlertCircle size={15} />
+              <span>{error}</span>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="form-grid-2col">

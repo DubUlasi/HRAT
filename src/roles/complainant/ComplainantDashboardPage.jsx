@@ -71,7 +71,7 @@ export default function ComplainantDashboardPage() {
       {/* ─── Desktop layout ─── */}
       <div className="complainant-desktop-header">
         <PageHeader
-          title="Complaints Dashboard"
+          title="Complainant Dashboard"
           subtitle="Manage and track your human rights complaints, access support, and view status updates."
           actions={<Button variant="primary" icon={PlusCircle} onClick={() => setShowNewModal(true)}>File New Complaint</Button>}
         />

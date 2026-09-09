@@ -66,7 +66,7 @@ export default function ComplainantRightsPage() {
         subtitle="Understand the fundamental human rights guaranteed to every citizen under Chapter IV of the Constitution."
       />
 
-      <div className="dashboard-grid">
+      <div className="dashboard-grid rights-page-grid">
         <div className="categories-card">
           <h2 style={{ fontSize: 16, marginBottom: 14 }}>Guaranteed Civil Rights</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

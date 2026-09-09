@@ -69,7 +69,7 @@ const PERSONNEL_KINDS = {
 // sharing convention as Business Intelligence/Reports/Track Complaint/Repeat Violators — one
 // canonical URL, granted to multiple roles, each rendering their own sidebar via
 // ROLE_NAV_ITEMS[user.role]).
-export const PERSONNEL_ROLES = ['registry-head', 'department-director', 'department-supervisor', 'executive-secretary', 'state-coordinator'];
+export const PERSONNEL_ROLES = ['complaint-registry-head', 'department-director', 'department-supervisor', 'executive-secretary', 'state-coordinator'];
 
 // Which personnel kinds each role's own Personnel page shows. Director sees both tiers of their
 // own department (Supervisor is a de facto Investigator manager); Supervisor sees only their own
@@ -79,7 +79,7 @@ export const PERSONNEL_ROLES = ['registry-head', 'department-director', 'departm
 // gets the full directory across every kind.
 export function getPersonnelKindsForRole(role) {
   switch (role) {
-    case 'registry-head': return ['desk-officer'];
+    case 'complaint-registry-head': return ['desk-officer'];
     case 'department-director': return ['supervisor', 'investigator'];
     case 'department-supervisor': return ['investigator'];
     case 'state-coordinator': return ['state-personnel'];

@@ -3,13 +3,13 @@
 import { departmentSupervisors, investigationOfficers } from '../data/mockOfficers';
 
 const TREND_BY_ROLE = {
-  'registry-head': { title: 'Complaints Filed, Year-over-Year Trend' },
+  'complaint-registry-head': { title: 'Complaints Filed, Year-over-Year Trend' },
   'executive-secretary': { title: 'Complaints Filed, Year-over-Year Trend' },
   'ict-head': { title: 'Complaints Filed, Year-over-Year Trend' },
-  'desk-officer': { title: 'My Caseload, Year-over-Year Trend' },
+  'complaint-registry-desk-officer': { title: 'My Caseload, Year-over-Year Trend' },
   'department-director': { title: "My Department's Complaints, Year-over-Year Trend" },
   'department-supervisor': { title: 'My Assigned Cases, Year-over-Year Trend' },
-  'department-investigator': { title: 'My Investigations, Year-over-Year Trend' },
+  'department-investigation-officer': { title: 'My Investigations, Year-over-Year Trend' },
   'state-coordinator': { title: "My Office's Complaints, Year-over-Year Trend" },
   'state-personnel': { title: 'My Cases, Year-over-Year Trend' },
 };
@@ -20,8 +20,8 @@ export function getBiRoleConfig(user) {
 
   // ICT Head gets the same full org-wide view as Registry Head/Executive Secretary — it can
   // view everything, it just can't act on any of it (see rolePermissions.js).
-  const isOversight = role === 'registry-head' || role === 'executive-secretary' || role === 'ict-head';
-  const isIndividualHandler = ['desk-officer', 'department-director', 'department-supervisor', 'department-investigator', 'state-coordinator', 'state-personnel'].includes(role);
+  const isOversight = role === 'complaint-registry-head' || role === 'executive-secretary' || role === 'ict-head';
+  const isIndividualHandler = ['complaint-registry-desk-officer', 'department-director', 'department-supervisor', 'department-investigation-officer', 'state-coordinator', 'state-personnel'].includes(role);
 
   let teams = [];
   if (role === 'department-director') {
@@ -38,13 +38,13 @@ export function getBiRoleConfig(user) {
   return {
     role,
     showActiveOfficesStat: isOversight || role === 'department-director',
-    showAdmissibilityStats: isOversight || role === 'desk-officer',
+    showAdmissibilityStats: isOversight || role === 'complaint-registry-desk-officer',
     showHandledSinceStat: isIndividualHandler,
-    showStageTimings: isOversight || role === 'desk-officer' || role === 'department-director',
+    showStageTimings: isOversight || role === 'complaint-registry-desk-officer' || role === 'department-director',
     showOrgPerformance: isOversight,
     showEsStats: role === 'executive-secretary',
-    showRegistryHeadQueueStats: role === 'registry-head',
+    showRegistryHeadQueueStats: role === 'complaint-registry-head',
     teams,
-    trend: TREND_BY_ROLE[role] || TREND_BY_ROLE['registry-head'],
+    trend: TREND_BY_ROLE[role] || TREND_BY_ROLE['complaint-registry-head'],
   };
 }

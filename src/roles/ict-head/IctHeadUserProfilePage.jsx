@@ -94,13 +94,6 @@ export default function IctHeadUserProfilePage() {
           </div>
         </div>
       </div>
-
-      {managedUser.status === 'inactive' && managedUser.deactivationReason && (
-        <div className="categories-card" style={{ marginTop: 14 }}>
-          <h2>Deactivation Reason</h2>
-          <p className="review-summary-line">{managedUser.deactivationReason}</p>
-        </div>
-      )}
     </AppShell>
   );
 }

@@ -21,7 +21,7 @@ import { registryHeadNavItems } from './navConfig';
 // entirely driven by getPersonnelRoster(user), so this component itself has no per-role
 // branching of its own.
 const PAGE_COPY = {
-  'registry-head': { title: 'Desk Officers', subtitle: 'The desk officers processing complaint numbering and admissibility checks.' },
+  'complaint-registry-head': { title: 'Desk Officers', subtitle: 'The desk officers processing complaint numbering and admissibility checks.' },
   'department-director': { title: 'My Department Staff', subtitle: 'The supervisors and investigation officers in your department.' },
   'department-supervisor': { title: 'My Investigation Officers', subtitle: 'The investigators in your department.' },
   'state-coordinator': { title: 'State Personnel', subtitle: 'The personnel officers at your state office.' },
@@ -54,7 +54,7 @@ export default function RegistryHeadPersonnelPage() {
     .filter((p) => matchesSearch(p, search));
   const pagination = usePagination(rows, 10, `${search}|${kindFilter}`);
 
-  const copy = PAGE_COPY[user?.role] || PAGE_COPY['registry-head'];
+  const copy = PAGE_COPY[user?.role] || PAGE_COPY['complaint-registry-head'];
   const activeCaseCount = (id) => getCasesForPersonnel(complaints, id).filter(isActiveCase).length;
 
   return (

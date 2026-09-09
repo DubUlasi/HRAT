@@ -15,11 +15,11 @@ import { statePersonnelNavItems } from './state-personnel/navConfig';
 // Complaint, Help, Settings) render whoever is actually logged in's OWN sidebar instead of
 // always hardcoding Registry Head's — keyed by the same role strings RequireRole/mockUsers use.
 export const ROLE_NAV_ITEMS = {
-  'registry-head': registryHeadNavItems,
-  'desk-officer': deskOfficerNavItems,
+  'complaint-registry-head': registryHeadNavItems,
+  'complaint-registry-desk-officer': deskOfficerNavItems,
   'department-director': departmentDirectorNavItems,
   'department-supervisor': departmentSupervisorNavItems,
-  'department-investigator': departmentInvestigatorNavItems,
+  'department-investigation-officer': departmentInvestigatorNavItems,
   'executive-secretary': executiveSecretaryNavItems,
   'ict-head': ictHeadNavItems,
   'ict-personnel': ictPersonnelNavItems,
@@ -48,11 +48,11 @@ export const ROLE_MOBILE_CLASS = {
 // detail link for it (callers fall back to the Registry Head base, which it can't reach either —
 // intentional, RequireRole is what actually blocks it).
 export const ROLE_COMPLAINT_DETAIL_BASE = {
-  'registry-head': '/registry-head/complaints',
-  'desk-officer': '/desk-officer/complaints',
+  'complaint-registry-head': '/registry-head/complaints',
+  'complaint-registry-desk-officer': '/desk-officer/complaints',
   'department-director': '/department-director/complaints',
   'department-supervisor': '/department-supervisor/complaints',
-  'department-investigator': '/department-investigator/complaints',
+  'department-investigation-officer': '/department-investigator/complaints',
   'executive-secretary': '/executive-secretary/complaints',
   'ict-head': '/ict-head/complaints',
   'state-coordinator': '/state-coordinator/complaints',
