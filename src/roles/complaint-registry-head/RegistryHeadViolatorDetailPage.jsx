@@ -15,6 +15,7 @@ import { CATEGORY_LABELS, CATEGORY_COLOR } from '../../constants/complaintCatego
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
 import { scopeRepeatOffendersForUser } from '../scopeComplaints';
+import RealViolatorDetail from './real/RealViolatorDetail';
 
 // Full case history for one repeat violator — everything OffenderCaseHistoryDrawer shows in its
 // compact slide-in, at full page width/detail, reached by clicking a row on the Repeat Violators
@@ -24,6 +25,11 @@ import { scopeRepeatOffendersForUser } from '../scopeComplaints';
 export default function RegistryHeadViolatorDetailPage() {
   const { violatorId } = useParams();
   const { user } = useAuth();
+
+  // complaint-registry-head has a real backend for this page now — Director/ES sharing this
+  // route keep seeing the mock body below, untouched.
+  if (user?.role === 'complaint-registry-head') return <RealViolatorDetail />;
+
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
   const { getRepeatOffenders } = useComplaints();

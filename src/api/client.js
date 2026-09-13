@@ -36,3 +36,48 @@ export const apiGet = (path) => request(path);
 export const apiPost = (path, body) => request(path, { method: 'POST', body });
 export const apiPut = (path, body) => request(path, { method: 'PUT', body });
 export const apiDelete = (path, body) => request(path, { method: 'DELETE', body });
+
+// Multipart upload (evidence files) — can't go through `request()`: a FormData body must not be
+// JSON.stringify'd, and its Content-Type (with the multipart boundary) has to be set by the
+// browser itself, not us, so `headers` here deliberately never includes one.
+export async function apiUpload(path, formData, headers) {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData,
+  });
+  if (!res.ok) {
+    const problem = await res.json().catch(() => null);
+    throw new ApiError(res.status, problem);
+  }
+  return res.json();
+}
+
+// The export endpoints (registry complaints/actions/flagged/treated/new/repeat-violators) return
+// a real XLSX binary, not JSON — `request()`'s `res.json()` would fail on it, so this is its own
+// small sibling rather than a `request()` option.
+export async function apiGetBlob(path) {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const problem = await res.json().catch(() => null);
+    throw new ApiError(res.status, problem);
+  }
+  return res.blob();
+}
+
+// Saves a blob (e.g. from apiGetBlob) to disk via a synthetic, immediately-revoked object URL —
+// same mechanism exportUtils.js already uses for its client-built files, just fed a real
+// server-provided blob instead of a client-built XML string.
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

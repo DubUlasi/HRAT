@@ -27,6 +27,7 @@ import { SUB_STATUS } from '../../constants/complaintStatus';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE, ROLE_BOTTOM_NAV, ROLE_MOBILE_CLASS } from '../roleNavMap';
 import { scopeComplaintsForUser } from '../scopeComplaints';
+import ComplainantTrackView from '../complainant/ComplainantTrackView';
 
 const NOT_WITHDRAWABLE = [SUB_STATUS.RESOLVED, SUB_STATUS.CLOSED, SUB_STATUS.WITHDRAWN];
 
@@ -65,6 +66,15 @@ function matchesSearch(complaint, search) {
 // manual ("This is the same process used to track complaints for every type of user").
 export default function RegistryHeadTrackPage() {
   const { user } = useAuth();
+  // The real tracking API's response shape (a public `timeline`, victims[]/allegedViolators[]
+  // with their own field names, `activities[]`, evidence with an openUrl) doesn't match this
+  // page's mock-complaint-shaped body below at all — rather than deeply branching a file every
+  // other role also depends on, the complainant role gets its own small dedicated component,
+  // same URL (including `?id=` deep-links), same "search or jump straight to a case" UX.
+  if (user?.role === 'complainant') {
+    return <ComplainantTrackView />;
+  }
+
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const bottomNavItems = ROLE_BOTTOM_NAV[user?.role];
   const mobileClassName = ROLE_MOBILE_CLASS[user?.role];

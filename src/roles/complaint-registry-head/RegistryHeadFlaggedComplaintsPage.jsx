@@ -17,6 +17,7 @@ import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
 import { scopeComplaintsForUser } from '../scopeComplaints';
+import RealFlaggedComplaints from './real/RealFlaggedComplaints';
 
 function matchesSearch(complaint, search) {
   if (!search) return true;
@@ -35,6 +36,11 @@ function flagReason(c) {
 // otherwise see (Registry Head/ES get every flagged complaint, everyone else only their own).
 export default function RegistryHeadFlaggedComplaintsPage() {
   const { user } = useAuth();
+
+  // complaint-registry-head has a real backend for this page now — this route has no
+  // RequireRole guard at all, so every other staff role keeps seeing the mock body below.
+  if (user?.role === 'complaint-registry-head') return <RealFlaggedComplaints />;
+
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
   const { complaints: allComplaints } = useComplaints();

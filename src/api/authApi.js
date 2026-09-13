@@ -31,3 +31,25 @@ export function loginRequest(identifier, password) {
 export function signUpRequest({ firstName, lastName, email, phoneNumber, gender, password, confirmPassword }) {
   return apiPost('/complainants/sign-up', { firstName, lastName, email, phoneNumber, gender, password, confirmPassword });
 }
+
+// ── Password reset (real accounts only — see ForgotPasswordPage.jsx for the dual-path split
+// against the mock roster) ──
+
+// Deliberately returns the same response whether or not the email belongs to a real account
+// (anti-enumeration, per the endpoint's own description) — there's no signal here to branch on,
+// the caller just always advances to the code-entry step.
+export function requestPasswordReset(email) {
+  return apiPost('/auth/password-reset/request', { email });
+}
+
+// Returns { resetToken, expiresInMinutes } on success — the token is short-lived/single-use and
+// must be threaded into completePasswordReset.
+export function verifyPasswordResetCode(email, code) {
+  return apiPost('/auth/password-reset/verify', { email, code });
+}
+
+// Real password policy (enforced server-side, worth validating client-side too so the error
+// isn't a surprise): at least 12 characters, upper+lower+digit+special.
+export function completePasswordReset(resetToken, newPassword, confirmNewPassword) {
+  return apiPost('/auth/password-reset/complete', { resetToken, newPassword, confirmNewPassword });
+}

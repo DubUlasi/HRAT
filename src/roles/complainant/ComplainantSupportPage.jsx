@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Phone, MapPin, Send, HelpCircle } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -8,26 +8,46 @@ import Input from '../../components/ui/Input';
 import TextArea from '../../components/ui/TextArea';
 import SuccessModal from '../../components/ui/SuccessModal';
 import { useAuth } from '../../context/AuthContext';
+import { getComplainantSupport, submitSupportEnquiry } from '../../api/complainantApi';
 import { complainantNavItems, complainantBottomNav, complainantUser } from './navConfig';
 
-const FAQS = [
-  { q: 'How long does an investigation take?', a: 'Investigation times vary based on case complexity and evidence availability. On average, admissibility checks take 5-7 business days, while full investigations may take 4-8 weeks.' },
-  { q: 'Can I submit evidence after filing a complaint?', a: 'Yes. If you need to submit additional documents or recordings, you can send them to our support team referencing your Complaint Number, or hand them in at the nearest NHRC state office.' },
-  { q: 'Is my personal information kept confidential?', a: 'Absolutely. The NHRC treats all complainant information with strict confidentiality. Identity details are only shared with relevant investigators and legal officers as permitted by the Commission guidelines.' },
-];
-
+// Was 100% static/fake before this — hardcoded FAQs, and the "Send a Message" form's submit
+// handler just flipped a success flag with nothing actually sent anywhere. Now reads the real
+// FAQ/helpdesk content from GET /support and actually submits the enquiry via
+// POST /support/enquiries, showing the real reference number it hands back.
 export default function ComplainantSupportPage() {
   const { user } = useAuth();
   const person = user || complainantUser;
+  const [faqs, setFaqs] = useState([]);
+  const [helpdesk, setHelpdesk] = useState(null);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    getComplainantSupport()
+      .then((result) => {
+        setFaqs(result.frequentlyAskedQuestions || []);
+        setHelpdesk(result.helpdesk || null);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowSuccess(true);
-    setSubject('');
-    setMessage('');
+    setError('');
+    setSubmitting(true);
+    try {
+      const result = await submitSupportEnquiry(subject, message);
+      setSuccessMessage(`Your message has been sent. Your reference number is ${result.referenceNumber} — keep it for follow-up.`);
+      setSubject('');
+      setMessage('');
+    } catch (err) {
+      setError(err.problem?.detail || err.message);
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -40,10 +60,10 @@ export default function ComplainantSupportPage() {
       <div className="dashboard-grid">
         <div className="categories-card">
           <h2>Frequently Asked Questions</h2>
-          {FAQS.map((item) => (
-            <div key={item.q} className="help-faq-item">
-              <h3><HelpCircle size={14} style={{ color: 'var(--accent-color)', verticalAlign: -2, marginRight: 6 }} />{item.q}</h3>
-              <p>{item.a}</p>
+          {faqs.map((item) => (
+            <div key={item.question} className="help-faq-item">
+              <h3><HelpCircle size={14} style={{ color: 'var(--accent-color)', verticalAlign: -2, marginRight: 6 }} />{item.question}</h3>
+              <p>{item.answer}</p>
             </div>
           ))}
         </div>
@@ -53,18 +73,22 @@ export default function ComplainantSupportPage() {
           <p className="review-summary-line" style={{ marginBottom: 14 }}>
             For technical assistance or direct inquiries, please reach us through the channels below:
           </p>
-          <a href="mailto:support@nhrc.gov.ng" className="help-contact-row">
-            <span className="help-contact-icon accent-info"><Mail size={16} /></span>
-            <span>support@nhrc.gov.ng</span>
-          </a>
-          <a href="tel:+2348000000000" className="help-contact-row">
-            <span className="help-contact-icon accent-accent"><Phone size={16} /></span>
-            <span>+234 800 000 0000</span>
-          </a>
-          <div className="help-contact-row help-contact-hours">
-            <span className="help-contact-icon accent-violet"><MapPin size={16} /></span>
-            <span>National Human Rights Commission HQ, 19 Aguiyi Ironsi Street, Maitama, Abuja.</span>
-          </div>
+          {helpdesk && (
+            <>
+              <a href={`mailto:${helpdesk.email}`} className="help-contact-row">
+                <span className="help-contact-icon accent-info"><Mail size={16} /></span>
+                <span>{helpdesk.email}</span>
+              </a>
+              <a href={`tel:${helpdesk.phoneNumber}`} className="help-contact-row">
+                <span className="help-contact-icon accent-accent"><Phone size={16} /></span>
+                <span>{helpdesk.phoneNumber}</span>
+              </a>
+              <div className="help-contact-row help-contact-hours">
+                <span className="help-contact-icon accent-violet"><MapPin size={16} /></span>
+                <span>{helpdesk.address}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -81,16 +105,17 @@ export default function ComplainantSupportPage() {
           <FormField label="Your Message" required>
             <TextArea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type details of your request here..." required />
           </FormField>
+          {error && <p className="su-field-hint-dark" style={{ color: 'var(--danger-color)' }}>{error}</p>}
           <div className="modal-actions">
-            <Button type="submit" variant="primary" icon={Send}>Send Inquiry</Button>
+            <Button type="submit" variant="primary" icon={Send} disabled={submitting}>{submitting ? 'Sending...' : 'Send Inquiry'}</Button>
           </div>
         </form>
       </div>
 
       <SuccessModal
-        open={showSuccess}
-        message="Your message has been sent successfully. A support officer will review and respond shortly."
-        onClose={() => setShowSuccess(false)}
+        open={!!successMessage}
+        message={successMessage}
+        onClose={() => setSuccessMessage('')}
       />
     </AppShell>
   );

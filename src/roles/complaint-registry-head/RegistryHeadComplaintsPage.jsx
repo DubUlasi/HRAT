@@ -23,6 +23,7 @@ import { downloadComplaintsExcel } from '../../utils/exportUtils';
 import { needsHeadAction, headActionReason, needsNumberAssignment, needsAdmissibilityAssignment } from './registryHeadQueue';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS, ROLE_COMPLAINT_DETAIL_BASE } from '../roleNavMap';
+import RealComplaintsList from './real/RealComplaintsList';
 
 // "New Complaints" means "the earliest stage a complaint sits in, waiting for the first real
 // human action" — and what that first action actually is depends on whether complaint numbers
@@ -58,6 +59,11 @@ function matchesSearch(complaint, search) {
 
 export default function RegistryHeadComplaintsPage({ filter = 'all' }) {
   const { user } = useAuth();
+
+  // complaint-registry-head has a real backend for this page now — everyone else sharing this
+  // route (ict-head) keeps seeing the mock body below, untouched.
+  if (user?.role === 'complaint-registry-head') return <RealComplaintsList filter={filter} />;
+
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const detailBase = ROLE_COMPLAINT_DETAIL_BASE[user?.role] || '/registry-head/complaints';
   const { complaints, complaintNumberAuto } = useComplaints();

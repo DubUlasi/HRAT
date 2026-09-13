@@ -2,12 +2,15 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import ComplaintWizardForm from './ComplaintWizardForm';
+import ComplainantComplaintWizard from './complainant-wizard/ComplainantComplaintWizard';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import { useTranslation } from '../../context/I18nContext';
 import '../../styles/makeComplaintModal.css';
 
-// Same wizard, same fields, same signup.css styling as the public /complaint page — framed in
-// a wide desktop wizard modal chrome (header + numbered stepper bar) instead of navigating away.
+// Same wide desktop wizard modal chrome either way — which wizard renders inside it depends on
+// `isComplainant`: real, draft-based ComplainantComplaintWizard for the Complainant's own
+// dashboard/rights page; the mock ComplaintWizardForm (unchanged) for staff filing on someone's
+// behalf, e.g. Registry Head's own "Make Complaint" — that flow has no real backend endpoint yet.
 export default function MakeComplaintModal({ open, onClose, prefillPhone, isComplainant = false }) {
   const { t } = useTranslation();
 
@@ -29,7 +32,11 @@ export default function MakeComplaintModal({ open, onClose, prefillPhone, isComp
           </div>
         </div>
         <div className="wizard-modal-body">
-          <ComplaintWizardForm onComplete={onClose} initialVictimPhone={prefillPhone} skipPhoneGate isComplainant={isComplainant} />
+          {isComplainant ? (
+            <ComplainantComplaintWizard onComplete={onClose} />
+          ) : (
+            <ComplaintWizardForm onComplete={onClose} initialVictimPhone={prefillPhone} skipPhoneGate isComplainant={isComplainant} />
+          )}
         </div>
       </div>
     </div>,

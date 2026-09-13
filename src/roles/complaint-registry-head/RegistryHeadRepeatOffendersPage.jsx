@@ -15,10 +15,16 @@ import { CATEGORY_LABELS } from '../../constants/complaintCategories';
 import { registryHeadNavItems, registryHeadUser } from './navConfig';
 import { ROLE_NAV_ITEMS } from '../roleNavMap';
 import { scopeRepeatOffendersForUser } from '../scopeComplaints';
+import RealRepeatOffendersPage from './real/RealRepeatViolators';
 
 export default function RegistryHeadRepeatOffendersPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // complaint-registry-head has a real backend for this page now — Director/ES sharing this
+  // route keep seeing the mock body below, untouched.
+  if (user?.role === 'complaint-registry-head') return <RealRepeatOffendersPage />;
+
   const navItems = ROLE_NAV_ITEMS[user?.role] || registryHeadNavItems;
   const { getRepeatOffenders } = useComplaints();
   const [search, setSearch] = useState('');

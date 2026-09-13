@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, Building2, ShieldCheck, UserRound } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useRolePermissions } from '../../context/RolePermissionsContext';
 import { ROLE_LABELS_FOR_ADMIN } from '../../data/mockManagedUsers';
 import { ROLE_HOME } from '../../data/mockUsers';
+import { listRoles } from '../../api/administrationApi';
 import { superAdminNavItems, superAdminUser } from './navConfig';
 
 // Groups the 11 hardcoded roles into 4 real categories, each with its own icon/accent — turns a
@@ -44,6 +45,17 @@ export default function SuperAdminRolesPage() {
   const { user } = useAuth();
   const person = user || superAdminUser;
   const { capabilityDefs, hasCapability } = useRolePermissions();
+  const [roleDescriptions, setRoleDescriptions] = useState({});
+
+  useEffect(() => {
+    listRoles()
+      .then((res) => {
+        const byCode = {};
+        (res.roles || []).forEach((r) => { byCode[r.code] = r.description; });
+        setRoleDescriptions(byCode);
+      })
+      .catch(() => {}); // purely an enrichment — the page works fine without it
+  }, []);
 
   return (
     <AppShell navItems={superAdminNavItems} user={person}>
@@ -66,6 +78,8 @@ export default function SuperAdminRolesPage() {
                       <span className="role-ref-home">{ROLE_HOME[role] || '—'}</span>
                     </div>
                   </div>
+
+                  {roleDescriptions[role] && <p className="role-ref-description">{roleDescriptions[role]}</p>}
 
                   {granted.length === 0 ? (
                     <p className="role-ref-empty">No elevated capabilities</p>
